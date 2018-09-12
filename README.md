@@ -40,8 +40,8 @@ systemctl status lidar.service
 ### Classification of Outdoor 3D Lidar Data Based on Unsupervised Gaussian Mixture Models
 
 #### Key Points
-- unsupervised learning (no data labelling at any point needed)
-- two-layer classification model
-- 
+- two-layer classification model (requires labelling by expert in the second stage)
+- first stage is clustering the 3d point cloud points (after featurization) using GMM
+- second stage human expert assigns each point to a smaller number of classes (supervised)
 
 #### Notes
