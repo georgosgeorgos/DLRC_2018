@@ -45,3 +45,17 @@ systemctl status lidar.service
 - second stage human expert assigns each point to a smaller number of classes (supervised)
 
 #### Notes
+
+
+## Lidar Setup
+
+* torse left 9
+* torse right 6
+* torse up 7
+* torse down 8
+
+- head left 5 
+- head right 1
+- head up 2
+- head down 4
+- head frontal 3
