@@ -1,0 +1,2 @@
+1 sample 100Hz 10 runs we move randomly around the robot
+1 sample 100Hz 10 runs (ex2) we move back and forth around the robot

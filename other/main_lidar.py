@@ -77,7 +77,7 @@ while True:
 
     lidar_array = np.array(lidar_list)
     print(lidar_array.shape)
-    np.save("lidar_data_1sample100Hz10runs.npy", lidar_array)
+    np.save("lidar_data_1sample100Hz10runs_ex2.npy", lidar_array)
     break
 
 
