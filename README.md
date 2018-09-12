@@ -10,6 +10,11 @@
 - Visualize signals timesteps
 - Prepare data for GMM like this: One datapoint is one histogram of values at one timestep within a run
 
+### Hypothesis 2 (Anomaly Detection using LSTM)
+
+
+## Ideas
+
 
 ## Setup
 
