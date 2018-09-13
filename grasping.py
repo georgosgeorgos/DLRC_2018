@@ -77,9 +77,9 @@ while True:
                 phi = np.arccos((z - current_pos_c[2]) / R)
                 print("grasp")
                 g_msg(r)
-                if r == 2:
-                    r = 1
-                else:
+                if r == 2: 
+                    r = 1 
+                else: 
                     r = 2
                 time.sleep(0.5)
 

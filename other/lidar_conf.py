@@ -31,3 +31,6 @@ for j in range(9):
     plt.plot(lidar_array[:,j])
     plt.title(j+1)
     plt.show()
+    plt.hist(lidar_array[:,j])
+    plt.title(j+1)
+    plt.show()
