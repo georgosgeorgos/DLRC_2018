@@ -1,0 +1,2 @@
+const double vWallMin[3] = {0.28, -0.78, 0.02};
+const double vWallMax[3] = {0.82,  0.78, 1.08};
