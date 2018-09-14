@@ -1,3 +1,4 @@
 .ipynb_checkpoints/*
 .parameter_pool_vars
 data/images*
+experiments/*
