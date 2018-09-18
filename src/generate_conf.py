@@ -42,10 +42,10 @@ current_pos_c = state.get_c_pos()
 print('initial pos: {}'.format(current_pos_c))
 
 n_points = 100
-n_runs = 100
-time2go = 4.
-delta = 2 * np.pi / n_points
-R = 0.2
+n_runs   = 100
+time2go  = 3.
+delta    = 2 * np.pi / n_points
+R        = 0.2
 
 data = {}
 c = 0
@@ -74,7 +74,9 @@ while runs < n_runs:
     runs +=1
     print("RUN:", runs)
     data[runs] = {"trajectory": [], 
-                  "state": {"j_pos": [], "j_vel": [], "j_load": [], "c_pos": [], "c_vel": [], "c_ori_quat": [], "dc_ori_quat": [], "timestamp": []}, 
+                  "state": {"j_pos": [], "j_vel": [], "j_load": [], 
+                  "c_pos": [], "c_vel": [], "c_ori_quat": [], 
+                  "dc_ori_quat": [], "timestamp": []}, 
                   "lidar": {"measure": [], "timestamp": []}}
     try:
         state = b.recv_msg("franka_state", -1)    
@@ -89,18 +91,18 @@ while runs < n_runs:
 
             alpha = np.random.uniform(-0.01, 0.01, 1)[0]
             #q = list(Quaternion.random())
-            if np.random.random() < 0.98:
-                pos = np.array([X, Y, Z])
-                pos_msg(pos)
-            else:
-                print("Change angle: ", alpha)
-                axis = np.zeros(3)
-                a = np.argmax(np.random.random(3))
-                axis[a] = 1
-                q = Quaternion(axis=axis, angle=alpha)
-                q = list(q)
-                pos = np.array([X, Y, Z] + q)
-                pos_msg(pos)
+            #if np.random.random() < 1.1:
+            pos = np.array([X, Y, Z])
+            pos_msg(pos)
+            # else:
+            #     print("Change angle: ", alpha)
+            #     axis = np.zeros(3)
+            #     a = np.argmax(np.random.random(3))
+            #     axis[a] = 1
+            #     q = Quaternion(axis=axis, angle=alpha)
+            #     q = list(q)
+            #     pos = np.array([X, Y, Z] + q)
+            #     pos_msg(pos)
 
             counter += 1
             time.sleep(0.5)
