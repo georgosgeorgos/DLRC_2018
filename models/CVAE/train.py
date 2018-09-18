@@ -38,12 +38,9 @@ def main(args):
 
     optimizer = torch.optim.Adam(vae.parameters(), lr=args.learning_rate)
 
-
     tracker_global = defaultdict(torch.FloatTensor)
 
     for epoch in range(args.epochs):
-
-        tracker_epoch = defaultdict(lambda: defaultdict(dict))
 
         for split, dataset in datasets.items():
 
@@ -62,12 +59,6 @@ def main(args):
                 else:
                     recon_x, mean, log_var, z = vae(x)
 
-                for i, yi in enumerate(y.data):
-                    id = len(tracker_epoch)
-                    tracker_epoch[id]['x'] = z[i, 0].item()
-                    tracker_epoch[id]['y'] = z[i, 1].item()
-                    tracker_epoch[id]['label'] = yi[0]
-
 
                 loss = loss_fn(recon_x, x, mean, log_var)
 
@@ -80,8 +71,7 @@ def main(args):
                 tracker_global['it'] = torch.cat((tracker_global['it'], torch.Tensor([epoch*len(data_loader)+iteration])))
 
                 if iteration % args.print_every == 0 or iteration == len(data_loader)-1:
-                    print("Batch %04d/%i, Loss %9.4f"%(iteration, len(data_loader)-1, loss.item()))
-
+                    print("Batch {:4d}/{}, Loss {:4.4f}".format(iteration, len(data_loader)-1, loss.item()))
 
                     if args.conditional:
                         c=to_var(torch.arange(0,10).long().view(-1,1))
@@ -98,27 +88,21 @@ def main(args):
                         plt.imshow(x[p].view(28,28).data.numpy())
                         plt.axis('off')
 
-
                     if not os.path.exists(os.path.join(args.fig_root, str(ts))):
                         if not(os.path.exists(os.path.join(args.fig_root))):
                             os.mkdir(os.path.join(args.fig_root))
                         os.mkdir(os.path.join(args.fig_root, str(ts)))
 
-                    plt.savefig(os.path.join(args.fig_root, str(ts), "E%iI%i.png"%(epoch, iteration)), dpi=300)
+                    plt.savefig(os.path.join(args.fig_root, str(ts), "E{}I{}.png".format(epoch, iteration)), dpi=300)
                     plt.clf()
                     plt.close()
-
-
-            df = pd.DataFrame.from_dict(tracker_epoch, orient='index')
-            g = sns.lmplot(x='x', y='y', hue='label', data=df.groupby('label').head(100), fit_reg=False, legend=True)
-            g.savefig(os.path.join(args.fig_root, str(ts), "E%i-Dist.png"%epoch), dpi=300)
 
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--epochs", type=int, default=1)
-    parser.add_argument("--batch_size", type=int, default=64)
+    parser.add_argument("--epochs", type=int, default=2)
+    parser.add_argument("--batch_size", type=int, default=256)
     parser.add_argument("--learning_rate", type=float, default=0.001)
     parser.add_argument("--encoder_layer_sizes", type=list, default=[784, 256])
     parser.add_argument("--decoder_layer_sizes", type=list, default=[256, 784])
