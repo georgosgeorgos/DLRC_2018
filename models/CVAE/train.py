@@ -22,7 +22,7 @@ def main(args):
     datasets['train'] = MNIST(root='data', train=True, transform=transforms.ToTensor(), download=True)
 
     def loss_fn(recon_x, x, mean, log_var):
-        BCE = torch.nn.functional.binary_cross_entropy(recon_x, x, size_average=False)
+        BCE = torch.nn.functional.binary_cross_entropy(recon_x, x, reduction='sum')
 
         KLD = -0.5 * torch.sum(1 + log_var - mean.pow(2) - log_var.exp())
 
@@ -64,8 +64,8 @@ def main(args):
 
                 for i, yi in enumerate(y.data):
                     id = len(tracker_epoch)
-                    tracker_epoch[id]['x'] = z[i, 0].data[0]
-                    tracker_epoch[id]['y'] = z[i, 1].data[0]
+                    tracker_epoch[id]['x'] = z[i, 0].item()
+                    tracker_epoch[id]['y'] = z[i, 1].item()
                     tracker_epoch[id]['label'] = yi[0]
 
 
@@ -76,11 +76,11 @@ def main(args):
                     loss.backward()
                     optimizer.step()
 
-                tracker_global['loss'] = torch.cat((tracker_global['loss'], loss.data/x.size(0)))
+                tracker_global['loss'] = torch.cat( (tracker_global['loss'], torch.FloatTensor([loss.data/x.size(0)])), dim=0 )
                 tracker_global['it'] = torch.cat((tracker_global['it'], torch.Tensor([epoch*len(data_loader)+iteration])))
 
                 if iteration % args.print_every == 0 or iteration == len(data_loader)-1:
-                    print("Batch %04d/%i, Loss %9.4f"%(iteration, len(data_loader)-1, loss.data[0]))
+                    print("Batch %04d/%i, Loss %9.4f"%(iteration, len(data_loader)-1, loss.item()))
 
 
                     if args.conditional:
@@ -117,7 +117,7 @@ def main(args):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--epochs", type=int, default=10)
+    parser.add_argument("--epochs", type=int, default=1)
     parser.add_argument("--batch_size", type=int, default=64)
     parser.add_argument("--learning_rate", type=float, default=0.001)
     parser.add_argument("--encoder_layer_sizes", type=list, default=[784, 256])

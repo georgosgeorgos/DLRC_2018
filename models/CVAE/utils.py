@@ -9,10 +9,10 @@ def to_var(x, volatile=False):
 def idx2onehot(idx, n):
 
     assert idx.size(1) == 1
-    assert torch.max(idx).data[0] < n
+    assert torch.max(idx).item() < n
 
     onehot = torch.zeros(idx.size(0), n)
-    onehot.scatter_(1, idx.data, 1)
+    onehot.scatter_(1, idx, 1)
     onehot = to_var(onehot)
     
     return onehot
