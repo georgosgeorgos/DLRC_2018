@@ -1,0 +1,4 @@
+const double vWallMin[3] = {0.28, -0.78, 0.02};
+const double vWallMax[3] = {0.82,  0.78, 1.08};
+
+max, min = (8191, 14) # lidar 3 (see mapping slack)
