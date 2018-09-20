@@ -1,4 +1,3 @@
-.ipynb_checkpoints/*
 .parameter_pool_vars
 data/images*
 __pycache__/*
@@ -7,3 +6,7 @@ models/CVAE/figs/*
 models/CVAE/data/*
 models/CVAE/__pycache__/*
 .idea/*
+*.pkl
+*.pickle
+*.png
+*/.ipynb_checkpoints/*
