@@ -5,22 +5,35 @@ import numpy as np
 
 class Loader(data.Dataset):
 
-    def __init__(self, split="", transform=None):
-        with open("../data/custom_trajectories.pkl", "rb") as f:
-            self.data = pkl.load(f)[0]["data"]
-            
+    def __init__(self, split="train", transform=None):
+
+        self.split = split
+
+        if self.split == "train":
+            with open("./data/train.pkl", "rb") as f:
+                self.data = pkl.load(f)
+                self.data = [self.data[i]["lidar"]["measure"] for i in range(len(self.data))]
+                self.data = np.array(self.data, dtype=float)
+                self.data = np.reshape(self.data, (-1, self.data.shape[2]))
+
+        else:
+            with open("./data/test.pkl", "rb") as f:
+                self.data = pkl.load(f)[0]["data"]
+
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, index):
 
         lidar = self.data[index]
-
-        lidar = th.from_numpy(np.array([lidar.astype(float) for _ in range(9)]))
-        lidar = lidar.float()
+        if self.split == "train":
+            lidar = th.from_numpy(lidar)
+        else:
+            lidar = th.from_numpy(np.array([lidar.astype(float) for _ in range(9)]))
+            lidar = lidar.float()
         return lidar
 
 if __name__ == '__main__':
-    data = Loader()
+    data = Loader("train")
     print(len(data))
-    print(data[2])
+    print(data[100])

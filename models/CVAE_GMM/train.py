@@ -125,7 +125,6 @@ if __name__ == '__main__':
     parser.add_argument("--batch_size", type=int, default=1)
     parser.add_argument("--learning_rate", type=float, default=0.0001)
     parser.add_argument("--encoder_layer_sizes", type=list, default=[9, 256])
-    #parser.add_argument("--decoder_layer_sizes", type=list, default=[256, 784])
     parser.add_argument("--latent_size", type=int, default=27)
     parser.add_argument("--print_every", type=int, default=100)
     parser.add_argument("--fig_root", type=str, default='figs')
