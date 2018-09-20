@@ -12,19 +12,19 @@ from torch.utils.data import DataLoader
 from torch.distributions.normal import Normal
 from collections import OrderedDict, defaultdict
 
+import torch as th
+import torch.nn.functional as F
+
 from utils import *
-from models import VAE
+from model import VAE
+from lidarLoader import Loader
 
 def main(args):
 
     ts = time.time()
+    split = "train"
 
-    datasets = OrderedDict()
-    datasets['train'] = MNIST(root='data', train=True, transform=transforms.ToTensor(), download=True)
-
-    def loss_fn(y_z, mu_phi, log_var_phi, mu_theta, log_var_theta, batch_size=24):
-        from torch.distributions.normal import Normal
-
+    def loss_fn(y_z, mu_phi, log_var_phi, mu_theta, log_var_theta, batch_size=24, n_sample=1, k=1):
         loglikelihood = 0
         
         std_theta = std(log_var_theta)
@@ -36,8 +36,10 @@ def main(args):
         pdf_y = th.exp(N.log_prob(y_expanded))
         pdf_y = reshape(pdf_y)
 
-        # sample z to build likelihood over z
-        for sample in range(10):
+        # sample z to build empirical sample mean over z for the likelihood
+        # we are using only one sample at time from the mixture ----> likelihood
+        # is simply the normal
+        for sample in range(n_sample):
             eps = V(th.randn(y_expanded.size()))
             z_y = eps * std_phi + mu_phi
 
@@ -45,13 +47,17 @@ def main(args):
             z_y = F.softmax(z_y, dim=2)
             loglikelihood += th.log(th.sum(pdf_y * z_y, dim=2))
 
+        loglikelihood /= 10
         loglikelihood = th.sum(loglikelihood) / y_z.size()[0]*y_z.size()[1]
         # reduce mean over the batch size reduce sum over the lidars
         
         # reduce over KLD
-        KLD = 0.5 * torch.sum(1 + log_var_phi - mu_phi.pow(2) - log_var_phi.exp())
+        # explicit form when q(z|x) is normal and N(0,I)
+        kld = 1/2 * torch.sum(log_var_phi.exp() + mu_phi.pow(2) - 1 - log_var_phi)
+        # we want to maximize this guy
+        elbo = loglikelihood - kld 
 
-        return - (loglikelihood + KLD)
+        return - elbo
 
 
     vae = VAE(
@@ -66,72 +72,60 @@ def main(args):
 
     tracker_global = defaultdict(torch.FloatTensor)
 
+    dataset = Loader()
+    data_loader = DataLoader(dataset=dataset, batch_size=args.batch_size, shuffle=True)
+
     for epoch in range(args.epochs):
-        for split, dataset in datasets.items():
-            data_loader = DataLoader(dataset=dataset, batch_size=args.batch_size, shuffle=split=='train')
+        print("Epoch: ", epoch)
+        for iteration, y in enumerate(data_loader):
 
-            for iteration, (y, x) in enumerate(data_loader):
+            # observable
+            y = V(y)
+            y = y / 1000
+            #y = y.view(-1, 9)
 
-                # observable
-                y = V(y)
-                y = y.view(-1, 9)
+            # conditioning
+            #x = V(x)
+            #x = x.view(-1, 7)
 
-                # conditioning
-                x = V(x)
-                x = x.view(-1, 7)
+            if args.conditional:
+                mu_phi, log_var_phi, mu_theta, log_var_theta = vae(y, x)
+            else:
+                mu_phi, log_var_phi, mu_theta, log_var_theta = vae(y)
+
+
+            loss = loss_fn(y, mu_phi, log_var_phi, mu_theta, log_var_theta)
+
+            if split == 'train':
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+
+            tracker_global['loss'] = torch.cat( (tracker_global['loss'], torch.FloatTensor([loss.data/y.size(0)])), dim=0 )
+            tracker_global['it'] = torch.cat((tracker_global['it'], torch.Tensor([epoch*len(data_loader)+iteration])))
+
+            if iteration % args.print_every == 100 or iteration == len(data_loader)-1:
+                print("Batch {:4d}/{}, Loss {:4.4f}".format(iteration, len(data_loader)-1, loss.item()))
 
                 if args.conditional:
-                    y, mu_phi, log_var_phi, mu_theta, log_var_theta = vae(y, x)
+                    z_y = vae.inference(y)
                 else:
-                    y, mu_phi, log_var_phi, mu_theta, log_var_theta = vae(y)
+                    z_y = vae.inference(y)
 
+                print("inference:")
+                print(z_y.data.numpy())
 
-                loss = loss_fn(y, mu_phi, log_var_phi, mu_theta, log_var_theta)
-
-                if split == 'train':
-                    optimizer.zero_grad()
-                    loss.backward()
-                    optimizer.step()
-
-                tracker_global['loss'] = torch.cat( (tracker_global['loss'], torch.FloatTensor([loss.data/x.size(0)])), dim=0 )
-                tracker_global['it'] = torch.cat((tracker_global['it'], torch.Tensor([epoch*len(data_loader)+iteration])))
-
-                if iteration % args.print_every == 0 or iteration == len(data_loader)-1:
-                    print("Batch {:4d}/{}, Loss {:4.4f}".format(iteration, len(data_loader)-1, loss.item()))
-
-                    if args.conditional:
-                        c=to_var(torch.arange(0,10).long().view(-1,1))
-                        x = vae.inference(n=c.size(0), c=c)
-                    else:
-                        x = vae.inference(n=10)
-
-                    plt.figure()
-                    plt.figure(figsize=(5,10))
-                    for p in range(10):
-                        plt.subplot(5,2,p+1)
-                        if args.conditional:
-                            plt.text(0,0,"c=%i"%c.data[p][0], color='black', backgroundcolor='white', fontsize=8)
-                        plt.imshow(x[p].view(28,28).data.numpy())
-                        plt.axis('off')
-
-                    if not os.path.exists(os.path.join(args.fig_root, str(ts))):
-                        if not(os.path.exists(os.path.join(args.fig_root))):
-                            os.mkdir(os.path.join(args.fig_root))
-                        os.mkdir(os.path.join(args.fig_root, str(ts)))
-
-                    plt.savefig(os.path.join(args.fig_root, str(ts), "E{}I{}.png".format(epoch, iteration)), dpi=300)
-                    plt.clf()
-                    plt.close()
-
+        #plt.plot(tracker_global["it"].data.numpy(), tracker_global["loss"].data.numpy())
+        #plt.show()
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--epochs", type=int, default=2)
-    parser.add_argument("--batch_size", type=int, default=256)
-    parser.add_argument("--learning_rate", type=float, default=0.001)
-    parser.add_argument("--encoder_layer_sizes", type=list, default=[784, 256])
-    parser.add_argument("--decoder_layer_sizes", type=list, default=[256, 784])
+    parser.add_argument("--epochs", type=int, default=100)
+    parser.add_argument("--batch_size", type=int, default=1)
+    parser.add_argument("--learning_rate", type=float, default=0.0001)
+    parser.add_argument("--encoder_layer_sizes", type=list, default=[9, 256])
+    #parser.add_argument("--decoder_layer_sizes", type=list, default=[256, 784])
     parser.add_argument("--latent_size", type=int, default=27)
     parser.add_argument("--print_every", type=int, default=100)
     parser.add_argument("--fig_root", type=str, default='figs')
