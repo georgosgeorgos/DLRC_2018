@@ -30,8 +30,9 @@ class Encoder(nn.Module):
 
         for i, (in_size, out_size) in enumerate( zip(layer_sizes[:-1], layer_sizes[1:]) ):
             self.MLP.add_module(name="L%i"%(i), module=nn.Linear(in_size, out_size))
-            self.MLP.add_module(name="LL%i"%(i), module=nn.Linear(out_size, out_size))
             self.MLP.add_module(name="A%i"%(i), module=nn.Tanh())
+            self.MLP.add_module(name="LL%i"%(i), module=nn.Linear(out_size, out_size))
+            self.MLP.add_module(name="AA%i"%(i), module=nn.Tanh())
 
         self.linear_means   = nn.Linear(layer_sizes[-1], latent_size)
         self.linear_log_var = nn.Linear(layer_sizes[-1], latent_size)
@@ -102,6 +103,15 @@ class VAE(nn.Module):
         # the decoder compute the approx likelihood p_{theta}(y|z, x)
         self.decoder = Decoder(latent_size, batch_size, conditional, num_labels)
 
+        self.init_parameters()
+
+
+    def init_parameters(self):
+        for m in self.modules():
+            if isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight)
+                nn.init.constant_(m.bias, 0)
+
     def forward(self, y, x=None):
         mu_phi, log_var_phi     = self.encoder(y, x)
         mu_theta, log_var_theta = self.decoder()
@@ -152,7 +162,7 @@ if __name__ == '__main__':
     print(z_y.size())
     print(z_y.sum(2))
 
-    def loss_fn(y_z, mu_phi, log_var_phi, mu_theta, log_var_theta, batch_size=24):
+    def loss_fn(y_z, mu_phi, log_var_phi, mu_theta, log_var_theta, batch_size):
         from torch.distributions.normal import Normal
 
         loglikelihood = 0

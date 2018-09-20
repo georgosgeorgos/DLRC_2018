@@ -7,9 +7,21 @@ def V(x, volatile=False):
     return Variable(x, volatile=volatile, requires_grad=True)
 
 def std(log_var):
-	res = torch.exp(0.5 * log_var)
-	return res
+    res = torch.exp(0.5 * log_var)
+    return res
 
 def reshape(z, l=9, s=3):
-	res = z.view(-1, l, s)
-	return res
+    res = torch.zeros((z.size()[0], l, s))
+    index = 0
+    for j in range(s):
+        res[:, :, j] = z[:,(index*l):((index+1)*l)]
+        index +=1
+    return res
+
+def expand(x, s=3):
+    n, m = x.size()
+    x_expanded = torch.zeros(n, m, 3)
+    for j in range(s):
+        x_expanded[:, :, j] = x
+    return x_expanded
+
