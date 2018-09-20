@@ -3,6 +3,8 @@ from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import os
+from utils.utils import path_exists
 
 b = pab.broker()
 print(b.request_signal("franka_lidar", pab.MsgType.franka_lidar))

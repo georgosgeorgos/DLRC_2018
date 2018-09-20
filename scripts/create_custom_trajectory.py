@@ -10,7 +10,7 @@ import os.path as osp
 # dictionary with key=trajectory and value list of measurements over `num_timesteps`
 data = defaultdict()
 lidar_id = 3 # zero-indexed, 9 in total
-data_path = '../../data'
+data_path = 'data'
 
 # initialization broker
 b = pab.broker()
