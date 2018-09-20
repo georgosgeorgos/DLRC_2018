@@ -47,7 +47,7 @@ def main(args):
             z_y = F.softmax(z_y, dim=2)
             loglikelihood += th.log(th.sum(pdf_y * z_y, dim=2))
 
-        loglikelihood /= 10
+        loglikelihood /= n_sample
         loglikelihood = th.sum(loglikelihood) / y_z.size()[0]*y_z.size()[1]
         # reduce mean over the batch size reduce sum over the lidars
         
@@ -72,7 +72,7 @@ def main(args):
 
     tracker_global = defaultdict(torch.FloatTensor)
 
-    dataset = Loader()
+    dataset = Loader(split=split)
     data_loader = DataLoader(dataset=dataset, batch_size=args.batch_size, shuffle=True)
 
     for epoch in range(args.epochs):
