@@ -10,3 +10,5 @@ models/CVAE/__pycache__/*
 *.pickle
 *.png
 */.ipynb_checkpoints/*
+*.npy
+.ipynb_checkpoints/lidar_clustering_max_std-checkpoint.ipynb
