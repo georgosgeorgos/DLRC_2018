@@ -2,12 +2,11 @@
 data/images*
 __pycache__/*
 Untitled.ipynb
-models/CVAE/figs/*
-models/CVAE/data/*
-models/CVAE/__pycache__/*
 .idea/*
 *.pkl
 *.pickle
 *.png
 *.ipynb_checkpoints
 *.npy
+/models/CVAE_GMM/__pycache__/
+/models/CVAE_GMM/data/raw/
