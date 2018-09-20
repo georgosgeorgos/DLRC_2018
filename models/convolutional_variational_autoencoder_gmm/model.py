@@ -31,8 +31,8 @@ class Encoder(nn.Module):
         for i, (in_size, out_size) in enumerate( zip(layer_sizes[:-1], layer_sizes[1:]) ):
             self.MLP.add_module(name="L%i"%(i), module=nn.Linear(in_size, out_size))
             self.MLP.add_module(name="A%i"%(i), module=nn.Tanh())
-            self.MLP.add_module(name="LL%i"%(i), module=nn.Linear(out_size, out_size))
-            self.MLP.add_module(name="AA%i"%(i), module=nn.Tanh())
+            #self.MLP.add_module(name="LL%i"%(i), module=nn.Linear(out_size, out_size))
+            #self.MLP.add_module(name="AA%i"%(i), module=nn.Tanh())
 
         self.linear_means   = nn.Linear(layer_sizes[-1], latent_size)
         self.linear_log_var = nn.Linear(layer_sizes[-1], latent_size)
@@ -177,11 +177,10 @@ if __name__ == '__main__':
         y_expanded = th.cat([y_z, y_z, y_z], dim=1)
         #print(y_expanded.size())
         pdf_y = th.exp(N.log_prob(y_expanded))
-        #print(pdf_y.size())
         pdf_y = reshape(pdf_y)
         #print(pdf_y.size())
         # sample z
-        for sample in range(100):
+        for sample in range(10):
             eps = V(th.randn(y_expanded.size()))
             z_y = eps * std_phi + mu_phi
 

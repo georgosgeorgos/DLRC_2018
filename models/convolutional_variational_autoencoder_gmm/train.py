@@ -22,7 +22,7 @@ from lidarLoader import Loader
 parser = argparse.ArgumentParser()
 parser.add_argument("--epochs", type=int, default=100)
 parser.add_argument("--batch_size", type=int, default=24)
-parser.add_argument("--learning_rate", type=float, default=0.0001)
+parser.add_argument("--learning_rate", type=float, default=0.00001)
 parser.add_argument("--encoder_layer_sizes", type=list, default=[9, 256])
 parser.add_argument("--latent_size", type=int, default=27)
 parser.add_argument("--print_every", type=int, default=1000)
@@ -112,13 +112,12 @@ def main(args):
                 else:
                     mu_phi, log_var_phi, mu_theta, log_var_theta = vae(y)
 
-
                 loss, kld, ll = loss_fn(y, mu_phi, log_var_phi, mu_theta, log_var_theta, args.batch_size)
 
                 if split == 'train':
                     loss.backward()
-                    optimizer.zero_grad()
                     optimizer.step()
+                    optimizer.zero_grad()
 
                 # compute the loss averaging over epochs and dividing by batches
                 L.append(loss.data.numpy())
@@ -129,14 +128,14 @@ def main(args):
             else:
                 z_y = vae.inference(y)
 
-            print("inference:")
-            print(z_y.data.numpy())
-            print("ll: ", -ll.data.numpy())
-            print("kld: ", kld.data.numpy())
+            #print("inference:")
+            #print(z_y.data.numpy())
+            #print("ll: ", -ll.data.numpy())
+            #print("kld: ", kld.data.numpy())
             print("loss: ", np.mean(L))
 
         loss_list.append(np.mean(L) / (len(data_loader)))
-        
+
     plt.plot(np.array(loss_list))
     plt.grid()
     plt.show()
