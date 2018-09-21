@@ -67,7 +67,7 @@ def main(args):
         # reduce over KLD
         # explicit form when q(z|x) is normal and N(0,I)
         # what about k? 9 or 27?
-        k = 1 #z_y.size()[2]
+        k   = 1 #z_y.size()[2]
         kld = 0.5 * ((log_var_phi.exp() + mu_phi.pow(2) - log_var_phi) - k)
         kld = torch.sum(kld, dim=1)
         kld = torch.mean(kld)
@@ -78,7 +78,7 @@ def main(args):
         return -elbo, kld, loglikelihood
 
 
-    vae = VAE(
+    model = VAE(
             encoder_layer_sizes=args.encoder_layer_sizes,
             latent_size=args.latent_size,
             batch_size=args.batch_size,
@@ -86,10 +86,12 @@ def main(args):
             num_labels=args.num_labels
             )
 
+    #model = nn.DataParallel(model)
+
     # probably adam not the most appropriate algorithms
-    optimizer = torch.optim.Adam(vae.parameters(), lr=args.learning_rate)
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     optimizer.zero_grad()
-    tracker_global = defaultdict(torch.FloatTensor)
+    #tracker_global = defaultdict(torch.FloatTensor)
 
     dataset = Loader(split=split)
     data_loader = DataLoader(dataset=dataset, batch_size=args.batch_size, shuffle=True)
@@ -108,9 +110,9 @@ def main(args):
                 continue
             else:
                 if args.conditional:
-                    mu_phi, log_var_phi, mu_theta, log_var_theta = vae(y, x)
+                    mu_phi, log_var_phi, mu_theta, log_var_theta = model(y, x)
                 else:
-                    mu_phi, log_var_phi, mu_theta, log_var_theta = vae(y)
+                    mu_phi, log_var_phi, mu_theta, log_var_theta = model(y)
 
                 loss, kld, ll = loss_fn(y, mu_phi, log_var_phi, mu_theta, log_var_theta, args.batch_size)
 
@@ -124,9 +126,9 @@ def main(args):
 
         if True:
             if args.conditional:
-                z_y = vae.inference(y)
+                z_y = model.inference(y)
             else:
-                z_y = vae.inference(y)
+                z_y = model.inference(y)
 
             #print("inference:")
             #print(z_y.data.numpy())
@@ -139,6 +141,9 @@ def main(args):
     plt.plot(np.array(loss_list))
     plt.grid()
     plt.show()
+
+    path = "./ckpt/model.pth"
+    th.save(model.state_dict(), path)
 
 if __name__ == '__main__':
     args = parser.parse_args()

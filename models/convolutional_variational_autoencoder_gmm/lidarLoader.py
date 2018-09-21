@@ -21,6 +21,7 @@ class Loader(data.Dataset):
         else:
             with open("./data/test.pkl", "rb") as f:
                 self.data = pkl.load(f)[0]["data"]
+                print(len(self.data))
 
     def __len__(self):
         return len(self.data)
@@ -30,12 +31,14 @@ class Loader(data.Dataset):
         lidar = self.data[index]
         if self.split == "train":
             lidar = th.from_numpy(lidar)
-            # convert in meters
             lidar = lidar.float()
         else:
-            lidar = th.from_numpy(np.array([lidar.astype(float) for _ in range(9)]))
-            lidar = lidar.float()
-        return lidar
+            lidar_list = [0 for i in range(9)]
+            lidar_list[3] = lidar
+            lidar_array = np.array(lidar_list)
+            lidar_array = th.from_numpy(lidar_array)
+            lidar_array = lidar_array.float()
+        return lidar_array
 
 if __name__ == '__main__':
     data = Loader("train")
