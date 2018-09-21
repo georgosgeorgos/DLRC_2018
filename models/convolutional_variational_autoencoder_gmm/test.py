@@ -35,7 +35,7 @@ def main(args):
 
     ts = time.time()
     split = "test"
-    ckpt = "model.pth"
+    ckpt = "ckpt_2018-09-21_08:58:33.pth"
 
     model = VAE(
             encoder_layer_sizes=args.encoder_layer_sizes,

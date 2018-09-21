@@ -33,12 +33,13 @@ class Loader(data.Dataset):
             lidar = th.from_numpy(lidar)
             lidar = lidar.float()
         else:
-            lidar_list = [0 for i in range(9)]
+            # everything background
+            lidar_list = [2.0 for i in range(9)]
             lidar_list[3] = lidar
             lidar_array = np.array(lidar_list)
             lidar_array = th.from_numpy(lidar_array)
-            lidar_array = lidar_array.float()
-        return lidar_array
+            lidar = lidar_array.float()
+        return lidar
 
 if __name__ == '__main__':
     data = Loader("train")

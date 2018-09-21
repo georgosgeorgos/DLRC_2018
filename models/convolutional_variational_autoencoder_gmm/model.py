@@ -31,8 +31,8 @@ class Encoder(nn.Module):
         for i, (in_size, out_size) in enumerate( zip(layer_sizes[:-1], layer_sizes[1:]) ):
             self.MLP.add_module(name="L%i"%(i), module=nn.Linear(in_size, out_size))
             self.MLP.add_module(name="A%i"%(i), module=nn.Tanh())
-            #self.MLP.add_module(name="LL%i"%(i), module=nn.Linear(out_size, out_size))
-            #self.MLP.add_module(name="AA%i"%(i), module=nn.Tanh())
+            self.MLP.add_module(name="LL%i"%(i), module=nn.Linear(out_size, out_size))
+            self.MLP.add_module(name="AA%i"%(i), module=nn.Tanh())
 
         self.linear_means   = nn.Linear(layer_sizes[-1], latent_size)
         self.linear_log_var = nn.Linear(layer_sizes[-1], latent_size)

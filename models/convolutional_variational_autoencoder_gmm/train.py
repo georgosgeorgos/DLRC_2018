@@ -19,8 +19,10 @@ from utils import *
 from model import VAE
 from lidarLoader import Loader
 
+import datetime
+
 parser = argparse.ArgumentParser()
-parser.add_argument("--epochs", type=int, default=100)
+parser.add_argument("--epochs", type=int, default=200)
 parser.add_argument("--batch_size", type=int, default=24)
 parser.add_argument("--learning_rate", type=float, default=0.00001)
 parser.add_argument("--encoder_layer_sizes", type=list, default=[9, 256])
@@ -29,11 +31,21 @@ parser.add_argument("--print_every", type=int, default=1000)
 parser.add_argument("--fig_root", type=str, default='figs')
 parser.add_argument("--conditional", action='store_true')
 parser.add_argument("--num_labels", type=int, default=0)
+parser.add_argument("--ckpt_dir", type=str, default="./ckpt/")
 
 def main(args):
 
     ts = time.time()
     split = "train"
+
+    s = datetime.datetime.utcnow()
+    s = str(s).split(".")[0]
+    s = s.split(" ")
+    s = "_".join(s)
+    ckpt = "ckpt_" + s + ".pth"
+    print(ckpt)
+
+
     def loss_fn(y_z, mu_phi, log_var_phi, mu_theta, log_var_theta, batch_size=24, n_sample=10):
         '''
         add annealing alpha (1-alpha)
@@ -87,6 +99,7 @@ def main(args):
             )
 
     #model = nn.DataParallel(model)
+    #model.cuda()
 
     # probably adam not the most appropriate algorithms
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
@@ -142,8 +155,8 @@ def main(args):
     plt.grid()
     plt.show()
 
-    path = "./ckpt/model.pth"
-    th.save(model.state_dict(), path)
+    th.save(model.state_dict(), args.ckpt_dir + ckpt)
+    print("done!")
 
 if __name__ == '__main__':
     args = parser.parse_args()
