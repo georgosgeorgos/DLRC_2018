@@ -1,8 +1,11 @@
-import torch as th
 from torch.utils.data import DataLoader, Dataset
+from torchvision import transforms
+import torch
 import pickle as pkl
 import numpy as np
 import os.path as osp
+from utils.utils import path_exists
+import configs as cfg
 
 
 class PandaDataSet(Dataset):
@@ -11,6 +14,8 @@ class PandaDataSet(Dataset):
         self.root_dir = root_dir
         self.train = train
         self.transform = transform
+
+        path_exists(root_dir)
 
         with open(osp.join(root_dir, 'train.pkl'), "rb") as f:
             self.data = pkl.load(f)
@@ -26,6 +31,8 @@ class PandaDataSet(Dataset):
 
             self.X = [self.data[i]["state"]["j_pos"] for i in range(self.num_demonstrations)]
             self.X = np.array(self.X, dtype=float).reshape((self.num_samples, self.num_joints))
+
+            print(np.min(self.Y), np.max(self.Y))
 
     def __len__(self):
         """
@@ -45,8 +52,13 @@ class PandaDataSet(Dataset):
 
 
 # if __name__ == '__main__':
-#     ds = PandaDataSet()
-#     dl = DataLoader(ds, batch_size=32, shuffle=True, num_workers=1)
-#     for (x,y) in dl:
-#         print(x.size(), y.size())
-#         break
+#     ds = PandaDataSet(
+#         transform=transforms.Compose([
+#             transforms.Lambda(lambda n: torch.Tensor(n)),
+#             transforms.Lambda(lambda n: torch.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
+#             transforms.Lambda(lambda n: n / 1000)
+#         ])
+#     )
+#     dl = DataLoader(ds, batch_size=1024, shuffle=True, num_workers=1)
+#     for i, (x, y) in enumerate(dl):
+#         print(torch.Tensor.min(y).item(), torch.Tensor.max(y).item())
