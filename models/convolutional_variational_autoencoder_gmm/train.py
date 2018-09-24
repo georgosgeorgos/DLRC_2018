@@ -29,8 +29,8 @@ n_samples_z      = 10 # sample from selector
 clusters         = 2  # clustering component (background/self | static/dynamic)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--epochs", type=int, default=50)
-parser.add_argument("--batch_size", type=int, default=36)
+parser.add_argument("--epochs", type=int, default=100)
+parser.add_argument("--batch_size", type=int, default=24)
 parser.add_argument("--learning_rate", type=float, default=0.00001)
 parser.add_argument("--encoder_layer_sizes", type=list, default=[(lidar_input_size*n_samples_y), 64, 128])
 parser.add_argument("--decoder_layer_sizes", type=list, default=[(joint_input_size*n_samples_y), 64, 128])
@@ -100,7 +100,7 @@ def main(args):
 
                 #print(y.type(), mu_phi.type(), log_var_phi.type(),mu_theta.type(),log_var_theta.type())
                 #print(y.size(), mu_phi.size(), log_var_phi.size(),mu_theta.size(),log_var_theta.size())
-                loss, kld, ll = loss_fn(y, mu_phi, log_var_phi, mu_theta, log_var_theta)
+                loss, kld, ll, pdf, zz, s = loss_fn(y, mu_phi, log_var_phi, mu_theta, log_var_theta)
                 #print(mu_theta[0], log_var_theta[0])
                 #print(ll)
                 if split == 'train':
@@ -121,10 +121,13 @@ def main(args):
 
             print("loss: ", np.mean(L))
 
-        #print("likelihood: ", ll.data)
-        #print("kl: ", kld.data)
-        #print(mu_theta[0], log_var_theta[0])
-
+        print("zz: ", zz.data.numpy())
+        print("pdf: ", pdf.data.numpy())
+        print("negative likelihood: ", -ll.data.numpy())
+        print("kl: ", kld.data.numpy())
+        print("s: ", s)
+        #print(log_var_phi, log_var_theta)
+        
         loss_list.append(np.mean(L) / (len(data_loader)))
 
     plt.plot(np.array(loss_list))
