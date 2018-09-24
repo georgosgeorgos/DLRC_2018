@@ -36,7 +36,7 @@ class Encoder(nn.Module):
 
     def forward(self, y, x=None):
         if self.conditional:
-            y = th.cat((y, x), dim=-1)
+            y = th.cat((y, x), dim=1)
 
         y = self.MLP(y)
 
@@ -46,10 +46,9 @@ class Encoder(nn.Module):
 
 
 class Decoder(nn.Module):
-    def __init__(self, latent_size, layer_sizes, batch_size, conditional, num_labels):
+    def __init__(self, layer_sizes, latent_size, batch_size, conditional, num_labels):
 
         super().__init__()
-
         self.MLP = nn.Sequential()
 
         self.conditional = conditional
@@ -65,17 +64,24 @@ class Decoder(nn.Module):
         self.linear_means   = nn.Linear(layer_sizes[-1], latent_size)
         self.linear_log_var = nn.Linear(layer_sizes[-1], latent_size)
 
-        self.mu_theta      = V(th.zeros((batch_size, latent_size)))
-        self.log_var_theta = V(th.zeros((batch_size, latent_size)))
+        # self.mu_theta      = th.zeros(batch_size, latent_size)
+        # nn.init.normal_(self.mu_theta)
+        # self.log_var_theta = th.zeros(batch_size, latent_size)
+        # nn.init.normal_(self.log_var_theta)
 
-    def forward(self, z=None, x=None):
-        if self.conditional:
-            x = self.MLP(x)
-            self.mu_theta      = self.linear_means(y)
-            self.log_var_theta = self.linear_log_var(y)
+        # self.mu_theta_      = nn.Parameter(self.mu_theta)
+        # self.log_var_theta_ = nn.Parameter(self.log_var_theta)
+
+        # self.mu_theta      = Variable(self.mu_theta, requires_grad=True)
+        # self.log_var_theta = Variable(self.log_var_theta, requires_grad=True)
+
+    def forward(self, x, z=None):
+        #if self.conditional:
+        x = self.MLP(x)
+        self.mu_theta      = self.linear_means(x)
+        self.log_var_theta = self.linear_log_var(x)
 
         return self.mu_theta, self.log_var_theta
-
 
 class VAE(nn.Module):
     def __init__(self, 
@@ -104,7 +110,9 @@ class VAE(nn.Module):
         # the encoder is typically a MLP
         self.encoder = Encoder(encoder_layer_sizes, latent_size, conditional, num_labels)
         # the decoder compute the approx likelihood p_{theta}(y|z, x)
-        self.decoder = Decoder(latent_size, decoder_layer_sizes, batch_size, conditional, num_labels)
+        self.decoder = Decoder(decoder_layer_sizes, latent_size, batch_size, conditional, num_labels)
+        #for name, param in self.decoder.named_parameters():
+        #    print (name, param.data)
 
         self.init_parameters()
 
@@ -113,6 +121,7 @@ class VAE(nn.Module):
             if isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(m.weight)
                 nn.init.constant_(m.bias, 0)
+
 
     def forward(self, y, x=None):
         mu_phi, log_var_phi     = self.encoder(y, x)
@@ -133,7 +142,7 @@ class VAE(nn.Module):
         std_phi = std(log_var_phi)
 
         ## assuming a normal model for z|y,x
-        eps = V(th.randn([batch_size, self.latent_size]))
+        eps = th.randn([batch_size, self.latent_size])
         ## z is 18 dimensional (9 lidars x 2 states)
         z_y = eps * std_phi + mu_phi
         #print(z_y)

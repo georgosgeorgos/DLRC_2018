@@ -19,6 +19,10 @@ class Loader(data.Dataset):
                 self.data_lidar = np.reshape(self.data_lidar, (-1, self.data_lidar.shape[2]))
                 self.data_lidar /= 1000
                 self.data_lidar[self.data_lidar > 2.0] = 2.0
+
+                self.data_joint = [self.data[i]["state"]["j_pos"] for i in range(len(self.data))]
+                self.data_joint = np.array(self.data_joint, dtype=float)
+                self.data_joint = np.reshape(self.data_joint, (-1, self.data_joint.shape[2]))
                 #print(self.data[200,:])
                 #self.data_lidar_t = [self.data[(index*self.samples):((index+1)*self.samples)] for index in range(int(self.data.shape[0]/self.samples))]
         else:
@@ -31,7 +35,6 @@ class Loader(data.Dataset):
         self.index_lidar = [i for i in range(0, self.data_lidar.shape[0])]
         shuffle(self.index_lidar)
         self.index_lidar = np.array(self.index_lidar)
-        print(self.index_lidar[:10])
 
     def __len__(self):
         return len(self.data_lidar)
@@ -47,10 +50,14 @@ class Loader(data.Dataset):
         lidar = self.data_lidar[(ix - self.samples):ix]
         #print(lidar)
         if self.split == "train":
+            joint = self.data_joint[(ix - self.samples):ix]
             lidar = lidar.flatten()
+            joint = joint.flatten()
             #print(lidar)
             lidar = th.from_numpy(lidar)
+            joint = th.from_numpy(joint)
             lidar = lidar.float()
+            joint = joint.float()
         else:
             # everything background
             lidar_array = np.ones((self.samples, 9)) * 2.0
@@ -62,7 +69,8 @@ class Loader(data.Dataset):
             #lidar_array = np.array(lidar_array)
             lidar_array = th.from_numpy(lidar_array)
             lidar = lidar_array.float()
-        return lidar
+            return lidar
+        return lidar, joint
 
 if __name__ == '__main__':
 

@@ -4,7 +4,7 @@ from torch.autograd import Variable
 def V(x, volatile=False):
     if torch.cuda.is_available():
         x = x.cuda()
-    return Variable(x, volatile=volatile, requires_grad=True)
+    return Variable(x, requires_grad=True)
 
 def std(log_var):
     res = torch.exp(0.5 * log_var)

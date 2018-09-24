@@ -28,8 +28,8 @@ clusters         = 2  # clustering component (background/self | static/dynamic)
 parser = argparse.ArgumentParser()
 parser.add_argument("--epochs", type=int, default=1)
 parser.add_argument("--batch_size", type=int, default=1)
-parser.add_argument("--encoder_layer_sizes", type=list, default=[(lidar_input_size*n_samples_y), 256, 256])
-parser.add_argument("--decoder_layer_sizes", type=list, default=[(joint_input_size*n_samples_y), 256, 256])
+parser.add_argument("--encoder_layer_sizes", type=list, default=[(lidar_input_size*n_samples_y), 64, 128])
+parser.add_argument("--decoder_layer_sizes", type=list, default=[(joint_input_size*n_samples_y), 64, 128])
 parser.add_argument("--latent_size", type=int, default=lidar_input_size*clusters)
 parser.add_argument("--print_every", type=int, default=1000)
 parser.add_argument("--fig_root", type=str, default='figs')
@@ -42,7 +42,7 @@ def main(args):
     ts = time.time()
     split = "test"
     #10 samples y and 57% accuracy 
-    ckpt = "ckpt_2018-09-24_12:14:57.pth"
+    ckpt = "ckpt_2018-09-24_17:31:10.pth"
     
 
     model = VAE(
@@ -65,10 +65,10 @@ def main(args):
     for epoch in range(args.epochs):
         for itr, y in enumerate(data_loader):
             # observable
-            y = V(y)
+            y = y
 
             if args.conditional:
-                z_y = model.inference(y)
+                z_y = model.inference(y, x)
             else:
                 z_y = model.inference(y)
 
