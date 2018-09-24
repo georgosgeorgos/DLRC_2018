@@ -1,7 +1,5 @@
 .parameter_pool_vars
-*/__pycache__/
 Untitled.ipynb
-*/.idea/*
 *.pkl
 *.pickle
 *.png
@@ -10,3 +8,6 @@ Untitled.ipynb
 */models/CVAE_GMM/__pycache__/
 */models/CVAE_GMM/data/raw/
 data/*
+.idea/
+__pycache__/
+*.pyc
