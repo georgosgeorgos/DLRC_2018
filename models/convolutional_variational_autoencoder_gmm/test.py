@@ -65,6 +65,7 @@ def main(args):
     for epoch in range(args.epochs):
         for itr, y in enumerate(data_loader):
             print(y.size())
+            print()
             # observable
             y = V(y)
 

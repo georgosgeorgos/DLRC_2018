@@ -41,14 +41,14 @@ class Loader(data.Dataset):
             lidar = lidar.float()
         else:
             # everything background
-            n = lidar.shape[0]
+            n = 
             lidar_array = np.ones(lidar.shape[0]*9) * 2.0
             # lidar 3
             k = 3
             lidar_array[(k*n):(k+1)*n] = lidar
-            #lidar_array[:, k] = lidar
+            lidar_array[:, k] = lidar
             #print(lidar_array.shape)
-            #lidar_array = np.array(lidar_array)
+            lidar_array = np.array(lidar_array)
             lidar_array = th.from_numpy(lidar_array)
             lidar = lidar_array.float()
         return lidar
