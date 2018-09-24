@@ -32,8 +32,6 @@ class PandaDataSet(Dataset):
             self.X = [self.data[i]["state"]["j_pos"] for i in range(self.num_demonstrations)]
             self.X = np.array(self.X, dtype=float).reshape((self.num_samples, self.num_joints))
 
-            print(np.min(self.Y), np.max(self.Y))
-
     def __len__(self):
         """
         Return number of samples in the dataset, which is equivalent to flattening [num_demonstrations x num_timesteps]
