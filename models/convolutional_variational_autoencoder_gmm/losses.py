@@ -7,7 +7,7 @@ from torch.distributions.normal import Normal
 from utils import *
 
 class nELBO(nn.Module):
-    def __init__(self, batch_size=2, n_samples_z=10, n_samples_y=5):
+    def __init__(self, batch_size=2, n_samples_z=10, n_samples_y=10):
         super(nELBO, self).__init__()
         '''
         add annealing alpha (1-alpha)

@@ -134,12 +134,14 @@ def main(args):
     optimizer.zero_grad()
 
     dataset = Loader(split=split, samples=n_samples_y)
-    data_loader = DataLoader(dataset=dataset, batch_size=args.batch_size, shuffle=True)
+    # randomize an auxiliary index because we want to use sample of time-series (10 time steps)
+    data_loader = DataLoader(dataset=dataset, batch_size=args.batch_size, shuffle=False)
     print(len(data_loader))
 
     loss_list = []
 
     for epoch in range(args.epochs):
+        dataset.generate_index()
         print("Epoch: ", epoch)
         L = []
         for itr, y in enumerate(data_loader):

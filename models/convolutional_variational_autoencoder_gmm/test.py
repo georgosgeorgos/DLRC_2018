@@ -42,7 +42,7 @@ def main(args):
     ts = time.time()
     split = "test"
     #10 samples y and 57% accuracy 
-    ckpt = "ckpt_2018-09-24_10:00:14.pth"
+    ckpt = "ckpt_2018-09-24_12:14:57.pth"
     
 
     model = VAE(
@@ -64,8 +64,6 @@ def main(args):
 
     for epoch in range(args.epochs):
         for itr, y in enumerate(data_loader):
-            print(y.size())
-            print()
             # observable
             y = V(y)
 
@@ -80,6 +78,7 @@ def main(args):
 
     prediction = np.array(prediction)
     np.savetxt("prediction.csv", prediction[:,3].astype(int), fmt='%i')
+    print("Done!")
 if __name__ == '__main__':
     args = parser.parse_args()
     main(args)

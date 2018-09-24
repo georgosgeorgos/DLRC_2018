@@ -136,8 +136,10 @@ class VAE(nn.Module):
         eps = V(th.randn([batch_size, self.latent_size]))
         ## z is 18 dimensional (9 lidars x 2 states)
         z_y = eps * std_phi + mu_phi
+        #print(z_y)
 
         z_y = reshape(z_y)
+        #print(z_y)
         z_y = F.softmax(z_y, dim=2)
 
         return z_y
