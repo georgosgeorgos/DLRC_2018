@@ -14,10 +14,9 @@ from utils import *
 # at inference time, we have interest in q(z|y,x) 
 
 # model assumption: 
-# for every lidar (9) exists a (3) component clustering to cluster its measurements
+# for every lidar (9) exists a (k) component clustering to cluster its measurements
 
 class Encoder(nn.Module):
-
     def __init__(self, layer_sizes, latent_size, conditional, num_labels):
 
         super().__init__()
@@ -31,19 +30,15 @@ class Encoder(nn.Module):
         for i, (in_size, out_size) in enumerate( zip(layer_sizes[:-1], layer_sizes[1:]) ):
             self.MLP.add_module(name="L%i"%(i), module=nn.Linear(in_size, out_size))
             self.MLP.add_module(name="A%i"%(i), module=nn.Tanh())
-            self.MLP.add_module(name="LL%i"%(i), module=nn.Linear(out_size, out_size))
-            self.MLP.add_module(name="AA%i"%(i), module=nn.Tanh())
 
         self.linear_means   = nn.Linear(layer_sizes[-1], latent_size)
         self.linear_log_var = nn.Linear(layer_sizes[-1], latent_size)
 
     def forward(self, y, x=None):
-
         if self.conditional:
             y = th.cat((y, x), dim=-1)
 
         y = self.MLP(y)
-
 
         self.mu_phi      = self.linear_means(y)
         self.log_var_phi = self.linear_log_var(y)
@@ -51,8 +46,7 @@ class Encoder(nn.Module):
 
 
 class Decoder(nn.Module):
-
-    def __init__(self, latent_size, batch_size, conditional, num_labels):
+    def __init__(self, latent_size, layer_sizes, batch_size, conditional, num_labels):
 
         super().__init__()
 
@@ -64,19 +58,29 @@ class Decoder(nn.Module):
         else:
             input_size = latent_size
 
+        for i, (in_size, out_size) in enumerate( zip(layer_sizes[:-1], layer_sizes[1:]) ):
+            self.MLP.add_module(name="L%i"%(i), module=nn.Linear(in_size, out_size))
+            self.MLP.add_module(name="A%i"%(i), module=nn.Tanh())
+
+        self.linear_means   = nn.Linear(layer_sizes[-1], latent_size)
+        self.linear_log_var = nn.Linear(layer_sizes[-1], latent_size)
+
         self.mu_theta      = V(th.zeros((batch_size, latent_size)))
         self.log_var_theta = V(th.zeros((batch_size, latent_size)))
 
     def forward(self, z=None, x=None):
-
+        if self.conditional:
+            x = self.MLP(x)
+            self.mu_theta      = self.linear_means(y)
+            self.log_var_theta = self.linear_log_var(y)
 
         return self.mu_theta, self.log_var_theta
 
 
 class VAE(nn.Module):
-
     def __init__(self, 
-                 encoder_layer_sizes, 
+                 encoder_layer_sizes,
+                 decoder_layer_sizes,
                  latent_size,
                  batch_size,  
                  conditional=False, 
@@ -89,7 +93,6 @@ class VAE(nn.Module):
 
         assert type(encoder_layer_sizes) == list
         assert type(latent_size) == int
-
         # in our case the latent space is 9 (lidars) x 3 (hidden states)
         # for any lidar we assume a different mixture of gaussian
         
@@ -101,10 +104,9 @@ class VAE(nn.Module):
         # the encoder is typically a MLP
         self.encoder = Encoder(encoder_layer_sizes, latent_size, conditional, num_labels)
         # the decoder compute the approx likelihood p_{theta}(y|z, x)
-        self.decoder = Decoder(latent_size, batch_size, conditional, num_labels)
+        self.decoder = Decoder(latent_size, decoder_layer_sizes, batch_size, conditional, num_labels)
 
         self.init_parameters()
-
 
     def init_parameters(self):
         for m in self.modules():
@@ -114,7 +116,7 @@ class VAE(nn.Module):
 
     def forward(self, y, x=None):
         mu_phi, log_var_phi     = self.encoder(y, x)
-        mu_theta, log_var_theta = self.decoder()
+        mu_theta, log_var_theta = self.decoder(x)
 
         return mu_phi, log_var_phi, mu_theta, log_var_theta
 
@@ -132,7 +134,7 @@ class VAE(nn.Module):
 
         ## assuming a normal model for z|y,x
         eps = V(th.randn([batch_size, self.latent_size]))
-        ## z is 27 dimensional (9 lidars x 3 states)
+        ## z is 18 dimensional (9 lidars x 2 states)
         z_y = eps * std_phi + mu_phi
 
         z_y = reshape(z_y)
@@ -141,7 +143,6 @@ class VAE(nn.Module):
         return z_y
 
 if __name__ == '__main__':
-
     vae = VAE(batch_size=24, conditional=False, num_labels=7)
     y = Variable(th.zeros(24, 9))
     x = Variable(th.zeros(24, 7))
