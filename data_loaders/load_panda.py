@@ -14,7 +14,6 @@ class PandaDataSet(Dataset):
         self.root_dir = root_dir
         self.train = train
         self.transform = transform
-
         path_exists(root_dir)
 
         with open(osp.join(root_dir, 'train.pkl'), "rb") as f:
@@ -22,13 +21,11 @@ class PandaDataSet(Dataset):
             self.num_demonstrations = len(self.data)
             self.num_timesteps = len(self.data[0]["lidar"]["measure"])
             self.num_samples = self.num_demonstrations*self.num_timesteps
-
             self.num_lidars = len(self.data[0]["lidar"]["measure"][0])
             self.num_joints = len(self.data[0]["state"]["j_pos"][0])
 
             self.Y = [self.data[i]["lidar"]["measure"] for i in range(self.num_demonstrations)]
             self.Y = np.array(self.Y, dtype=float).reshape((self.num_samples, self.num_lidars))
-
             self.X = [self.data[i]["state"]["j_pos"] for i in range(self.num_demonstrations)]
             self.X = np.array(self.X, dtype=float).reshape((self.num_samples, self.num_joints))
 
