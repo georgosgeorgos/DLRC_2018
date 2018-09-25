@@ -31,7 +31,7 @@ ds = PandaDataSet(
         transform=transforms.Compose([
             transforms.Lambda(lambda n: th.Tensor(n)),
             transforms.Lambda(lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
-            # transforms.Lambda(lambda n: n / 1000)
+            transforms.Lambda(lambda n: n / 1000)
         ])
     )
 train_loader = DataLoader(ds, batch_size=trbs, shuffle=True, **kwargs)
