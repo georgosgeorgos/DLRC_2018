@@ -15,15 +15,16 @@ class LLNormal(nn.Module):
 
     def forward(self, *input):
 
-        mu_phi = input[0]
-        logvar_phi = input[1]
+        mu = input[0]
+        logvar = input[1]
         y = input[2]  # lidar measurements
-        std_phi = th.exp(0.5 * logvar_phi)
+        std = th.exp(0.5 * logvar)
 
-        N = Normal(mu_phi, std_phi)
+        N = Normal(mu, std)
         loglikelihood = th.sum(th.exp(N.log_prob(y)))
+        # loglikelihood = loglikelihood.mean()
 
-        return loglikelihood
+        return -loglikelihood
 
 
 # if __name__ == '__main__':

@@ -8,15 +8,17 @@ from data_loaders.load_panda import PandaDataSet
 from torch.utils.data import DataLoader
 import configs as cfg
 import sys
+from torch.distributions.normal import Normal
 
 ############################################################
 ### INITIALIZATION
 ############################################################
 
-lr = 1e-5
+verbose = False
+lr = 1e-3
 every_nth = 100
-trbs = 128
-epochs = 10
+trbs = 256
+epochs = 200
 th.manual_seed(42)
 cuda = th.cuda.is_available()
 device = th.device("cuda" if cuda else "cpu")
@@ -68,7 +70,7 @@ loss_fn = LLNormal()
 def train(epoch):
     model.train()
     train_loss = 0
-    for batch_idx, (x,y) in enumerate(train_loader):
+    for batch_idx, (x, y) in enumerate(train_loader):
         n, m = x.size()
         x.resize_(min(trbs, n), m)
         x = x.to(device).float()
@@ -78,13 +80,34 @@ def train(epoch):
         loss.backward()
         train_loss += loss.item()
         optimizer.step()
-        if batch_idx % every_nth == 0:
-            print("train epoch: {}/{} [{}/{} ({:.0f}%)]".format(
-                epoch, epochs, (batch_idx + 1) * trbs - (trbs - x.size()[0]),
-                len(train_loader.dataset), 100. * (batch_idx + 1) / len(train_loader)))
+        if verbose:
+            if batch_idx % every_nth == 0:
+                print("train epoch: {}/{} [{}/{} ({:.0f}%)]".format(
+                    epoch, epochs, (batch_idx + 1) * trbs - (trbs - x.size()[0]),
+                    len(train_loader.dataset), 100. * (batch_idx + 1) / len(train_loader)))
 
-    print('====> epoch: {} Average loss: {:.4f}\n'.format(
-          epoch, train_loss / len(train_loader.dataset)))
+    print(' ---> epoch: {} Average loss: {:.4f}'.format(epoch, train_loss / len(train_loader.dataset)))
+
+
+def test(epoch):
+
+    model.eval()
+    test_loss = 0.
+
+    with th.no_grad():
+        for i, (x, y) in enumerate(train_loader):
+
+            n, m = x.size()
+            x.resize_(min(trbs, n), m)
+            x = x.to(device).float()
+
+            mu, logvar = model(x)
+            N = Normal(mu, th.exp(0.5 * logvar))
+            y_pred = N.sample(sample_shape=(100,))
+            y_pred = th.mean(y_pred, dim=0)
+            test_loss += F.mse_loss(y_pred, y)
+
+    print('====> test epoch: {} Average loss: {:.4f}'.format(epoch, test_loss / len(train_loader.dataset)))
 
 ############################################################
 ### EXECUTE MODEL
@@ -94,3 +117,4 @@ def train(epoch):
 if __name__ == '__main__':
     for epoch in range(1, epochs + 1):
         train(epoch)
+        test(epoch)
