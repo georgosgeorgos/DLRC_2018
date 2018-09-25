@@ -1,19 +1,12 @@
 .parameter_pool_vars
-Untitled.ipynb
-<<<<<<< HEAD
 *.pkl
-=======
-*/.idea/*
->>>>>>> a88d454f1cf679647e708b3eab904a41566a1426
 *.pickle
 *.png
 *.ipynb_checkpoints
 *.npy
-*/models/CVAE_GMM/__pycache__/
-*/models/CVAE_GMM/data/raw/
-data/*
+data/raw/
+data/
 .idea/
-__pycache__/
 *.pyc
 /models/CVAE/data/*
 /models/CVAE/__pycache__
