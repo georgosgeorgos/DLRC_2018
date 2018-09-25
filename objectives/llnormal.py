@@ -21,8 +21,8 @@ class LLNormal(nn.Module):
         std = th.exp(0.5 * logvar)
 
         N = Normal(mu, std)
-        loglikelihood = th.sum(th.exp(N.log_prob(y)))
-        # loglikelihood = loglikelihood.mean()
+        loglikelihood = th.sum(N.log_prob(y), dim=1)  # sum over lidars
+        loglikelihood = loglikelihood.mean()  # average over batch
 
         return -loglikelihood
 
