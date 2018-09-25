@@ -7,7 +7,7 @@ from torch.distributions.normal import Normal
 from utils import *
 
 class nELBO(nn.Module):
-    def __init__(self, batch_size=2, n_samples_z=10, n_samples_y=5):
+    def __init__(self, batch_size=2, n_samples_z=10, n_samples_y=10):
         super(nELBO, self).__init__()
         '''
         add annealing alpha (1-alpha)
@@ -33,7 +33,8 @@ class nELBO(nn.Module):
         #print(y_z.shape)
         #print(y_z[0, -1, :])
         #print(y_z.size())
-
+        
+        # two clusters
         y_expanded = torch.cat([y_z, y_z], dim=1)
         #expand(y_z)
         #print(y_expanded.size())
@@ -55,6 +56,9 @@ class nELBO(nn.Module):
             z_y = reshape(z_y)
             z_y = F.softmax(z_y, dim=2)
             # log of mixture weighted with z
+            #print(z_y.shape)
+            #print(pdf_y.shape)
+            s = th.sum(pdf_y * z_y, dim=2)
             loglikelihood += th.log(th.sum(pdf_y * z_y, dim=2))
 
         loglikelihood /= self.n_samples_z
@@ -73,4 +77,4 @@ class nELBO(nn.Module):
         # we want to maximize this guy
         elbo = loglikelihood - kld
         # so we need to negate the elbo to minimize
-        return - elbo, kld, loglikelihood
+        return -elbo, kld, loglikelihood, pdf_y, z_y, s
