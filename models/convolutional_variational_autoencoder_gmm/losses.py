@@ -38,7 +38,7 @@ class nELBO(nn.Module):
         y_expanded = torch.cat([y_z, y_z], dim=1)
         #expand(y_z)
         #print(y_expanded.size())
-        pdf_y = th.exp(N.log_prob(y_expanded))
+        pdf_y = N.log_prob(y_expanded)
         pdf_y = reshape(pdf_y)
         #print(y_expanded)
         #print(pdf_y)
@@ -59,7 +59,7 @@ class nELBO(nn.Module):
             #print(z_y.shape)
             #print(pdf_y.shape)
             s = th.sum(pdf_y * z_y, dim=2)
-            loglikelihood += th.log(th.sum(pdf_y * z_y, dim=2))
+            loglikelihood += th.sum(pdf_y * z_y, dim=2)
 
         loglikelihood /= self.n_samples_z
         loglikelihood = th.sum(loglikelihood, dim=1)

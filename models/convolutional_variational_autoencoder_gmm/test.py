@@ -42,7 +42,7 @@ def main(args):
     ts = time.time()
     split = "test"
     #10 samples y and 57% accuracy 
-    ckpt = "ckpt_2018-09-25_12:25:30.pth"
+    ckpt = "ckpt_2018-09-25_16:21:12.pth"
     
 
     model = VAE(
