@@ -9,4 +9,7 @@ data/
 .idea/
 *.pyc
 /models/CVAE/data/*
-*/__pycache__/
+/models/CVAE/__pycache__
+/utils/__pycache__
+/TRAIN_DATA/RGB/*
+/TRAIN_DATA/DEPTH/*

@@ -42,7 +42,7 @@ def main(args):
     ts = time.time()
     split = "test"
     #10 samples y and 57% accuracy 
-    ckpt = "ckpt_2018-09-24_17:31:10.pth"
+    ckpt = "ckpt_2018-09-25_12:25:30.pth"
     
 
     model = VAE(
@@ -53,7 +53,7 @@ def main(args):
             conditional=args.conditional,
             num_labels=args.num_labels
             )
-    #model = nn.DataParallel(model)
+    
     saved_state_dict = th.load(args.ckpt_dir + ckpt)
     model.load_state_dict(saved_state_dict)
 

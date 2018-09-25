@@ -65,6 +65,8 @@ class nELBO(nn.Module):
         loglikelihood = th.sum(loglikelihood, dim=1)
         loglikelihood = th.mean(loglikelihood) #/ y_z.size()[0]*y_z.size()[1]
         # reduce mean over the batch size reduce sum over the lidars
+        if torch.cuda.is_available():
+            loglikelihood = loglikelihood.cuda()
         
         # reduce over KLD
         # explicit form when q(z|x) is normal and N(0,I)

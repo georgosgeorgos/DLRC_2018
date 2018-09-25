@@ -29,9 +29,9 @@ n_samples_z      = 10 # sample from selector
 clusters         = 2  # clustering component (background/self | static/dynamic)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--epochs", type=int, default=100)
-parser.add_argument("--batch_size", type=int, default=24)
-parser.add_argument("--learning_rate", type=float, default=0.00001)
+parser.add_argument("--epochs", type=int, default=400)
+parser.add_argument("--batch_size", type=int, default=256)
+parser.add_argument("--learning_rate", type=float, default=0.0001)
 parser.add_argument("--encoder_layer_sizes", type=list, default=[(lidar_input_size*n_samples_y), 64, 128])
 parser.add_argument("--decoder_layer_sizes", type=list, default=[(joint_input_size*n_samples_y), 64, 128])
 parser.add_argument("--latent_size", type=int, default=lidar_input_size*clusters)
@@ -63,9 +63,9 @@ def main(args):
             conditional=args.conditional,
             num_labels=args.num_labels
             )
+    if th.cuda.is_available():
+        model.cuda()
 
-    #model = nn.DataParallel(model)
-    #model.cuda()
     model.train()
     for params in model.parameters():
         params.requires_grad = True
@@ -82,7 +82,6 @@ def main(args):
     data_loader = DataLoader(dataset=dataset, batch_size=args.batch_size, shuffle=False)
 
     loss_list = []
-
     for epoch in range(args.epochs):
         dataset.generate_index()
         print("Epoch: ", epoch)
@@ -95,38 +94,25 @@ def main(args):
             if y.size(0) != args.batch_size:
                 continue
             else:
-
                 mu_phi, log_var_phi, mu_theta, log_var_theta = model(y, x)
 
-                #print(y.type(), mu_phi.type(), log_var_phi.type(),mu_theta.type(),log_var_theta.type())
-                #print(y.size(), mu_phi.size(), log_var_phi.size(),mu_theta.size(),log_var_theta.size())
                 loss, kld, ll, pdf, zz, s = loss_fn(y, mu_phi, log_var_phi, mu_theta, log_var_theta)
-                #print(mu_theta[0], log_var_theta[0])
-                #print(ll)
+
                 if split == 'train':
                     loss.backward()
                     optimizer.step()
                     optimizer.zero_grad()
 
                 # compute the loss averaging over epochs and dividing by batches
-                L.append(loss.data.numpy())
-                #print(mu_phi.grad,log_var_phi.grad)
-                #print(mu_theta.grad,log_var_theta.grad)
+                L.append(loss.cpu().data.numpy())
 
-        if True:
-            if args.conditional:
-                z_y = model.inference(y)
-            else:
-                z_y = model.inference(y)
-
-            print("loss: ", np.mean(L))
-
-        print("zz: ", zz.data.numpy())
-        print("pdf: ", pdf.data.numpy())
-        print("negative likelihood: ", -ll.data.numpy())
-        print("kl: ", kld.data.numpy())
-        print("s: ", s)
+        #print("zz: ", zz.cpu().data.numpy())
+        #print("pdf: ", pdf.cpu().data.numpy())
+        print("negative likelihood: ", -ll.cpu().data.numpy())
+        print("kl: ", kld.cpu().data.numpy())
+        #print("s: ", s)
         #print(log_var_phi, log_var_theta)
+        print("loss:", loss)
         
         loss_list.append(np.mean(L) / (len(data_loader)))
 
