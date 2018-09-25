@@ -11,3 +11,6 @@ data/*
 .idea/
 __pycache__/
 *.pyc
+/models/CVAE/data/*
+/models/CVAE/__pycache__
+/utils/__pycache__
