@@ -49,8 +49,7 @@ for it in range(num_trajectories):
     plt.show()
     plt.hist(data[it]['data'])
     plt.show()
-
-
+    
 # save collected data
 print("Saving...")
 pkl.dump(data, open(osp.join(data_path, 'custom_trajectories.pkl'), "wb"))

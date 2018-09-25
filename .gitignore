@@ -18,3 +18,5 @@ __pycache__/
 /models/CVAE/data/*
 /models/CVAE/__pycache__
 /utils/__pycache__
+/TRAIN_DATA/RGB/*
+/TRAIN_DATA/DEPTH/*
