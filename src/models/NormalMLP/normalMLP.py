@@ -23,7 +23,7 @@ lr = 1e-3
 every_nth = 100
 trbs = 512
 tebs = 256
-epochs = 100
+epochs = 200
 test_every_nth = 1
 th.manual_seed(42)
 cuda = th.cuda.is_available()
@@ -162,11 +162,14 @@ if __name__ == '__main__':
 
     for epoch in range(1, epochs + 1):
         train_loss_history.append(train(epoch))
-        plot_eval(np.arange(epoch), np.array(train_loss_history),
-                  save_to=osp.join(path_results, 'train_loss.png'), title='train loss')
 
         if epoch % test_every_nth == 0:
             epoch_loss, hist_values = test(epoch)
             test_loss_history.append(epoch_loss)
-            plot_eval(np.arange(epoch), np.array(test_loss_history), save_to=osp.join(path_results, 'test_loss.png'), title='test loss')
-            plot_hist(hist_values, save_to=osp.join(path_results, 'test_histogram.png'), title='Histograms of target measurements (on test set) for each channel')
+
+    plot_eval(np.arange(epochs), np.array(train_loss_history),
+              save_to=osp.join(path_results, 'train_loss.png'), title='train loss')
+    plot_eval(np.arange(epochs), np.array(test_loss_history),
+              save_to=osp.join(path_results, 'test_loss.png'), title='test loss')
+    plot_hist(hist_values,
+              save_to=osp.join(path_results, 'test_histogram.png'), title='Histograms of target measurements (on test set) for each channel')
