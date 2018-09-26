@@ -5,7 +5,7 @@ import pickle as pkl
 import numpy as np
 import os.path as osp
 from utils.utils import path_exists
-import configs as cfg
+import utils.configs as cfg
 
 
 class PandaDataSet(Dataset):

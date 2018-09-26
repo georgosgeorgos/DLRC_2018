@@ -15,10 +15,10 @@ from collections import OrderedDict, defaultdict
 import torch as th
 import torch.nn.functional as F
 
-from utils.utils import *
-from variational_autoencoder_gmm import VAE
+from models.variational_autoencoder_gmm.vae_gmm import VAE
 from objectives.nELBO_gmm import nELBO
-from data_loader.Loader_multiple_samples import  Loader
+from loaders.Loader_multiple_samples import Loader
+from utils.utils import * 
 
 import datetime
 
@@ -96,7 +96,7 @@ def main(args):
             else:
                 mu_phi, log_var_phi, mu_theta, log_var_theta = model(y, x)
 
-                loss, kld, ll, pdf, zz, s = loss_fn(y, mu_phi, log_var_phi, mu_theta, log_var_theta)
+                loss, kld, ll = loss_fn(y, mu_phi, log_var_phi, mu_theta, log_var_theta)
 
                 if split == 'train':
                     loss.backward()
@@ -106,12 +106,8 @@ def main(args):
                 # compute the loss averaging over epochs and dividing by batches
                 L.append(loss.cpu().data.numpy())
 
-        #print("zz: ", zz.cpu().data.numpy())
-        #print("pdf: ", pdf.cpu().data.numpy())
         print("negative likelihood: ", -ll.cpu().data.numpy())
         print("kl: ", kld.cpu().data.numpy())
-        #print("s: ", s)
-        #print(log_var_phi, log_var_theta)
         print("loss:", loss)
         
         loss_list.append(np.mean(L) / (len(data_loader)))
@@ -120,6 +116,7 @@ def main(args):
     plt.grid()
     plt.show()
 
+    path_exists(args.ckpt_dir)
     th.save(model.state_dict(), args.ckpt_dir + ckpt)
     print("done!")
 

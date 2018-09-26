@@ -1,5 +1,8 @@
 import torch
 from torch.autograd import Variable
+from os import makedirs, listdir
+from os.path import exists
+
 
 def V(x, volatile=False):
     if torch.cuda.is_available():
