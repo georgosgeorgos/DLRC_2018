@@ -1,6 +1,6 @@
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
-import torch
+import torch as th
 import pickle as pkl
 import numpy as np
 import os.path as osp
@@ -59,8 +59,8 @@ class PandaDataSet(Dataset):
 # if __name__ == '__main__':
 #     train_set = PandaDataSet(root_dir='../../data/data_toy/', train=True,
 #                              transform=transforms.Compose([
-#             transforms.Lambda(lambda n: torch.Tensor(n)),
-#             transforms.Lambda(lambda n: torch.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
+#             transforms.Lambda(lambda n: th.Tensor(n)),
+#             transforms.Lambda(lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
 #             transforms.Lambda(lambda n: n / 1000)
 #         ])
 #                              )
@@ -70,9 +70,9 @@ class PandaDataSet(Dataset):
 #
 #     test_set = PandaDataSet(root_dir='../../data/data_toy/', train=False,
 #                              transform=transforms.Compose([
-#                                  transforms.Lambda(lambda n: torch.Tensor(n)),
+#                                  transforms.Lambda(lambda n: th.Tensor(n)),
 #                                  transforms.Lambda(
-#                                      lambda n: torch.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
+#                                      lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
 #                                  transforms.Lambda(lambda n: n / 1000)
 #                              ])
 #                              )
