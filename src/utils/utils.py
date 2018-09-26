@@ -24,8 +24,3 @@ def expand(x, s=2):
     for j in range(s):
         x_expanded[:, :, j] = x
     return x_expanded
-
-def path_exists(path):
-    if not exists(path):
-        makedirs(path)
-    return path

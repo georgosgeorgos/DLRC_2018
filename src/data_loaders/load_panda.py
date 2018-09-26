@@ -5,16 +5,15 @@ import pickle as pkl
 import numpy as np
 import os.path as osp
 from utils.utils import path_exists
-import configs as cfg
+import src.utils.configs as cfg
 
 
 class PandaDataSet(Dataset):
-    def __init__(self, root_dir='data_toy', train=None, transform=None):
+    def __init__(self, root_dir=None, train=None, transform=None):
 
         self.root_dir = root_dir
         self.train = train
         self.transform = transform
-        path_exists(root_dir)
 
         with open(osp.join(root_dir, 'train.pkl'), "rb") as f:
             self.data = pkl.load(f)
@@ -47,7 +46,7 @@ class PandaDataSet(Dataset):
 
 
 # if __name__ == '__main__':
-#     ds = PandaDataSet(
+#     ds = PandaDataSet(root_dir='../../data/data_toy/',
 #         transform=transforms.Compose([
 #             transforms.Lambda(lambda n: torch.Tensor(n)),
 #             transforms.Lambda(lambda n: torch.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),

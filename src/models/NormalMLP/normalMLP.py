@@ -3,10 +3,11 @@ import torch.nn as nn
 from torch.nn import functional as F
 from torch import nn, optim
 from torchvision import transforms
-from objectives.llnormal import LLNormal
-from data_loaders.load_panda import PandaDataSet
+from src.objectives.llnormal import LLNormal
+from src.data_loaders.load_panda import PandaDataSet
 from torch.utils.data import DataLoader
-import configs as cfg
+from torch.autograd import Variable
+import src.utils.configs as cfg
 import sys
 from torch.distributions.normal import Normal
 
@@ -27,7 +28,7 @@ cuda = th.cuda.is_available()
 device = th.device("cuda" if cuda else "cpu")
 kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
 
-ds = PandaDataSet(
+ds = PandaDataSet(root_dir='../../../data/data_toy',
         transform=transforms.Compose([
             transforms.Lambda(lambda n: th.Tensor(n)),
             transforms.Lambda(lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
@@ -73,10 +74,12 @@ def train(epoch):
     model.train()
     train_loss = 0
     for batch_idx, (x, y) in enumerate(train_loader):
-
         n, m = x.size()
         x.resize_(min(trbs, n), m)
+        x = Variable(x)
         x = x.to(device).float()
+        y = Variable(y)
+        y = y.to(device).float()
 
         optimizer.zero_grad()
         mu, logvar = model(x)
@@ -107,7 +110,10 @@ def test(epoch):
 
             n, m = x.size()
             x.resize_(min(trbs, n), m)
+            x = Variable(x)
             x = x.to(device).float()
+            y = Variable(y)
+            y = y.to(device).float()
 
             mu, logvar = model(x)
             N = Normal(mu, th.exp(0.5 * logvar))
@@ -128,4 +134,4 @@ def test(epoch):
 if __name__ == '__main__':
     for epoch in range(1, epochs + 1):
         train(epoch)
-        test(epoch)
+        # test(epoch)
