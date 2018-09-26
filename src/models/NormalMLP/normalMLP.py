@@ -23,7 +23,7 @@ lr = 1e-4
 every_nth = 100
 trbs = 512
 epochs = 100
-test_every_nth = 10
+test_every_nth = 1
 th.manual_seed(42)
 cuda = th.cuda.is_available()
 device = th.device("cuda" if cuda else "cpu")
@@ -133,7 +133,9 @@ def test(epoch):
             loss = loss_fn(mu, logvar, y)
             test_loss += loss.item()
 
+    epoch_loss = test_loss / len(test_loader.dataset)
     print('### TEST: epoch: {} avg. loss: {:.4f}\n'.format(epoch, test_loss / len(test_loader.dataset)))
+    return epoch_loss
 
 ############################################################
 ### EXECUTE MODEL
@@ -144,10 +146,15 @@ if __name__ == '__main__':
 
     path_results = osp.join(rootdir, 'experiments', 'normalMLP')
     path_exists(path_results)
-
     train_loss_history = []
+    test_loss_history = []
+
     for epoch in range(1, epochs + 1):
         train_loss_history.append(train(epoch))
-        plot_eval(np.arange(epoch), np.array(train_loss_history), savepathfile=osp.join(path_results, 'train_loss.png'), title='train loss')
+        plot_eval(np.arange(epoch), np.array(train_loss_history),
+                  savepathfile=osp.join(path_results, 'train_loss.png'), title='train loss')
+
         if epoch % test_every_nth == 0:
-            test(epoch)
+            test_loss_history.append(test(epoch))
+            plot_eval(np.arange(epoch), np.array(test_loss_history),
+                      savepathfile=osp.join(path_results, 'test_loss.png'), title='test loss')

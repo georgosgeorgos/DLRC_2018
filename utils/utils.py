@@ -15,5 +15,6 @@ def plot_eval(x, y, title, savepathfile):
     plt.xlabel('epochs')
     plt.ylabel('loss')
     plt.title(title)
+    plt.grid()
     plt.savefig(savepathfile, format='png')
     plt.close()
