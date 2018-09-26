@@ -21,7 +21,8 @@ n_hidden = 128
 verbose = False
 lr = 1e-3
 every_nth = 100
-trbs = 256
+trbs = 512
+tebs = 256
 epochs = 100
 test_every_nth = 1
 th.manual_seed(42)
@@ -47,7 +48,7 @@ test_set = PandaDataSet(root_dir='../../../data/data_toy', train=False,
                              transforms.Lambda(lambda n: n / 1000)
                          ])
                          )
-test_loader = DataLoader(test_set, batch_size=trbs, shuffle=True, **kwargs)
+test_loader = DataLoader(test_set, batch_size=tebs, shuffle=True, **kwargs)
 
 ############################################################
 ### MODEL
@@ -123,7 +124,7 @@ def test(epoch):
     with th.no_grad():
         for i, (x, y) in enumerate(test_loader):
             n, m = x.size()
-            x.resize_(min(trbs, n), m)
+            x.resize_(min(tebs, n), m)
             x = Variable(x)
             x = x.to(device).float()
             y = Variable(y)
@@ -139,7 +140,7 @@ def test(epoch):
             y_cen_batch = y_cen_batch.tolist()
             y_cen.append(y_cen_batch)
 
-    y_cen_array = np.array(y_cen[:len(y_cen)-1])  # exclude last batch which might have different size than `trbs`
+    y_cen_array = np.array(y_cen[:len(y_cen)-1])  # exclude last batch which might have different size than `tebs`
     y_cen_array = np.reshape(y_cen_array, (y_cen_array.shape[0]*y_cen_array.shape[1], n_lidars))  # reshape to [num_samples x num_channels]
     y_cen_array = np.vstack((y_cen_array, np.array(y_cen[-1])))  # add last batch
 
@@ -168,4 +169,4 @@ if __name__ == '__main__':
             epoch_loss, hist_values = test(epoch)
             test_loss_history.append(epoch_loss)
             plot_eval(np.arange(epoch), np.array(test_loss_history), save_to=osp.join(path_results, 'test_loss.png'), title='test loss')
-            plot_hist(hist_values, save_to=osp.join(path_results, 'test_histogram.png'), title='test histogram')
+            plot_hist(hist_values, save_to=osp.join(path_results, 'test_histogram.png'), title='Histograms of target measurements (on test set) for each channel')
