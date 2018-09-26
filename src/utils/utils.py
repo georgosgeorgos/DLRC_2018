@@ -2,6 +2,7 @@ import torch
 from torch.autograd import Variable
 from os import makedirs, listdir
 from os.path import exists
+import datetime
 
 
 def V(x, volatile=False):
@@ -27,3 +28,21 @@ def expand(x, s=2):
     for j in range(s):
         x_expanded[:, :, j] = x
     return x_expanded
+
+def path_exists(path):
+    if not exists(path):
+        makedirs(path)
+    return path
+
+def ckpt_utc():
+    s = datetime.datetime.utcnow()
+    s = str(s).split(".")[0]
+    s = s.split(" ")
+    s = "_".join(s)
+    ckpt = "ckpt_" + s + ".pth"
+    return ckpt
+
+def check_cuda(x):
+    if torch.cuda.is_available():
+        x = x.cuda()
+    return x

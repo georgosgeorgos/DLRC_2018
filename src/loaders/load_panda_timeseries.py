@@ -12,7 +12,6 @@ class Loader(data.Dataset):
         self.index_lidar = []
         if self.split == "train":
             with open(path + "train.pkl", "rb") as f:
-                if self.split == "train":
                 self.data = pkl.load(f)
 
                 self.data_lidar = [self.data[i]["lidar"]["measure"] for i in range(len(self.data))]

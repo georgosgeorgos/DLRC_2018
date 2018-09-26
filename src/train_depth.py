@@ -15,9 +15,9 @@ from collections import OrderedDict, defaultdict
 import torch as th
 import torch.nn.functional as F
 
-from models.variational_autoencoder_gmm.vae_gmm import VAE
-from objectives.nELBO_gmm import nELBO
-from loaders.load_panda_timeseries import Loader
+from models.autoencoder.autoencoder import Autoencoder as Model
+from objectives.reconstruction import LossReconstruction as Loss
+from loaders.load_panda_depth import PandaDataSet as Loader
 from utils.utils import * 
 
 import datetime
@@ -27,76 +27,56 @@ joint_input_size = 7  # joint state   cond var
 n_samples_y      = 10 # length timeseries
 n_samples_z      = 10 # sample from selector
 clusters         = 2  # clustering component (background/self | static/dynamic)
+split            = "train"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--epochs", type=int, default=100)
-parser.add_argument("--batch_size", type=int, default=512)
+parser.add_argument("--batch_size", type=int, default=1)
 parser.add_argument("--learning_rate", type=float, default=0.0001)
 parser.add_argument("--encoder_layer_sizes", type=list, default=[(lidar_input_size*n_samples_y), 256, 256])
 parser.add_argument("--decoder_layer_sizes", type=list, default=[(joint_input_size*n_samples_y), 256, 256])
 parser.add_argument("--latent_size", type=int, default=lidar_input_size*clusters)
-parser.add_argument("--print_every", type=int, default=1000)
 parser.add_argument("--fig_root", type=str, default='figs')
 parser.add_argument("--conditional", action='store_true')
 parser.add_argument("--num_labels", type=int, default=0)
-parser.add_argument("--ckpt_dir", type=str, default="./ckpt/")
+parser.add_argument("--ckpt_dir", type=str, default="./ckpt/depth/")
+parser.add_argument("--data_dir", type=str, default="../DEPTH/")
+parser.add_argument("--split", type=str, default=split)
+
 
 def main(args):
+    split = args.split
 
-    ts = time.time()
-    split = "train"
-
-    s = datetime.datetime.utcnow()
-    s = str(s).split(".")[0]
-    s = s.split(" ")
-    s = "_".join(s)
-    ckpt = "ckpt_" + s + ".pth"
+    ckpt = ckpt_utc()
     print(ckpt)
     
-    loss_fn = nELBO(args.batch_size, n_samples_z, n_samples_y)
+    loss_fn = Loss()
 
-    model = VAE(
-            encoder_layer_sizes=args.encoder_layer_sizes,
-            decoder_layer_sizes=args.decoder_layer_sizes,
-            latent_size=args.latent_size,
-            batch_size=args.batch_size,
-            conditional=args.conditional,
-            num_labels=args.num_labels
-            )
-    if th.cuda.is_available():
-        model.cuda()
+    model   = Model()
+    model   = check_cuda(model)
+    loss_fn = check_cuda(loss_fn)
 
     model.train()
-    for params in model.parameters():
-        params.requires_grad = True
-    for name, param in model.named_parameters():
-        if param.requires_grad:
-            print (name, param)
 
     # probably adam not the most appropriate algorithms
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     optimizer.zero_grad()
 
-    dataset = Loader(split=split, samples=n_samples_y)
-    # randomize an auxiliary index because we want to use sample of time-series (10 time steps)
-    data_loader = DataLoader(dataset=dataset, batch_size=args.batch_size, shuffle=False)
+    dataset = Loader(root_dir=args.data_dir)
+    data_loader = DataLoader(dataset=dataset, batch_size=args.batch_size, shuffle=True)
 
     loss_list = []
     for epoch in range(args.epochs):
-        dataset.generate_index()
         print("Epoch: ", epoch)
         L = []
-        for itr, batch in enumerate(data_loader):
+        for itr, depth in enumerate(data_loader):
             # observable
-            y, x = batch
-            y = V(y)
-            x = V(x)
-            if y.size(0) != args.batch_size:
+            depth = V(depth)
+            if depth.size(0) != args.batch_size:
                 continue
             else:
-                mu_phi, log_var_phi, mu_theta, log_var_theta = model(y, x)
-
-                loss, kld, ll = loss_fn(y, mu_phi, log_var_phi, mu_theta, log_var_theta)
+                depth_pred, _ = model(depth)
+                loss = loss_fn(depth, depth_pred)
 
                 if split == 'train':
                     loss.backward()
@@ -105,9 +85,7 @@ def main(args):
 
                 # compute the loss averaging over epochs and dividing by batches
                 L.append(loss.cpu().data.numpy())
-
-        print("negative likelihood: ", -ll.cpu().data.numpy())
-        print("kl: ", kld.cpu().data.numpy())
+                
         print("loss:", loss)
         
         loss_list.append(np.mean(L) / (len(data_loader)))
