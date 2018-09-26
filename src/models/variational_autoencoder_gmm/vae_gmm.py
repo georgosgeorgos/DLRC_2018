@@ -2,7 +2,7 @@ import torch as th
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
-from utils import *
+from utils.utils import *
 # we frame all the problem as an unsupervised learning problem.
 # we want to use a Conditional Variational Auto-Encoder to tackle the problem.
 

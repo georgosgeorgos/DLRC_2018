@@ -5,13 +5,14 @@ import numpy as np
 from random import shuffle
 
 class Loader(data.Dataset):
-    def __init__(self, path="./data_test/", split="train", transform=None, samples=10, pivot=0):
+    def __init__(self, path="./data_mockup/", split="train", transform=None, samples=10, pivot=0):
         self.split   = split
         self.path    = path
         self.samples = samples
         self.index_lidar = []
         if self.split == "train":
             with open(path + "train.pkl", "rb") as f:
+                if self.split == "train":
                 self.data = pkl.load(f)
 
                 self.data_lidar = [self.data[i]["lidar"]["measure"] for i in range(len(self.data))]

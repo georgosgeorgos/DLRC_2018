@@ -15,9 +15,11 @@ from collections import OrderedDict, defaultdict
 import torch as th
 import torch.nn.functional as F
 
-from utils import *
-from model import VAE
-from lidarLoader import Loader
+from models.variational_autoencoder_gmm.vae_gmm import VAE
+from objectives.nELBO_gmm import nELBO
+from loaders.Loader_multiple_samples import Loader
+
+from utils.utils import * 
 
 lidar_input_size = 9  # number lidars obs var
 joint_input_size = 7  # joint state   cond var
@@ -42,7 +44,7 @@ def main(args):
     ts = time.time()
     split = "test"
     #10 samples y and 57% accuracy 
-    ckpt = "ckpt_2018-09-25_16:21:12.pth"
+    ckpt = "ckpt_2018-09-26_10:19:55.pth"
     
 
     model = VAE(

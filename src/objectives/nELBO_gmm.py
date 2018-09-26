@@ -79,4 +79,4 @@ class nELBO(nn.Module):
         # we want to maximize this guy
         elbo = loglikelihood - kld
         # so we need to negate the elbo to minimize
-        return -elbo, kld, loglikelihood, pdf_y, z_y, s
+        return -elbo, kld, loglikelihood
