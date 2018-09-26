@@ -9,10 +9,11 @@ import src.utils.configs as cfg
 
 
 class PandaDataSet(Dataset):
-    def __init__(self, root_dir=None, train=None, transform=None):
+    def __init__(self, root_dir=None, train=None, test_split=0.2, transform=None):
 
         self.root_dir = root_dir
         self.train = train
+        self.test_split = test_split
         self.transform = transform
 
         with open(osp.join(root_dir, 'train.pkl'), "rb") as f:
@@ -28,12 +29,22 @@ class PandaDataSet(Dataset):
             self.X = [self.data[i]["state"]["j_pos"] for i in range(self.num_demonstrations)]
             self.X = np.array(self.X, dtype=float).reshape((self.num_samples, self.num_joints))
 
+            if train is not None:
+                if train:
+                    train_idx = int(self.num_samples * (1 - self.test_split))
+                    self.Y = self.Y[:train_idx]
+                    self.X = self.X[:train_idx]
+                else:
+                    test_idx = int(self.num_samples * (1 - self.test_split))
+                    self.Y = self.Y[test_idx:]
+                    self.X = self.X[test_idx:]
+
     def __len__(self):
         """
         Return number of samples in the dataset, which is equivalent to flattening [num_demonstrations x num_timesteps]
         :return:
         """
-        return self.num_samples
+        return self.Y.shape[0]
 
     def __getitem__(self, index):
         Y = self.Y[index]
@@ -46,13 +57,25 @@ class PandaDataSet(Dataset):
 
 
 # if __name__ == '__main__':
-#     ds = PandaDataSet(root_dir='../../data/data_toy/',
-#         transform=transforms.Compose([
+#     train_set = PandaDataSet(root_dir='../../data/data_toy/', train=True,
+#                              transform=transforms.Compose([
 #             transforms.Lambda(lambda n: torch.Tensor(n)),
 #             transforms.Lambda(lambda n: torch.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
 #             transforms.Lambda(lambda n: n / 1000)
 #         ])
-#     )
-#     dl = DataLoader(ds, batch_size=1024, shuffle=True, num_workers=1)
-#     for i, (x, y) in enumerate(dl):
-#         print(torch.Tensor.min(y).item(), torch.Tensor.max(y).item())
+#                              )
+#     train_loader = DataLoader(train_set, batch_size=256, shuffle=True, num_workers=1)
+#
+#     print(len(train_loader.dataset))
+#
+#     test_set = PandaDataSet(root_dir='../../data/data_toy/', train=False,
+#                              transform=transforms.Compose([
+#                                  transforms.Lambda(lambda n: torch.Tensor(n)),
+#                                  transforms.Lambda(
+#                                      lambda n: torch.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
+#                                  transforms.Lambda(lambda n: n / 1000)
+#                              ])
+#                              )
+#     test_loader = DataLoader(test_set, batch_size=256, shuffle=True, num_workers=1)
+#
+#     print(len(test_loader.dataset))
