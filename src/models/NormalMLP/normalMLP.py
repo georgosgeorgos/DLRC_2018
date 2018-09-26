@@ -1,5 +1,4 @@
 import torch as th
-import torch.nn as nn
 from torch.nn import functional as F
 from torch import nn, optim
 from torchvision import transforms
@@ -7,9 +6,10 @@ from src.objectives.llnormal import LLNormal
 from src.data_loaders.load_panda import PandaDataSet
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
-import src.utils.configs as cfg
-import sys
-from torch.distributions.normal import Normal
+import utils.configs as cfg
+from utils.utils import plot_eval, path_exists
+import numpy as np
+import os.path as osp
 
 ############################################################
 ### INITIALIZATION
@@ -29,7 +29,8 @@ cuda = th.cuda.is_available()
 device = th.device("cuda" if cuda else "cpu")
 kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
 
-train_set = PandaDataSet(root_dir='../../../data/data_toy', train=True,
+rootdir = '../../../'
+train_set = PandaDataSet(root_dir=osp.join(rootdir, 'data/data_toy'), train=True,
                              transform=transforms.Compose([
             transforms.Lambda(lambda n: th.Tensor(n)),
             transforms.Lambda(lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
@@ -108,7 +109,9 @@ def train(epoch):
                     epoch, epochs, (batch_idx + 1) * trbs - (trbs - x.size()[0]),
                     len(train_loader.dataset), 100. * (batch_idx + 1) / len(train_loader)))
 
-    print('====> train epoch: {} avg. loss: {:.4f}'.format(epoch, train_loss / len(train_loader.dataset)))
+    epoch_loss = train_loss / len(train_loader.dataset)
+    print('====> train epoch: {} avg. loss: {:.4f}'.format(epoch, epoch_loss))
+    return epoch_loss
 
 
 def test(epoch):
@@ -138,7 +141,13 @@ def test(epoch):
 
 
 if __name__ == '__main__':
+
+    path_results = osp.join(rootdir, 'experiments', 'normalMLP')
+    path_exists(path_results)
+
+    train_loss_history = []
     for epoch in range(1, epochs + 1):
-        train(epoch)
+        train_loss_history.append(train(epoch))
+        plot_eval(np.arange(epoch), np.array(train_loss_history), savepathfile=osp.join(path_results, 'train_loss.png'), title='train loss')
         if epoch % test_every_nth == 0:
             test(epoch)
