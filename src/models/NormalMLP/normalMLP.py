@@ -159,9 +159,8 @@ if __name__ == '__main__':
             epoch_loss, hist_values = test(epoch)
             test_loss_history.append(epoch_loss)
 
-    plot_eval(np.arange(epochs), np.array(train_loss_history), title='train loss',
-              save_to=osp.join(path_results, 'train_loss.png'))
-    plot_eval(np.arange(epochs), np.array(test_loss_history), title='test loss',
-              save_to=osp.join(path_results, 'test_loss.png'))
-    plot_hist(hist_values,
-              save_to=osp.join(path_results, 'test_histogram.png'), title='Histograms of target measurements (on test set) for each channel')
+        plot_eval(np.arange(len(train_loss_history)), np.array(train_loss_history), title='train loss',
+                  save_to=osp.join(path_results, 'train_loss.png'))
+        plot_eval(np.arange(len(test_loss_history)), np.array(test_loss_history), title='test loss',
+                  save_to=osp.join(path_results, 'test_loss.png'))
+        plot_hist(hist_values, save_to=osp.join(path_results, 'test_histogram.png'), title='Histograms of target measurements (on test set) for each channel')

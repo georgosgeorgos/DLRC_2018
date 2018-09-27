@@ -21,7 +21,7 @@ from utils import configs as cfg
 parser = argparse.ArgumentParser(description='VAE Anomaly Example')
 parser.add_argument('--batch_size', type=int, default=32, metavar='N',
                     help='input batch size for training (default: 32)')
-parser.add_argument('--code_size', type=int, default=10, metavar='N',
+parser.add_argument('--code_size', type=int, default=3, metavar='N',
                     help='code size (default: 2)')
 parser.add_argument('--lr', type=float, default=1e-4, metavar='N',
                     help='learning rate (default: 1e-3)')
