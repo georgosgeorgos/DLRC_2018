@@ -7,7 +7,7 @@ from src.loaders.load_panda import PandaDataSet
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
 import utils.configs as cfg
-from utils.utils import plot_eval, path_exists, plot_hist
+from src.utils.utils import plot_eval, path_exists, plot_hist
 import numpy as np
 import os.path as osp
 
@@ -23,7 +23,7 @@ lr = 1e-3
 every_nth = 100
 trbs = 512
 tebs = 256
-epochs = 200
+epochs = 2000
 test_every_nth = 1
 th.manual_seed(42)
 cuda = th.cuda.is_available()
@@ -89,9 +89,7 @@ def train(epoch):
     for batch_idx, (x, y) in enumerate(train_loader):
         n, m = x.size()
         x.resize_(min(trbs, n), m)
-        x = Variable(x)
         x = x.to(device).float()
-        y = Variable(y)
         y = y.to(device).float()
 
         optimizer.zero_grad()
@@ -111,7 +109,7 @@ def train(epoch):
                     len(train_loader.dataset), 100. * (batch_idx + 1) / len(train_loader)))
 
     epoch_loss = train_loss / len(train_loader.dataset)
-    print('====> train epoch: {} avg. loss: {:.4f}'.format(epoch, epoch_loss))
+    print('train epoch: {} avg. loss: {:.4f}'.format(epoch, epoch_loss))
     return epoch_loss
 
 
@@ -125,9 +123,7 @@ def test(epoch):
         for i, (x, y) in enumerate(test_loader):
             n, m = x.size()
             x.resize_(min(tebs, n), m)
-            x = Variable(x)
             x = x.to(device).float()
-            y = Variable(y)
             y = y.to(device).float()
 
             mu, logvar = model(x)
@@ -145,7 +141,7 @@ def test(epoch):
     y_cen_array = np.vstack((y_cen_array, np.array(y_cen[-1])))  # add last batch
 
     epoch_loss = test_loss / len(test_loader.dataset)
-    print('### TEST: epoch: {} avg. loss: {:.4f}\n'.format(epoch, epoch_loss))
+    print(' test epoch: {} avg. loss: {:.4f}\n'.format(epoch, epoch_loss))
     return epoch_loss, y_cen_array
 
 ############################################################

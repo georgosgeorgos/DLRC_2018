@@ -14,3 +14,4 @@ data/
 /utils/__pycache__
 /TRAIN_DATA/RGB/*
 /TRAIN_DATA/DEPTH/*
+experiments/*

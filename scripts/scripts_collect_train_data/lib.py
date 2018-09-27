@@ -7,6 +7,8 @@ from PIL import Image
 from libtiff import TIFF
 import pickle as pkl
 from pyquaternion import Quaternion
+from utils.utils import path_exists
+
 
 def default():
     broker = pab.broker()
@@ -18,7 +20,10 @@ def default():
     time.sleep(0.5)
     print(broker.request_signal("realsense_images", pab.MsgType.realsense_image))
     time.sleep(0.5)
+    print("Register signal <_des_tau> {}".format(broker.register_signal("franka_des_tau", pab.MsgType.des_tau)))
+    time.sleep(0.5)
     return broker
+
 
 def pos_msg(pos, broker, counter, time2go=3):
     msg = pab.target_pos_msg()
@@ -30,6 +35,18 @@ def pos_msg(pos, broker, counter, time2go=3):
     broker.send_msg("franka_target_pos", msg)
     counter += 1
     return counter
+
+
+def tau_msg(broker, counter):
+    msg = pab.des_tau_msg()
+    msg.set_timestamp(time.clock_gettime(time.CLOCK_MONOTONIC))
+    msg.set_fnumber(counter)
+    msg.set_j_torque_des(np.zeros(7))
+    # Send message
+    broker.send_msg("franka_des_tau", msg)
+    counter += 1
+    return counter
+
 
 def build_position(X,Y,Z):
     pos = np.array([X, Y, Z])
@@ -53,6 +70,7 @@ def build_position_orientation(X, Y, Z, alpha):
 #     msg.set_time_to_go(time2go)
 #     broker.send_msg("franka_target_pos", msg)
 
+
 def sample():
     #WallMin = [0.28, -0.78, 0.02]
     #WallMax = [0.82,  0.78, 1.08]
@@ -65,33 +83,38 @@ def sample():
     alpha = np.random.uniform(-0.01, 0.01, 1)[0]
     return X, Y, Z, alpha
 
-def collect_rgb_depth(img, img_counter):
+
+def collect_rgb_depth(img, img_counter, path_rgb='./RGB/', path_depth='./DEPTH/'):
     rgb = np.reshape(img.get_rgb(), img.get_shape_rgb())
     rgb = Image.fromarray(rgb)
-    rgb.save('./RGB/' + str(img_counter) + '.png')
-
+    path_exists(path_rgb)
+    rgb.save(path_rgb + str(img_counter) + '.png')
+    path_exists(path_depth)
     depth = np.reshape(img.get_depth(), img.get_shape_depth())
-    tiff = TIFF.open('./DEPTH/' + str(img_counter) + '.tiff', mode='w')
+    tiff = TIFF.open(path_depth + str(img_counter) + '.tiff', mode='w')
     tiff.write_image(depth)
     tiff.close()
     img_counter += 1
     return img_counter
 
-def update_data(data, lidar, new_state, runs):
-    data[runs]["trajectory"].append(list(new_state.get_c_pos()))
 
-    data[runs]["state"]["j_pos"].append(list(new_state.get_j_pos()))
-    data[runs]["state"]["j_vel"].append(list(new_state.get_j_vel()))
-    data[runs]["state"]["j_load"].append(list(new_state.get_j_load()))
-    data[runs]["state"]["c_pos"].append(list(new_state.get_c_pos()))
-    data[runs]["state"]["c_vel"].append(list(new_state.get_c_vel()))
-    data[runs]["state"]["c_ori_quat"].append(list(new_state.get_c_ori_quat()))
-    data[runs]["state"]["dc_ori_quat"].append(list(new_state.get_dc_ori_quat()))
-    data[runs]["state"]["timestamp"].append(new_state.get_timestamp())
+def update_data(data, msg_lidar, msg_state, runs):
+    data[runs]["trajectory"].append(list(msg_state.get_c_pos()))
+
+    data[runs]["state"]["j_pos"].append(list(msg_state.get_j_pos()))
+    data[runs]["state"]["j_vel"].append(list(msg_state.get_j_vel()))
+    data[runs]["state"]["j_load"].append(list(msg_state.get_j_load()))
+    data[runs]["state"]["c_pos"].append(list(msg_state.get_c_pos()))
+    data[runs]["state"]["c_vel"].append(list(msg_state.get_c_vel()))
+    data[runs]["state"]["c_ori_quat"].append(list(msg_state.get_c_ori_quat()))
+    data[runs]["state"]["dc_ori_quat"].append(list(msg_state.get_dc_ori_quat()))
+    data[runs]["state"]["timestamp"].append(msg_state.get_timestamp())
     
-    data[runs]["lidar"]["measure"].append(list(lidar.get_data()))
-    data[runs]["lidar"]["timestamp"].append(lidar.get_timestamp())
+    data[runs]["lidar"]["measurements"].append(list(msg_lidar.get_data()))
+    data[runs]["lidar"]["timestamp"].append(msg_lidar.get_timestamp())
+
     return data
+
 
 def init_data_run(data, runs):
     data[runs] = {
@@ -102,7 +125,7 @@ def init_data_run(data, runs):
                             "dc_ori_quat": [], "timestamp": []
                             }, 
                   "lidar": {
-                            "measure": [], "timestamp": []
+                            "measurements": [], "timestamp": []
                             }
                   }
     return data

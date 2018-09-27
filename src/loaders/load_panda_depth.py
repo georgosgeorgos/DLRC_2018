@@ -8,7 +8,7 @@ import glob
 import torch as th
 
 
-class PandaDataSet(Dataset):
+class PandaDataSetImg(Dataset):
     def __init__(self, root_dir=None, train=None, test_split=0.2, transform=None):
 
         self.root_dir = root_dir
@@ -39,11 +39,11 @@ class PandaDataSet(Dataset):
         return depth
 
 
-if __name__ == '__main__':
-    train_set = PandaDataSet("../../DEPTH/")
-    print(train_set[0])
-    print(train_set[0] / 1000)
-    print(train_set[0].shape)
-    print(train_set[0].dtype)
-    print(type(train_set[0]))
-    print(np.array(train_set[0]).dtype)
+# if __name__ == '__main__':
+#     train_set = PandaDataSet("../../DEPTH/")
+#     print(train_set[0])
+#     print(train_set[0] / 1000)
+#     print(train_set[0].shape)
+#     print(train_set[0].dtype)
+#     print(type(train_set[0]))
+#     print(np.array(train_set[0]).dtype)
