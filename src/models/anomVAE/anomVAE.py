@@ -7,8 +7,9 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 from src.loaders.load_panda import PandaDataSet
 import os.path as osp
-from src.utils.utils import path_exists
+from src.utils.utils import path_exists, plot_eval
 from utils import configs as cfg
+import numpy as np
 
 ############################################################
 ### INITIALIZATION
@@ -17,11 +18,11 @@ from utils import configs as cfg
 parser = argparse.ArgumentParser(description='VAE Anomaly Example')
 parser.add_argument('--batch_size', type=int, default=32, metavar='N',
                     help='input batch size for training (default: 32)')
-parser.add_argument('--code_size', type=int, default=20, metavar='N',
-                    help='code size (default: 20)')
-parser.add_argument('--lr', type=float, default=1e-3, metavar='N',
+parser.add_argument('--code_size', type=int, default=3, metavar='N',
+                    help='code size (default: 2)')
+parser.add_argument('--lr', type=float, default=1e-4, metavar='N',
                     help='learning rate (default: 1e-3)')
-parser.add_argument('--epochs', type=int, default=200, metavar='N',
+parser.add_argument('--epochs', type=int, default=1000, metavar='N',
                     help='number of epochs to train (default: 150)')
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='enables CUDA training')
@@ -34,6 +35,12 @@ args.cuda = not args.no_cuda and th.cuda.is_available()
 
 device = th.device("cuda" if args.cuda else "cpu")
 kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
+
+test_every_nth = 1
+n_joints = 7
+n_lidars = 9
+n_hidden = 64
+verbose = False
 trbs = 512
 tebs = 256
 rootdir = '../../../'
@@ -64,14 +71,14 @@ class VAE(nn.Module):
     def __init__(self):
         super(VAE, self).__init__()
 
-        self.fc1 = nn.Linear(768, 400)
-        self.fc21 = nn.Linear(400, args.code_size)
-        self.fc22 = nn.Linear(400, args.code_size)
-        self.fc3 = nn.Linear(args.code_size, 400)
-        self.fc4 = nn.Linear(400, 768)
+        self.fc1 = nn.Linear(n_lidars, n_hidden)
+        self.fc21 = nn.Linear(n_hidden, args.code_size)
+        self.fc22 = nn.Linear(n_hidden, args.code_size)
+        self.fc3 = nn.Linear(args.code_size, n_hidden)
+        self.fc4 = nn.Linear(n_hidden, n_lidars)
 
-    def encode(self, x):
-        h1 = F.relu(self.fc1(x))
+    def encode(self, *input):
+        h1 = th.tanh(self.fc1(input[0]))
         return self.fc21(h1), self.fc22(h1)
 
     def reparameterize(self, mu, logvar):
@@ -83,11 +90,11 @@ class VAE(nn.Module):
             return mu
 
     def decode(self, z):
-        h3 = F.relu(self.fc3(z))
-        return F.sigmoid(self.fc4(h3))
+        h3 = th.tanh(self.fc3(z))
+        return th.tanh(self.fc4(h3))
 
     def forward(self, x):
-        mu, logvar = self.encode(x.view(-1, 768))
+        mu, logvar = self.encode(x.view(-1, n_lidars))
         z = self.reparameterize(mu, logvar)
         return self.decode(z), mu, logvar
 
@@ -97,7 +104,7 @@ optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
 # Reconstruction + KL divergence losses summed over all elements and batch
 def loss_function(recon_x, x, mu, logvar):
-    BCE = F.binary_cross_entropy(recon_x, x.view(-1, 768), size_average=False)
+    BCE = F.mse_loss(recon_x, x.view(-1, n_lidars), reduction='sum')
 
     # see Appendix B from Generative_Models paper:
     # Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
@@ -110,42 +117,67 @@ def loss_function(recon_x, x, mu, logvar):
 
 def train(epoch):
     model.train()
-    train_loss = 0
-    for batch_idx, (data, _) in enumerate(train_loader):
-        data = data.to(device)
+    train_loss = 0.
+    for batch_idx, (x, y, z) in enumerate(train_loader):
+        y = y.to(device)
         optimizer.zero_grad()
-        recon_batch, mu, logvar = model(data)
-        loss = loss_function(recon_batch, data, mu, logvar)
+        recon_batch, mu, logvar = model(y)
+        loss = loss_function(recon_batch, y, mu, logvar)
         loss.backward()
         train_loss += loss.item()
         optimizer.step()
-        if batch_idx % args.log_interval == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(data), len(train_loader.dataset),
-                100. * batch_idx / len(train_loader),
-                loss.item() / len(data)))
-    print('====> Epoch: {} Average loss: {:.4f}'.format(
-          epoch, train_loss / len(train_loader.dataset)))
+        if verbose:
+            if batch_idx % args.log_interval == 0:
+                print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                    epoch, batch_idx * len(y), len(train_loader.dataset),
+                    100. * batch_idx / len(train_loader),
+                    loss.item() / len(y)))
+    epoch_loss = train_loss / len(train_loader.dataset)
+    print('train epoch: {} avg. loss: {:.4f}'.format(epoch, epoch_loss))
+
+    return epoch_loss
 
 
-# def test(epoch):
-#     model.eval()
-#     test_loss = 0
-#     with th.no_grad():
-#         for i, (data, _) in enumerate(test_loader):
-#             data = data.to(device)
-#             recon_batch, mu, logvar = model(data)
-#             test_loss += loss_function(recon_batch, data, mu, logvar).item()
-#             if i == 0:
-#                 n = min(data.size(0), 8)
-#                 comparison = th.cat([data[:n],
-#                                       recon_batch.view(-1, 1, 32, 24)[:n]])
-#                 save_image(comparison.cpu(), os.path.join(path_results, 'reconstruction_' + str(epoch) + '.png'), nrow=n)
-# 
-#     test_loss /= len(test_loader.dataset)
-#     print('====> Test set loss: {:.4f}'.format(test_loss))
+def test(epoch):
+
+    model.eval()
+    test_loss = 0.
+    MSE = 0.
+
+    with th.no_grad():
+        for i, (x, y, z) in enumerate(test_loader):
+            bs, _, = y.size()
+            y = y.to(device)
+            y_recon, mu, logvar = model(y)
+            test_loss += loss_function(y_recon, y, mu, logvar).item()
+
+            MSE += F.mse_loss(y, y_recon, reduction='elementwise_mean')
+
+    epoch_loss = test_loss / len(test_loader.dataset)
+    epoch_RMSE = th.sqrt(MSE / len(test_loader.dataset))
+    print(' test epoch: {} avg. loss: {:.4f}\tRMSE: {:.4f}\n'.format(epoch, epoch_loss, epoch_RMSE))
+
+    return epoch_loss, epoch_RMSE
 
 
-for epoch in range(1, args.epochs + 1):
-    train(epoch)
-    
+if __name__ == '__main__':
+
+    train_loss_history = []
+
+    test_loss_history = []
+    test_RMSE_history = []
+
+    for epoch in range(1, args.epochs + 1):
+        train_loss_history.append(train(epoch))
+
+        if epoch % test_every_nth == 0:
+            epoch_loss, epoch_RMSE = test(epoch)
+            test_loss_history.append(epoch_loss)
+            test_RMSE_history.append(epoch_RMSE)
+
+        plot_eval(np.arange(len(train_loss_history)), np.array(train_loss_history), xlabel='epochs', ylabel='loss',
+                  title='train loss', save_to=osp.join(path_results, 'train_loss.png'))
+        plot_eval(np.arange(len(test_loss_history)), np.array(test_loss_history), xlabel='epochs', ylabel='loss',
+                  title='test loss', save_to=osp.join(path_results, 'test_loss.png'))
+        plot_eval(np.arange(len(test_RMSE_history)), np.array(test_RMSE_history), xlabel='epochs', ylabel='RMSE',
+                  title='test RMSE', save_to=osp.join(path_results, 'test_RMSE.png'))

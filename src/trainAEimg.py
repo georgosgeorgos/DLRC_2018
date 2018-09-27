@@ -82,7 +82,8 @@ def trainAE():
 
         print('train epoch: {} avg. loss: {:.4f}'.format(epoch, epoch_loss))
 
-        plot_eval(np.arange(len(epoch_loss_history)), np.array(epoch_loss_history), save_to=osp.join(path_results, 'train_loss.png'), title = 'train loss')
+        plot_eval(np.arange(len(epoch_loss_history)), np.array(epoch_loss_history), title='train loss',
+                  save_to=osp.join(path_results, 'train_loss.png'))
         th.save(model.state_dict(), osp.join(path_results, args.ckpt_dir + ckpt))
 
 
