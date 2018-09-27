@@ -15,45 +15,19 @@ from collections import OrderedDict, defaultdict
 import torch as th
 import torch.nn.functional as F
 
-from models.variational_autoencoder_gmm.vae_gmm import VAE
+from models.cvae_gmm.cvae_gmm import VAE
 from objectives.nELBO_gmm import nELBO
 from loaders.load_panda_timeseries import Loader
-from utils.utils import * 
+from utils.utils import move_to_cuda, ckpt_utc, path_exists, tensor_to_variable, plot_eval
 
 import datetime
 
-lidar_input_size = 9  # number lidars obs var
-joint_input_size = 7  # joint state   cond var
-n_samples_y      = 10 # length timeseries
-n_samples_z      = 10 # sample from selector
-clusters         = 2  # clustering component (background/self | static/dynamic)
+def train(args):
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--epochs", type=int, default=100)
-parser.add_argument("--batch_size", type=int, default=512)
-parser.add_argument("--learning_rate", type=float, default=0.0001)
-parser.add_argument("--encoder_layer_sizes", type=list, default=[(lidar_input_size*n_samples_y), 256, 256])
-parser.add_argument("--decoder_layer_sizes", type=list, default=[(joint_input_size*n_samples_y), 256, 256])
-parser.add_argument("--latent_size", type=int, default=lidar_input_size*clusters)
-parser.add_argument("--print_every", type=int, default=1000)
-parser.add_argument("--fig_root", type=str, default='figs')
-parser.add_argument("--conditional", action='store_true')
-parser.add_argument("--num_labels", type=int, default=0)
-parser.add_argument("--ckpt_dir", type=str, default="./ckpt/")
-
-def main(args):
-
-    ts = time.time()
-    split = "train"
-
-    s = datetime.datetime.utcnow()
-    s = str(s).split(".")[0]
-    s = s.split(" ")
-    s = "_".join(s)
-    ckpt = "ckpt_" + s + ".pth"
-    print(ckpt)
+    split = args.split
+    ckpt = ckpt_utc()
     
-    loss_fn = nELBO(args.batch_size, n_samples_z, n_samples_y)
+    loss_fn = nELBO(args.batch_size, args.n_samples_z, args.n_samples_y)
 
     model = VAE(
             encoder_layer_sizes=args.encoder_layer_sizes,
@@ -63,21 +37,14 @@ def main(args):
             conditional=args.conditional,
             num_labels=args.num_labels
             )
-    if th.cuda.is_available():
-        model.cuda()
-
+    model = move_to_cuda(model)
     model.train()
-    for params in model.parameters():
-        params.requires_grad = True
-    for name, param in model.named_parameters():
-        if param.requires_grad:
-            print (name, param)
 
     # probably adam not the most appropriate algorithms
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     optimizer.zero_grad()
 
-    dataset = Loader(split=split, samples=n_samples_y)
+    dataset = Loader(split=args.split, samples=args.n_samples_y)
     # randomize an auxiliary index because we want to use sample of time-series (10 time steps)
     data_loader = DataLoader(dataset=dataset, batch_size=args.batch_size, shuffle=False)
 
@@ -89,8 +56,8 @@ def main(args):
         for itr, batch in enumerate(data_loader):
             # observable
             y, x = batch
-            y = V(y)
-            x = V(x)
+            y = tensor_to_variable(y)
+            x = tensor_to_variable(x)
             if y.size(0) != args.batch_size:
                 continue
             else:
@@ -108,7 +75,7 @@ def main(args):
 
         print("negative likelihood: ", -ll.cpu().data.numpy())
         print("kl: ", kld.cpu().data.numpy())
-        print("loss:", loss)
+        print("loss:", loss.cpu().data.numpy())
         
         loss_list.append(np.mean(L) / (len(data_loader)))
 
@@ -119,7 +86,3 @@ def main(args):
     path_exists(args.ckpt_dir)
     th.save(model.state_dict(), args.ckpt_dir + ckpt)
     print("done!")
-
-if __name__ == '__main__':
-    args = parser.parse_args()
-    main(args)

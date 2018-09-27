@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions.normal import Normal
 
-from utils.utils import *
+from utils.utils import move_to_cuda, tensor_to_variable, std, reshape
 
 class nELBO(nn.Module):
     def __init__(self, batch_size=2, n_samples_z=10, n_samples_y=10):
@@ -35,7 +35,7 @@ class nELBO(nn.Module):
         #print(y_z.size())
         
         # two clusters
-        y_expanded = torch.cat([y_z, y_z], dim=1)
+        y_expanded = th.cat([y_z, y_z], dim=1)
         #expand(y_z)
         #print(y_expanded.size())
         pdf_y = N.log_prob(y_expanded)
@@ -48,7 +48,7 @@ class nELBO(nn.Module):
         loglikelihood = 0
         # for every sample compute the weighted mixture
         for sample in range(self.n_samples_z):
-            eps = V(th.randn(y_expanded.size()))
+            eps = th.randn(y_expanded.size())
             # we use z_y as a selector/weight (z_i is a three dimensional Gaussian
             # in this way we can also measure uncertainly)
             z_y = eps * std_phi + mu_phi
@@ -65,16 +65,15 @@ class nELBO(nn.Module):
         loglikelihood = th.sum(loglikelihood, dim=1)
         loglikelihood = th.mean(loglikelihood) #/ y_z.size()[0]*y_z.size()[1]
         # reduce mean over the batch size reduce sum over the lidars
-        if torch.cuda.is_available():
-            loglikelihood = loglikelihood.cuda()
+        loglikelihood = move_to_cuda(loglikelihood)
         
         # reduce over KLD
         # explicit form when q(z|x) is normal and N(0,I)
         # what about k? 9 or 27?
         k   = 1 #z_y.size()[2]
         kld = 0.5 * ((log_var_phi.exp() + mu_phi.pow(2) - log_var_phi) - k)
-        kld = torch.sum(kld, dim=1)
-        kld = torch.mean(kld)
+        kld = th.sum(kld, dim=1)
+        kld = th.mean(kld)
 
         # we want to maximize this guy
         elbo = loglikelihood - kld
