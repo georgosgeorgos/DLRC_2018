@@ -66,18 +66,16 @@ def trainAE():
     for epoch in range(args.epochs):
         loss_batch_history = []
         for iter, x in enumerate(train_loader):
-            x = tensor_to_variable(x)
-            if x.size(0) != args.batch_size:
-                continue
-            else:
-                depth_pred, _ = model(x)
-                loss = loss_fn(x, depth_pred)
 
-                loss.backward()
-                optimizer.step()
-                optimizer.zero_grad()
-                
-                loss_batch_history.append(loss.item())
+            x = tensor_to_variable(x)
+            depth_pred, _ = model(x)
+            loss = loss_fn(x, depth_pred)
+
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
+
+            loss_batch_history.append(loss.item())
 
         epoch_loss = np.mean(loss_batch_history)
         epoch_loss_history.append(epoch_loss)
