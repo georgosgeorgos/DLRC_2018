@@ -29,8 +29,8 @@ th.manual_seed(42)
 cuda = th.cuda.is_available()
 device = th.device("cuda" if cuda else "cpu")
 kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
-
 rootdir = '../../../'
+
 train_set = PandaDataSet(root_dir=osp.join(rootdir, 'data/data_toy'), train=True,
                              transform=transforms.Compose([
             transforms.Lambda(lambda n: th.Tensor(n)),
@@ -40,7 +40,7 @@ train_set = PandaDataSet(root_dir=osp.join(rootdir, 'data/data_toy'), train=True
                              )
 train_loader = DataLoader(train_set, batch_size=trbs, shuffle=True, **kwargs)
 
-test_set = PandaDataSet(root_dir='../../../data/data_toy', train=False,
+test_set = PandaDataSet(root_dir=osp.join(rootdir, 'data/data_toy'), train=False,
                          transform=transforms.Compose([
                              transforms.Lambda(lambda n: th.Tensor(n)),
                              transforms.Lambda(
@@ -87,8 +87,6 @@ def train(epoch):
     model.train()
     train_loss = 0
     for batch_idx, (x, y, _) in enumerate(train_loader):
-        n, m = x.size()
-        x.resize_(min(trbs, n), m)
         x = x.to(device).float()
         y = y.to(device).float()
 
@@ -121,8 +119,6 @@ def test(epoch):
 
     with th.no_grad():
         for i, (x, y, _) in enumerate(test_loader):
-            n, m = x.size()
-            x.resize_(min(tebs, n), m)
             x = x.to(device).float()
             y = y.to(device).float()
 

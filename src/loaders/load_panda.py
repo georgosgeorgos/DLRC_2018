@@ -64,26 +64,26 @@ class PandaDataSet(Dataset):
         return X, Y, Z
 
 
-if __name__ == '__main__':
-    train_set = PandaDataSet(root_dir='../../data/data_toy/', train=True,
-                             transform=transforms.Compose([
-            transforms.Lambda(lambda n: th.Tensor(n)),
-            transforms.Lambda(lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
-            transforms.Lambda(lambda n: n / 1000)
-        ])
-                             )
-    train_loader = DataLoader(train_set, batch_size=256, shuffle=True, num_workers=1)
-
-    print(len(train_loader.dataset))
-
-    test_set = PandaDataSet(root_dir='../../data/data_toy/', train=False,
-                             transform=transforms.Compose([
-                                 transforms.Lambda(lambda n: th.Tensor(n)),
-                                 transforms.Lambda(
-                                     lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
-                                 transforms.Lambda(lambda n: n / 1000)
-                             ])
-                             )
-    test_loader = DataLoader(test_set, batch_size=256, shuffle=True, num_workers=1)
-
-    print(len(test_loader.dataset))
+# if __name__ == '__main__':
+#     train_set = PandaDataSet(root_dir='../../data/data_toy/', train=True,
+#                              transform=transforms.Compose([
+#             transforms.Lambda(lambda n: th.Tensor(n)),
+#             transforms.Lambda(lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
+#             transforms.Lambda(lambda n: n / 1000)
+#         ])
+#                              )
+#     train_loader = DataLoader(train_set, batch_size=256, shuffle=True, num_workers=1)
+#
+#     print(len(train_loader.dataset))
+#
+#     test_set = PandaDataSet(root_dir='../../data/data_toy/', train=False,
+#                              transform=transforms.Compose([
+#                                  transforms.Lambda(lambda n: th.Tensor(n)),
+#                                  transforms.Lambda(
+#                                      lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
+#                                  transforms.Lambda(lambda n: n / 1000)
+#                              ])
+#                              )
+#     test_loader = DataLoader(test_set, batch_size=256, shuffle=True, num_workers=1)
+#
+#     print(len(test_loader.dataset))
