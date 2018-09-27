@@ -1,10 +1,8 @@
-import py_at_broker as pab
-from PIL import Image
-import numpy as np
-import matplotlib.pyplot as plt
 import time
-import os
-from utils.utils import path_exists
+
+import matplotlib.pyplot as plt
+import numpy as np
+import py_at_broker as pab
 
 b = pab.broker()
 print(b.request_signal("franka_lidar", pab.MsgType.franka_lidar))

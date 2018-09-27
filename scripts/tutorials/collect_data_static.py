@@ -1,9 +1,8 @@
+import time
+
+import numpy as np
 import py_at_broker as pab
 from PIL import Image
-from libtiff import TIFF
-import numpy as np
-import matplotlib.pyplot as plt
-import time
 
 b = pab.broker()
 print(b.request_signal("franka_lidar", pab.MsgType.franka_lidar))

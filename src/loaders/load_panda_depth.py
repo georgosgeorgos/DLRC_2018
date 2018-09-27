@@ -1,11 +1,9 @@
-from torch.utils.data import Dataset
-import pickle as pkl
-import numpy as np
-import os.path as osp
-from PIL import Image
-from libtiff import TIFF
 import glob
+
+import numpy as np
 import torch as th
+from libtiff import TIFF
+from torch.utils.data import Dataset
 
 
 class PandaDataSetImg(Dataset):

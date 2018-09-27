@@ -1,15 +1,18 @@
 from __future__ import print_function
+
 import argparse
+import os.path as osp
+
+import numpy as np
 import torch as th
 from torch import nn, optim
 from torch.nn import functional as F
-from torchvision import transforms
 from torch.utils.data import DataLoader
+from torchvision import transforms
+
 from src.loaders.load_panda import PandaDataSet
-import os.path as osp
 from src.utils.utils import path_exists, plot_eval
 from utils import configs as cfg
-import numpy as np
 
 ############################################################
 ### INITIALIZATION

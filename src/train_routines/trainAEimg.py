@@ -1,33 +1,16 @@
-import os
-import time
-import torch
-import argparse
-import numpy as np
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-from torchvision import transforms
-from torchvision.datasets import MNIST
-from torch.utils.data import DataLoader
-from torch.distributions.normal import Normal
-from collections import OrderedDict, defaultdict
 import os.path as osp
 
+import numpy as np
+import torch
 import torch as th
-import torch.nn.functional as F
-
+from loaders.load_panda_depth import PandaDataSetImg
 from models.autoencoder.autoencoder import Autoencoder
 from objectives.reconstruction import LossReconstruction
-from loaders.load_panda_depth import PandaDataSetImg
-from utils.utils import move_to_cuda, ckpt_utc, path_exists, tensor_to_variable, plot_eval
-
-import datetime
+from torch.utils.data import DataLoader
+from utils.utils import move_to_cuda, ckpt_utc, tensor_to_variable, plot_eval
 
 def train(args):
-
-    split = args.split
     ckpt = ckpt_utc()
-
     train_set = PandaDataSetImg(root_dir=args.data_dir, split=args.split)
     train_loader = DataLoader(dataset=train_set, batch_size=args.batch_size, shuffle=True)
 
@@ -60,5 +43,5 @@ def train(args):
 
         print('train epoch: {} avg. loss: {:.4f}'.format(epoch, epoch_loss))
 
-        plot_eval(np.arange(len(epoch_loss_history)), np.array(epoch_loss_history), save_to=osp.join(path_results, 'train_loss.png'), title = 'train loss')
-        th.save(model.state_dict(), osp.join(path_results, args.ckpt_dir + ckpt))
+        plot_eval(np.arange(len(epoch_loss_history)), np.array(epoch_loss_history), save_to=osp.join(args.path_results, 'train_loss.png'), title = 'train loss', xlabel="epochs", ylabel="loss")
+        th.save(model.state_dict(), osp.join(args.ckpt_dir, ckpt))

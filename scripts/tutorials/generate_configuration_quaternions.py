@@ -1,12 +1,8 @@
-import py_at_broker as pab
-import numpy as np
-import time
-import matplotlib.pyplot as plt
-import seaborn as sns
-from PIL import Image
-from libtiff import TIFF
 import pickle as pkl
-from pyquaternion import Quaternion
+import time
+
+import numpy as np
+import py_at_broker as pab
 
 b = pab.broker()
 print(b.register_signal("franka_target_pos", pab.MsgType.target_pos))
@@ -126,7 +122,7 @@ while runs < n_runs:
             data[runs]["state"]["c_ori_quat"].append(list(new_state.get_c_ori_quat()))
             data[runs]["state"]["dc_ori_quat"].append(list(new_state.get_dc_ori_quat()))
             data[runs]["state"]["timestamp"].append(new_state.get_timestamp())
-            
+
             data[runs]["lidar"]["measure"].append(list(lidar.get_data()))
             data[runs]["lidar"]["timestamp"].append(lidar.get_timestamp())
 

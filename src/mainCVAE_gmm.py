@@ -1,15 +1,7 @@
-import os
-import time
-import torch
 import argparse
-import numpy as np
-import pandas as pd
-import os.path as osp
 
-from utils.utils import path_exists
-
-from train_routines.trainCVAE_gmm import train
 from test_routines.testCVAE_gmm import test
+from train_routines.trainCVAE_gmm import train
 
 lidar_input_size = 9  # number lidars obs var
 joint_input_size = 7  # joint state   cond var

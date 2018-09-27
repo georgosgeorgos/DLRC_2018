@@ -1,7 +1,7 @@
-import py_at_broker as pab
-import numpy as np
 import time
 
+import numpy as np
+import py_at_broker as pab
 
 b = pab.broker()
 print(b.register_signal("franka_target_pos", pab.MsgType.target_pos))

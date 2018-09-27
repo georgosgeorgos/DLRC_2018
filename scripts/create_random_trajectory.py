@@ -1,10 +1,7 @@
-import py_at_broker as pab
-import numpy as np
 import time
-import matplotlib.pyplot as plt
-import seaborn as sns
-from PIL import Image
-from libtiff import TIFF
+
+import numpy as np
+import py_at_broker as pab
 
 b = pab.broker()
 print(b.register_signal("franka_target_pos", pab.MsgType.target_pos))

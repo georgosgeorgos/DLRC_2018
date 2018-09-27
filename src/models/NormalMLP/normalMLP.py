@@ -1,15 +1,15 @@
-import torch as th
-from torch.nn import functional as F
-from torch import nn, optim
-from torchvision import transforms
-from src.objectives.llnormal import LLNormal
-from src.loaders.load_panda import PandaDataSet
-from torch.utils.data import DataLoader
-from torch.autograd import Variable
-import utils.configs as cfg
-from src.utils.utils import plot_eval, path_exists, plot_hist
-import numpy as np
 import os.path as osp
+
+import numpy as np
+import torch as th
+from torch import nn, optim
+from torch.utils.data import DataLoader
+from torchvision import transforms
+
+import utils.configs as cfg
+from src.loaders.load_panda import PandaDataSet
+from src.objectives.llnormal import LLNormal
+from src.utils.utils import plot_eval, path_exists, plot_hist
 
 ############################################################
 ### INITIALIZATION

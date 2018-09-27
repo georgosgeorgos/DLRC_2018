@@ -1,8 +1,10 @@
+import pickle as pkl
+from random import shuffle
+
+import numpy as np
 import torch as th
 from torch.utils import data
-import pickle as pkl
-import numpy as np
-from random import shuffle
+
 
 class Loader(data.Dataset):
     def __init__(self, path="./data_mockup/", split="train", transform=None, samples=10, pivot=0):

@@ -1,13 +1,14 @@
-import torch
-from torch.autograd import Variable
 import datetime
 from os import makedirs
 from os.path import exists
-import matplotlib.pyplot as plt
-import seaborn as sns
+
 import matplotlib.cm as cm
+import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
+import torch
 from matplotlib import gridspec
+from torch.autograd import Variable
 
 sns.set(style="darkgrid")
 sns.axes_style(style={"axes.grid": True})

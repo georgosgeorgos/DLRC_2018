@@ -1,6 +1,5 @@
-import torch.nn as nn
 import torch as th
-import torch.nn.functional as F
+import torch.nn as nn
 from torch.distributions.normal import Normal
 
 

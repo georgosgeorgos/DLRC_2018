@@ -1,10 +1,9 @@
-import numpy as np
 import torch as th
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions.normal import Normal
 
-from utils.utils import move_to_cuda, tensor_to_variable, std, reshape
+from utils.utils import move_to_cuda, std, reshape
 
 class nELBO(nn.Module):
     def __init__(self, batch_size=2, n_samples_z=10, n_samples_y=10):
