@@ -18,6 +18,7 @@ class Autoencoder(nn.Module):
         self.decoder_layer2 = nn.Conv2d(128, 32 , 3, stride=1, padding=1)
         self.decoder_layer1 = nn.Conv2d(32 , 1  , 3, stride=1, padding=1)
 
+        self.mode = "nearest"
         self.init_parameters()
 
     def init_parameters(self):
@@ -54,17 +55,17 @@ class Autoencoder(nn.Module):
         #print(x.size())
 
         x = self.relu(x)
-        x = nn.Upsample(size=x_size_layer3, mode='bilinear')(x)
+        x = nn.Upsample(size=x_size_layer3, mode=self.mode)(x)
         x = self.decoder_layer3(x)
         #print(x.size())
 
         x = self.relu(x)
-        x = nn.Upsample(size=x_size_layer2, mode='bilinear')(x)
+        x = nn.Upsample(size=x_size_layer2, mode=self.mode)(x)
         x = self.decoder_layer2(x)
         #print(x.size())
 
         x = self.relu(x)
-        x = nn.Upsample(size=x_size_layer1, mode='bilinear')(x)
+        x = nn.Upsample(size=x_size_layer1, mode=self.mode)(x)
         x = self.decoder_layer1(x)
         #print(x.size())
 

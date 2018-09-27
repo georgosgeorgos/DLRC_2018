@@ -9,14 +9,16 @@ import torch as th
 
 
 class PandaDataSetImg(Dataset):
-    def __init__(self, root_dir=None, train=None, test_split=0.2, transform=None):
+    def __init__(self, root_dir=None, split="train", transform=None):
 
         self.root_dir = root_dir
-        self.train = train
-        self.test_split = test_split
         self.transform = transform
+        self.split     = split
 
-        self.file_list = glob.glob(self.root_dir + "*")
+        if self.split == "train":
+            self.file_list = glob.glob(self.root_dir + "TRAIN/" +"*")
+        elif self.split == "test":
+            self.file_list = glob.glob(self.root_dir + "TEST/" +"*")
 
     def __len__(self):
         """

@@ -58,7 +58,7 @@ def main(args):
     
     saved_state_dict = th.load(args.ckpt_dir + ckpt)
     model.load_state_dict(saved_state_dict)
-
+    
     dataset = Loader(split=split, samples=n_samples_y)
     data_loader = DataLoader(dataset=dataset, batch_size=args.batch_size, shuffle=False)
 

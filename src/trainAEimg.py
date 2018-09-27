@@ -50,7 +50,7 @@ def trainAE():
     split = args.split
     ckpt = ckpt_utc()
 
-    train_set = PandaDataSetImg(root_dir=args.data_dir)
+    train_set = PandaDataSetImg(root_dir=args.data_dir, split=args.split)
     train_loader = DataLoader(dataset=train_set, batch_size=args.batch_size, shuffle=True)
 
     loss_fn = LossReconstruction()
@@ -73,11 +73,10 @@ def trainAE():
                 depth_pred, _ = model(x)
                 loss = loss_fn(x, depth_pred)
 
-                if split == 'train':
-                    loss.backward()
-                    optimizer.step()
-                    optimizer.zero_grad()
-
+                loss.backward()
+                optimizer.step()
+                optimizer.zero_grad()
+                
                 loss_batch_history.append(loss.item())
 
         epoch_loss = np.mean(loss_batch_history)
