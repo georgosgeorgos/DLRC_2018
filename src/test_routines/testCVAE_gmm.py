@@ -3,19 +3,12 @@ import argparse
 import numpy as np
 from torchvision import transforms
 from torch.utils.data import DataLoader
-
 import torch as th
-
 from models.cvae_gmm.cvae_gmm import VAE
-from objectives.nELBO_gmm import nELBO
 from loaders.load_panda_timeseries import Loader
 
-
 def test(args):
-
-    split = args.split
-    #10 samples y and 57% accuracy 
-    
+    #10 samples y and 57% accuracy
     model = VAE(
             encoder_layer_sizes=args.encoder_layer_sizes,
             decoder_layer_sizes=args.decoder_layer_sizes,

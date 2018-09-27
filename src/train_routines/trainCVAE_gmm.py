@@ -1,14 +1,3 @@
-import torch
-import numpy as np
-import matplotlib.pyplot as plt
-from torch.utils.data import DataLoader
-
-import torch as th
-
-from models.cvae_gmm.cvae_gmm import VAE
-from objectives.nELBO_gmm import nELBO
-from loaders.load_panda_timeseries import Loader
-from utils.utils import move_to_cuda, ckpt_utc, path_exists, tensor_to_variable
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -21,8 +10,6 @@ from utils.utils import move_to_cuda, ckpt_utc, path_exists, tensor_to_variable
 
 
 def train(args):
-
-    split = args.split
     ckpt = ckpt_utc()
     
     loss_fn = nELBO(args.batch_size, args.n_samples_z, args.n_samples_y)
@@ -38,7 +25,6 @@ def train(args):
     model = move_to_cuda(model)
     model.train()
 
-    # probably adam not the most appropriate algorithms
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     optimizer.zero_grad()
 
@@ -63,7 +49,7 @@ def train(args):
 
                 loss, kld, ll = loss_fn(y, mu_phi, log_var_phi, mu_theta, log_var_theta)
 
-                if split == 'train':
+                if args.split == 'train':
                     loss.backward()
                     optimizer.step()
                     optimizer.zero_grad()

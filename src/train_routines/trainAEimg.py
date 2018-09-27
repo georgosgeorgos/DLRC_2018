@@ -43,5 +43,5 @@ def train(args):
 
         print('train epoch: {} avg. loss: {:.4f}'.format(epoch, epoch_loss))
 
-        plot_eval(np.arange(len(epoch_loss_history)), np.array(epoch_loss_history), save_to=osp.join(args.path_results, 'train_loss.png'), title = 'train loss', xlabel="epochs", ylabel="loss")
+        plot_eval(np.arange(len(epoch_loss_history)), np.array(epoch_loss_history), save_to=osp.join(args.result_dir, 'train_loss.png'), title = 'train loss', xlabel="epochs", ylabel="loss")
         th.save(model.state_dict(), osp.join(args.ckpt_dir, ckpt))

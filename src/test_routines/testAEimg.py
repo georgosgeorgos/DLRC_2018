@@ -14,27 +14,26 @@ from models.autoencoder.autoencoder import Autoencoder
 from objectives.reconstruction import LossReconstruction
 from loaders.load_panda_depth import PandaDataSetImg
 
+from utils.utils import move_to_cuda
+
 def test(args):
     test_set    = PandaDataSetImg(root_dir=args.data_dir, split=args.split)
-    test_loader = DataLoader(dataset=test_set, batch_size=args.batch_size, shuffle=True)
+    test_loader = DataLoader(dataset=test_set, batch_size=args.batch_size, shuffle=False)
     model = Autoencoder()
     model = move_to_cuda(model)
     model.eval()
 
-    saved_state_dict = th.load(args.ckpt_dir, map_location='cpu')
+    saved_state_dict = th.load(args.ckpt_dir + args.ckpt_test)
     model.load_state_dict(saved_state_dict)
 
-    T = 0
-    MSE = 0
-    for epoch in range(args.epochs):
-        for iter, x in enumerate(test_loader):
-            x_pred, _ = model(x)
+    MSE, T = 0, 0
+    for iter, x in enumerate(test_loader):
+        x_pred, _ = model(x)
 
-            _, _, n, m = x.size()
-            x      = x.data.numpy()
-            x_pred = x_pred.data.numpy()
-            
-            T    += n * m
-            MSE += ((x - x_pred)**2).sum()
+        b, _, n, m = x.size()
+        T   += n * m * b
+        MSE += th.sum((x - x_pred)**2)
 
-        print('RMSE: {:.4f}'.format(np.sqrt(MSE / T)))
+        print(MSE)
+
+    print('RMSE: {:.4f}'.format(np.sqrt(MSE / T)))

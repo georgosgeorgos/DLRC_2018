@@ -14,9 +14,9 @@ class PandaDataSetImg(Dataset):
         self.split     = split
 
         if self.split == "train":
-            self.file_list = glob.glob(self.root_dir + "TRAIN/" +"*")
+            self.file_list = glob.glob(self.root_dir + "TRAIN/" + "*")
         elif self.split == "test":
-            self.file_list = glob.glob(self.root_dir + "TEST/" +"*")
+            self.file_list = glob.glob(self.root_dir + "TEST/" + "*")
 
     def __len__(self):
         """
@@ -35,7 +35,6 @@ class PandaDataSetImg(Dataset):
         tiff.close()
         depth = np.reshape(depth, (1, depth.shape[0], depth.shape[1]))
         depth = th.from_numpy(depth).float()
-
         return depth
 
 
