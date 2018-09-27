@@ -86,7 +86,7 @@ loss_fn = LLNormal()
 def train(epoch):
     model.train()
     train_loss = 0
-    for batch_idx, (x, y) in enumerate(train_loader):
+    for batch_idx, (x, y, _) in enumerate(train_loader):
         n, m = x.size()
         x.resize_(min(trbs, n), m)
         x = x.to(device).float()
@@ -120,7 +120,7 @@ def test(epoch):
     y_cen = []
 
     with th.no_grad():
-        for i, (x, y) in enumerate(test_loader):
+        for i, (x, y, _) in enumerate(test_loader):
             n, m = x.size()
             x.resize_(min(tebs, n), m)
             x = x.to(device).float()

@@ -48,8 +48,6 @@ for d in range(num_demonstrations):
 
         data = update_data(data, msg_lidar, msg_panda, d)
 
-        #img_counter = collect_rgb_depth(img, img_counter)
-
         print("\rtimesteps: {}".format(t), end="")
         sys.stdout.flush()
     end = time.time()
