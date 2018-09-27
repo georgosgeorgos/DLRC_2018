@@ -83,8 +83,8 @@ def plot_hist(x, title, save_to):
         col = int(idx / ncol)
         gs = gridspec.GridSpec(nrow, ncol, width_ratios=[1]*nrow, height_ratios=[1]*ncol)
         ax0 = plt.subplot(gs[row, col])
-        sns.distplot(x[:, idx], ax=ax0, vertical=False, bins=15, kde=True,
-                     hist_kws={"color": colors[idx], "range": (np.min(x), np.max(x))},
+        sns_dist = sns.distplot(x[:, idx], ax=ax0, vertical=False, bins=20, kde=True,
+                     hist_kws={"color": colors[idx], "range": (-4, 4)},
                      kde_kws={"color": colors[idx], "lw": 3}, label='channel {}'.format(idx))
         ax0.legend(loc=1, fontsize=30)
     plt.savefig(save_to, format='png')
