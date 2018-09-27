@@ -36,6 +36,6 @@ path_exists(osp.join(path_results, args.ckpt_dir))
 
 if __name__ == '__main__':
 	if args.split == "train":
-		trainAE(args)
+		train(args)
 	else:
-		testAE(args)
+		test(args)

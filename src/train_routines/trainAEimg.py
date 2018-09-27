@@ -23,7 +23,7 @@ from utils.utils import move_to_cuda, ckpt_utc, path_exists, tensor_to_variable,
 
 import datetime
 
-def trainAE(args):
+def train(args):
 
     split = args.split
     ckpt = ckpt_utc()

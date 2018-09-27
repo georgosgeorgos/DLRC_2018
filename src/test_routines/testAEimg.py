@@ -24,7 +24,7 @@ from utils.utils import move_to_cuda, ckpt_utc, path_exists, tensor_to_variable,
 from PIL import Image
 import datetime
 
-def testAE(args):
+def test(args):
     split = args.split
     
 

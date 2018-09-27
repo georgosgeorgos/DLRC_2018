@@ -58,7 +58,7 @@ def move_to_cuda(x):
     return x
 
 
-def plot_eval(x, y, title, save_to):
+def plot_eval(x=None, y=None, xlabel=None, ylabel=None, title=None, save_to=None):
     plt.figure(figsize=(7, 5))
     plt.plot(x, y)
     plt.xlabel('epochs')
