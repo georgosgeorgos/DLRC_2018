@@ -10,8 +10,8 @@ from torch.nn import functional as F
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from src.loaders.load_panda import PandaDataSet
-from src.utils.utils import path_exists, plot_eval
+from loaders.load_panda import PandaDataSet
+from utils.utils import path_exists, plot_eval
 from utils import configs as cfg
 
 ############################################################

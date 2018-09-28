@@ -26,19 +26,18 @@ def test(args):
 
     prediction = []
 
-    for epoch in range(args.epochs):
-        for itr, y in enumerate(data_loader):
-            # observable
+    for itr, y in enumerate(data_loader):
+        # observable
 
-            if args.conditional:
-                z_y = model.inference(y, x)
-            else:
-                z_y = model.inference(y)
+        if args.conditional:
+            z_y = model.inference(y, x)
+        else:
+            z_y = model.inference(y)
 
-            z = z_y.data.numpy().squeeze()
+        z = z_y.data.numpy().squeeze()
 
-            z = np.argmax(z, axis=1)
-            prediction.append(z)
+        z = np.argmax(z, axis=1)
+        prediction.append(z)
 
     prediction = np.array(prediction)
     np.savetxt("prediction.csv", prediction[:,3].astype(int), fmt='%i')
