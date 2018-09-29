@@ -6,10 +6,10 @@ from torch import nn, optim
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-import utils.configs as cfg
+import src.utils.configs as cfg
 from src.loaders.load_panda import PandaDataSet
 from src.objectives.llnormal import LLNormal
-from src.utils.utils import plot_eval, path_exists, plot_hist
+from src.utils.utils import plot_eval, path_exists, plot_hist_lidars, ckpt_utc
 
 ############################################################
 ### INITIALIZATION
@@ -20,10 +20,11 @@ n_lidars = 9
 n_hidden = 128
 verbose = False
 lr = 1e-3
-every_nth = 100
+every_nth_batch = 100
+every_nth_epoch = 20
 trbs = 512
 tebs = 256
-epochs = 2000
+epochs = 1000
 test_every_nth = 1
 th.manual_seed(42)
 cuda = th.cuda.is_available()
@@ -101,13 +102,14 @@ def train(epoch):
         optimizer.step()
 
         if verbose:
-            if batch_idx % every_nth == 0:
+            if batch_idx % every_nth_batch == 0:
                 print("train epoch: {}/{} [{}/{} ({:.0f}%)]".format(
                     epoch, epochs, (batch_idx + 1) * trbs - (trbs - x.size()[0]),
                     len(train_loader.dataset), 100. * (batch_idx + 1) / len(train_loader)))
 
     epoch_loss = train_loss / len(train_loader.dataset)
-    print('train epoch: {} avg. loss: {:.4f}'.format(epoch, epoch_loss))
+    if epoch % every_nth_epoch == 0:
+        print('train epoch: {} avg. loss: {:.4f}'.format(epoch, epoch_loss))
     return epoch_loss
 
 
@@ -137,7 +139,8 @@ def test(epoch):
     y_cen_array = np.vstack((y_cen_array, np.array(y_cen[-1])))  # add last batch
 
     epoch_loss = test_loss / len(test_loader.dataset)
-    print(' test epoch: {} avg. loss: {:.4f}\n'.format(epoch, epoch_loss))
+    if epoch % every_nth_epoch == 0:
+        print(' test epoch: {} avg. loss: {:.4f}\n'.format(epoch, epoch_loss))
     return epoch_loss, y_cen_array
 
 ############################################################
@@ -149,6 +152,10 @@ if __name__ == '__main__':
 
     path_results = osp.join(rootdir, 'experiments', 'normalMLP')
     path_exists(path_results)
+    ckpt = ckpt_utc()
+    ckpt_dir = osp.join(path_results, 'ckpt/')
+    path_exists(ckpt_dir)
+
     train_loss_history = []
     test_loss_history = []
 
@@ -159,8 +166,10 @@ if __name__ == '__main__':
             epoch_loss, hist_values = test(epoch)
             test_loss_history.append(epoch_loss)
 
-        plot_eval(np.arange(len(train_loss_history)), np.array(train_loss_history), title='train loss',
-                  save_to=osp.join(path_results, 'train_loss.png'))
-        plot_eval(np.arange(len(test_loss_history)), np.array(test_loss_history), title='test loss',
-                  save_to=osp.join(path_results, 'test_loss.png'))
-        plot_hist(hist_values, save_to=osp.join(path_results, 'test_histogram.png'), title='Histograms of target measurements (on test set) for each channel')
+    th.save(model.state_dict(), osp.join(ckpt_dir, ckpt))
+
+    plot_eval(np.arange(len(train_loss_history)), np.array(train_loss_history), title='train loss',
+              save_to=osp.join(path_results, 'train_loss.png'))
+    plot_eval(np.arange(len(test_loss_history)), np.array(test_loss_history), title='test loss',
+              save_to=osp.join(path_results, 'test_loss.png'))
+    plot_hist_lidars(hist_values, save_to=osp.join(path_results, 'test_histogram.png'), title='Histograms of target measurements (on test set) for each channel')
