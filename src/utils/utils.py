@@ -51,6 +51,7 @@ def cumulative_moving_average(x=None, x_new=None, n=None):
 
 
 def plot_eval(x=None, y=None, xlabel=None, ylabel=None, title=None, save_to=None):
+    plt.clf()
     plt.figure(figsize=(7, 5))
     plt.plot(x, y)
     plt.xlabel(xlabel)
@@ -62,8 +63,9 @@ def plot_eval(x=None, y=None, xlabel=None, ylabel=None, title=None, save_to=None
 
 
 def plot_scatter(x=None, y=None, xlabel=None, ylabel=None, title=None, save_to=None):
+    plt.clf()
     plt.figure(figsize=(10, 10))
-    plt.scatter(x, y, s=5)
+    plt.scatter(x, y, s=15)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.title(title)
@@ -73,7 +75,7 @@ def plot_scatter(x=None, y=None, xlabel=None, ylabel=None, title=None, save_to=N
 
 
 def plot_hist_lidars(x, title, save_to):
-
+    plt.clf()
     num_samples, num_channels = x.shape
     nrow, ncol = 3, 3
     colors = cm.viridis(np.linspace(0, 1, num_channels))
@@ -94,7 +96,7 @@ def plot_hist_lidars(x, title, save_to):
 
 
 def plot_hist(x, xlabel=None, ylabel=None, title=None, save_to=None):
-
+    plt.clf()
     fig = plt.figure(figsize=(10, 5))
 
     sns_dist = sns.distplot(x, vertical=False, bins=25, kde=False,
@@ -112,6 +114,7 @@ def plot_hist(x, xlabel=None, ylabel=None, title=None, save_to=None):
 
 
 def plot_correlation_matrix(x, xlabel=None, ylabel=None, title=None, save_to=None):
+    plt.clf()
     fig = plt.figure(figsize=(9, 7))
     cor = np.corrcoef(x.T)
     sns.heatmap(cor, center=0., vmin=-1., vmax=1.)
@@ -121,7 +124,7 @@ def plot_correlation_matrix(x, xlabel=None, ylabel=None, title=None, save_to=Non
 
 
 def plot_timeseries(input, pred, mu, std, num_std=3, downsample_step=2, xlabel=None, ylabel=None, title=None, save_to=None):
-
+    plt.clf()
     num_samples, num_channels = input.shape
     colors = cm.viridis(np.linspace(0, 1, num_channels))
     downsample_every_nth = [i for i in range(0, input.shape[0], downsample_step)]
