@@ -10,7 +10,7 @@ from torch.nn import functional as F
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from loaders.load_panda import PandaDataSet
+from src.loaders.load_panda import PandaDataSet
 from src.utils.utils import path_exists, plot_eval, cumulative_moving_average, plot_hist, plot_correlation_matrix, ckpt_utc, plot_scatter
 from src.utils import configs as cfg
 
@@ -155,7 +155,7 @@ def test(epoch):
     moving_avg_mean_latent = th.zeros(args.code_size)
     moving_avg_mean_latent = moving_avg_mean_latent.to(device)
     test_latent = []
-    test_norm_recon = []
+    test_norm_target = []
     test_rel_err = []
 
     with th.no_grad():
@@ -178,21 +178,21 @@ def test(epoch):
             moving_avg_mean_latent = cumulative_moving_average(moving_avg_mean_latent, new_latent_mean, i)
 
             # compute norms
-            norm_recon = th.norm(input_recon, p=2, dim=1)
-            norm_rel_err = norm_recon / th.norm(input_concat, p=2, dim=1)
+            norm_target = th.norm(input_concat, p=2, dim=1)
+            norm_rel_err = th.norm((input_concat - input_recon), p=2, dim=1) / norm_target
 
             # accumulate latents
             test_latent.append(latent)
 
             # accumulate norm reconstructions and relative errors
-            test_norm_recon.append(norm_recon)
+            test_norm_target.append(norm_target)
             test_rel_err.append(norm_rel_err)
 
     epoch_loss = test_loss / len(test_loader.dataset)
     epoch_RMSE = th.sqrt(MSE / len(test_loader.dataset))
     print(' test epoch: {} avg. loss: {:.4f}\tRMSE: {:.4f}\n'.format(epoch, epoch_loss, epoch_RMSE))
 
-    return epoch_loss, epoch_RMSE, moving_avg_mean_latent, latent, test_norm_recon, test_rel_err
+    return epoch_loss, epoch_RMSE, moving_avg_mean_latent, latent, test_norm_target, test_rel_err
 
 
 if __name__ == '__main__':
@@ -212,7 +212,7 @@ if __name__ == '__main__':
         train_loss_history.append(train(epoch))
 
         if epoch % test_every_nth == 0:
-            epoch_loss, epoch_RMSE, moving_avg_mean_latent, latent, norm_recon, rel_err = test(epoch)
+            epoch_loss, epoch_RMSE, moving_avg_mean_latent, latent, norm_target, rel_err = test(epoch)
             test_loss_history.append(epoch_loss)
             test_RMSE_history.append(epoch_RMSE)
 
@@ -231,11 +231,11 @@ if __name__ == '__main__':
             plot_correlation_matrix(latent.cpu().data.numpy(), title='test_corr_matrix_latent',
                                     save_to=osp.join(path_results, 'test_corr_matrix_latent.png'))
 
-            # plot norm recon vs relative error
-            norm_recon_concat = th.cat(tuple(norm_recon), dim=0)
+            # plot norm target vs relative error
+            norm_target_concat = th.cat(tuple(norm_target), dim=0)
             norm_rel_err_concat = th.cat(tuple(rel_err), dim=0)
-            plot_scatter(y=norm_rel_err_concat.cpu().data.numpy(), x=norm_recon_concat.cpu().data.numpy(),
-                         ylabel="relative error (norm(recon) / norm(target))", xlabel="norm(recon)", title="norm vs rel err",
+            plot_scatter(y=norm_rel_err_concat.cpu().data.numpy(), x=norm_target_concat.cpu().data.numpy(),
+                         ylabel="relative error (norm(target - recon) / norm(target))", xlabel="norm(target)", title="norm vs rel err",
                          save_to=osp.join(path_results, 'test_norm_rel_err.png'))
 
     th.save(model.state_dict(), osp.join(ckpt_dir, ckpt))
