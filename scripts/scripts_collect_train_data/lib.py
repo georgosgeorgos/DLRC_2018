@@ -1,13 +1,17 @@
 import pickle as pkl
 import time
-
+from os import makedirs
+from os.path import exists
 import numpy as np
 import py_at_broker as pab
 from PIL import Image
 from libtiff import TIFF
 from pyquaternion import Quaternion
-from utils.utils import path_exists
 
+def path_exists(path):
+    if not exists(path):
+        makedirs(path)
+    return path
 
 def default():
     broker = pab.broker()
@@ -19,8 +23,8 @@ def default():
     time.sleep(0.5)
     print(broker.request_signal("realsense_images", pab.MsgType.realsense_image))
     time.sleep(0.5)
-    print("Register signal <_des_tau> {}".format(broker.register_signal("franka_des_tau", pab.MsgType.des_tau)))
-    time.sleep(0.5)
+    #print("Register signal <_des_tau> {}".format(broker.register_signal("franka_des_tau", pab.MsgType.des_tau)))
+    #time.sleep(0.5)
     return broker
 
 
