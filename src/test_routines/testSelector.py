@@ -26,6 +26,7 @@ def test(args):
     data_loader = DataLoader(dataset=dataset, batch_size=args.batch_size_test, shuffle=False)
     print(model)
 
+    res = {"y": [], "mu": [], "std": []}
     prediction = []
     model.eval()
     dataset.generate_index()
@@ -38,8 +39,14 @@ def test(args):
         mu_c, std_c, clusters = model(x)
         # observable
         prediction.append((y.data.numpy() - mu_c.data.numpy()) / std_c.data.numpy())
+        res["y"].append(y.data.numpy().tolist())
+        res["mu"].append(mu_c.data.numpy().tolist())
+        res["std"].append(std_c.data.numpy().tolist())
 
     prediction = np.array(prediction).squeeze()
+    import json
+    with open("res.json", "w") as f:
+        json.dump(res, f)
 
     import seaborn as sns
     f, ax = plt.subplots(prediction.shape[1], 1, figsize=(20,20))
@@ -47,5 +54,5 @@ def test(args):
         sns.distplot(prediction[:,i], kde=True, ax=ax[i])
         ax[i].set_xlim([-3,3])
     plt.show()
-    #np.savetxt("prediction.csv", prediction[:,3].astype(int), fmt='%i')
+    np.savetxt("prediction.csv", prediction[:,3].astype(int), fmt='%i')
     print("Done!")

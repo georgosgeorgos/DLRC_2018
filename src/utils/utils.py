@@ -141,11 +141,11 @@ def plot_timeseries(input, pred, mu, std, num_std=3, downsample_step=2, xlabel=N
         ax0.plot(input[downsample_every_nth, idx], color='black')
         ax0.plot(pred[downsample_every_nth, idx], color='green')
         ax0.plot(mu[downsample_every_nth, idx], color='red')
-        ax0.plot(mu[downsample_every_nth, idx] - np.exp(0.5 * std[downsample_every_nth, idx]) * num_std, color='blue', alpha=0.5)
-        ax0.plot(mu[downsample_every_nth, idx] + np.exp(0.5 * std[downsample_every_nth, idx]) * num_std, color='blue', alpha=0.5)
+        ax0.plot(mu[downsample_every_nth, idx] - std[downsample_every_nth, idx] * num_std, color='blue', alpha=0.5)
+        ax0.plot(mu[downsample_every_nth, idx] + std[downsample_every_nth, idx] * num_std, color='blue', alpha=0.5)
 
-        ax0.fill_between([i for i in range(input[downsample_every_nth].shape[0])], mu[downsample_every_nth, idx] - np.exp(0.5 * std[downsample_every_nth, idx]) * num_std, facecolor="blue", alpha=0.1)
-        ax0.fill_between([i for i in range(input[downsample_every_nth].shape[0])], mu[downsample_every_nth, idx] + np.exp(0.5 * std[downsample_every_nth, idx]) * num_std, facecolor="blue", alpha=0.1)
+        ax0.fill_between([i for i in range(input[downsample_every_nth].shape[0])], mu[downsample_every_nth, idx] - std[downsample_every_nth, idx] * num_std, facecolor="blue", alpha=0.1)
+        ax0.fill_between([i for i in range(input[downsample_every_nth].shape[0])], mu[downsample_every_nth, idx] + std[downsample_every_nth, idx] * num_std, facecolor="blue", alpha=0.1)
 
         ax1 = plt.subplot(gs[x, y + 1])
         vert_hist = np.histogram(input[downsample_every_nth, idx])

@@ -34,10 +34,10 @@ class Loader(data.Dataset):
         n = self.data_lidar.shape[0]
 
         if self.split == "train":
-            self.index_lidar = [i for i in range(0, int(2/3 * n))]
+            self.index_lidar = [i for i in range(0, int(0.8 * n))]
             shuffle(self.index_lidar)
         elif self.split == "val":
-            self.index_lidar = [i for i in range(int(2/3 * n), n)]
+            self.index_lidar = [i for i in range(int(0.8 * n), n)]
 
         self.index_lidar = np.array(self.index_lidar)
 
