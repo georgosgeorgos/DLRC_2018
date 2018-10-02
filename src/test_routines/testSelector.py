@@ -8,6 +8,7 @@ from loaders.load_panda_timeseries import Loader
 from models.cvae_gmm.cvae_gmm_selector import VAE
 from objectives.loss_selector import LossSelector
 import matplotlib.pyplot as plt
+from utils.utils import plot_timeseries
 
 def test(args):
     model = VAE(
@@ -47,7 +48,7 @@ def test(args):
     import json
     with open("res.json", "w") as f:
         json.dump(res, f)
-
+        
     import seaborn as sns
     f, ax = plt.subplots(prediction.shape[1], 1, figsize=(20,20))
     for i in range(prediction.shape[1]):
