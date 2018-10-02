@@ -29,7 +29,7 @@ def main(broker):
     i = 0
     runs = 0
     data = lib.init_data_run(data, runs)
-    while i < 10e6:  
+    while i < 10e5:  
         try:
             start = time.time()
             # request data

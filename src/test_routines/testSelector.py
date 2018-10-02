@@ -4,11 +4,12 @@ import numpy as np
 from torchvision import transforms
 from torch.utils.data import DataLoader
 import torch as th
-from loaders.load_panda_timeseries import Loader
-from models.cvae_gmm.cvae_gmm_selector import VAE
-from objectives.loss_selector import LossSelector
+from src.loaders.load_panda_timeseries import Loader
+from src.models.cvae_gmm.cvae_gmm_selector import VAE
+from src.objectives.loss_selector import LossSelector
 import matplotlib.pyplot as plt
 from utils.utils import plot_timeseries
+
 
 def test(args):
     model = VAE(
@@ -53,7 +54,7 @@ def test(args):
     f, ax = plt.subplots(prediction.shape[1], 1, figsize=(20,20))
     for i in range(prediction.shape[1]):
         sns.distplot(prediction[:,i], kde=True, ax=ax[i])
-        ax[i].set_xlim([-3,3])
+        ax[i].set_xlim([-3, 3])
     plt.show()
     np.savetxt("prediction.csv", prediction[:,3].astype(int), fmt='%i')
     print("Done!")

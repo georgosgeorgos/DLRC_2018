@@ -6,23 +6,23 @@ from torch.utils.data import Dataset
 
 
 class PandaDataSet(Dataset):
-    def __init__(self, root_dir=None, train=None, test_split=0.2, transform=None):
+    def __init__(self, root_dir=None, filename=None, train=None, test_split=0.2, transform=None):
 
         self.root_dir = root_dir
         self.train = train
         self.test_split = test_split
         self.transform = transform
 
-        with open(osp.join(root_dir, 'train.pkl'), "rb") as f:
+        with open(osp.join(root_dir, filename), "rb") as f:
             self.data = pkl.load(f)
             self.num_demonstrations = len(self.data)
-            self.num_timesteps = len(self.data[0]["lidar"]["measure"])
+            self.num_timesteps = len(self.data[0]["lidar"]["measurements"])
             self.num_samples = self.num_demonstrations*self.num_timesteps
-            self.num_lidars = len(self.data[0]["lidar"]["measure"][0])
+            self.num_lidars = len(self.data[0]["lidar"]["measurements"][0])
             self.num_joints = len(self.data[0]["state"]["j_pos"][0])
 
             # lidars [mm]
-            self.Y = [self.data[i]["lidar"]["measure"] for i in range(self.num_demonstrations)]
+            self.Y = [self.data[i]["lidar"]["measurements"] for i in range(self.num_demonstrations)]
             self.Y = np.array(self.Y, dtype=float).reshape((self.num_samples, self.num_lidars))
             # joint position [rad]
             self.X = [self.data[i]["state"]["j_pos"] for i in range(self.num_demonstrations)]

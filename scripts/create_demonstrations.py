@@ -1,18 +1,19 @@
 import os.path as osp
 import sys
+import matplotlib.pyplot as plt
 from collections import defaultdict
 
 from scripts.scripts_collect_train_data.lib import *
 
 data = defaultdict()
-data_path = "data"
+rootdir = '../'
+data_path = osp.join(rootdir, "data")
 robot_name = "franka"
 max_sync_jitter = 0.2
 
 b = default()
 
 counter = 0
-img_counter = 0
 time.sleep(1)  # Allow some time for the communication setup
 
 num_demonstrations = input("Enter number of demonstrations to record: ")
@@ -40,12 +41,12 @@ for d in range(num_demonstrations):
         counter = tau_msg(b, counter)
 
         msg_lidar = b.recv_msg(robot_name + "_lidar", -1)
-        img = b.recv_msg("realsense_images", -1)
 
         data = update_data(data, msg_lidar, msg_panda, d)
 
         print("\rtimesteps: {}".format(t), end="")
         sys.stdout.flush()
+
     end = time.time()
     print("\n### Demo took {:.4f} seconds.".format(end-start))
     data[d]["lidar"]['freq'] = num_timesteps / (end - start)
@@ -54,7 +55,7 @@ for d in range(num_demonstrations):
     plt.show()
     plt.hist(data[d]["lidar"]["measurements"])
     plt.show()
-    
+
 # save collected data
 print("Saving...")
-pkl.dump(data, open(osp.join(data_path, 'custom_demos.pkl'), "wb"))
+pkl.dump(data, open(osp.join(data_path, 'demos.pkl'), "wb"))
