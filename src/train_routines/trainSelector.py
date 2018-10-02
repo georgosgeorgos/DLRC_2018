@@ -29,12 +29,12 @@ def train(args):
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     optimizer.zero_grad()
 
-    dataset = Loader(path=args.data_dir, split=args.split, samples=args.n_samples_y)
+    dataset = Loader(path=args.data_dir, split=args.split, n_samples=args.n_samples_y)
     # randomize an auxiliary index because we want to use random sample of time-series (10 time steps)
     # but the time series have to be intact
     data_loader = DataLoader(dataset=dataset, batch_size=args.batch_size, shuffle=False)
 
-    dataset_val = Loader(path=args.data_dir, split="val", samples=args.n_samples_y)
+    dataset_val = Loader(path=args.data_dir, split="val", n_samples=args.n_samples_y)
     data_loader_val = DataLoader(dataset=dataset_val, batch_size=args.batch_size, shuffle=False)
 
     loss_train = []

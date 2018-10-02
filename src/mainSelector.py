@@ -14,9 +14,10 @@ joint_input_size = 7 + 7  # joint state   cond var
 n_samples_y      = 10     # length timeseries
 n_samples_z      = 10 # sample from selector
 n_clusters       = 2  # clustering component (background/self | static/dynamic)
-split            = "train"
+split            = "tra"
 ckpt_test  = "ckpt_selector.pth"
 test_every_n_epochs = 10
+flag             = "test"
 
 result_dir = osp.join('..', 'experiments', 'Selector')
 path_exists(result_dir)
@@ -24,7 +25,7 @@ path_exists(result_dir)
 ckpt_dir = osp.join(result_dir, 'ckpt/')
 path_exists(ckpt_dir)
 
-data_dir = "./data_mockup/"
+data_dir = "../data/"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--epochs",              type=int,   default=epochs)
@@ -38,7 +39,7 @@ parser.add_argument("--n_samples_z",         type=int,   default=n_samples_z)
 parser.add_argument("--encoder_layer_sizes", type=list,  default=[(joint_input_size*n_samples_y), 256, 256])
 parser.add_argument("--n_clusters",          type=int,   default=n_clusters)
 parser.add_argument("--latent_size",         type=int,   default=lidar_input_size*n_clusters)
-parser.add_argument("--conditional",action='store_true')
+parser.add_argument("--conditional",         action='store_true')
 parser.add_argument("--num_labels",          type=int,   default=0)
 parser.add_argument("--ckpt_dir",            type=str,   default=ckpt_dir)
 parser.add_argument("--data_dir",            type=str,   default=data_dir)
@@ -46,6 +47,7 @@ parser.add_argument("--result_dir",          type=str,   default=result_dir)
 parser.add_argument("--ckpt",                type=str,   default=ckpt_test)
 parser.add_argument("--split",               type=str,   default=split)
 parser.add_argument("--test_every_n_epochs", type=str,   default=test_every_n_epochs)
+parser.add_argument("--flag",                type=str,   default=flag)
 
 args = parser.parse_args()
 
