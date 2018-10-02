@@ -25,7 +25,7 @@ ckpt = ckpt_utc()
 ckpt_dir = osp.join(path_results, 'ckpt/')
 path_exists(ckpt_dir)
 
-test_set = PandaDataSet(root_dir=osp.join(rootdir, 'data/data_toy'), filename='data_0.pkl', train=False, transform=transforms.Compose([
+test_set = PandaDataSet(root_dir=osp.join(rootdir, 'data'), filename='demos.pkl', train=True, test_split=0.0, transform=transforms.Compose([
     transforms.Lambda(lambda n: th.Tensor(n)),
     transforms.Lambda(
         lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
@@ -71,18 +71,34 @@ for k in range(len(data)):
     mu_list.append(data[k]["mu"])
     std_list.append(data[k]["std"])
 
+print(len(input_list), len(input_list[0]), input_list)
+
 input_array = np.array(input_list).squeeze()
 pred_array = np.array(pred_list).squeeze()
 mu_array = np.array(mu_list).squeeze()
 std_array = np.array(std_list).squeeze()
 
-## Simple anomaly test
-# Inject anomaly for lidar 3 (indexed-0) measurements
-# between timesteps 200-400 --> 0
-input_array[200:401, 3] = 0.
-# between timesteps 600-800 --> 2
-input_array[600:801, 3] = 2.
+# ## Simple anomaly test
+#
+# # Inject anomaly for lidar 3 (indexed-0) measurements
+# # between timesteps 200-400 --> 0
+# input_array[200:401, 3] = 0.
+# # between timesteps 600-800 --> 2
+# input_array[600:801, 3] = 2.
+#
+# # Inject anomaly for lidar 0 (indexed-0) measurements
+# # between timesteps 200-400 --> 0
+# input_array[200:401, 0] = 1.
+# # between timesteps 600-800 --> 2
+# input_array[600:801, 0] = 1.
+#
+# # Inject anomaly for lidar 1 (indexed-0) measurements
+# # between timesteps 200-400 --> 0
+# input_array[1000:, 0] = 0
+
+print(input_array.shape)
+
 
 plot_timeseries(input=input_array, pred=mu_array, std=std_array, xlabel="time", ylabel="depth (m)",
-                title='time series prediction', save_to=osp.join(path_results, 'test_timeseries_pred.png'))
+                title='time series prediction', save_to=osp.join(path_results, 'test_timeseries_pred_anom_real.png'))
 
