@@ -29,7 +29,7 @@ def ckpt_utc():
     s = str(s).split(".")[0]
     s = s.split(" ")
     s = "_".join(s)
-    ckpt = "ckpt_" + s + ".pkl"
+    ckpt = "ckpt_" + s + ".pth"
     return ckpt
 
 
@@ -135,6 +135,7 @@ def plot_timeseries(input, pred, std, num_std=3, downsample_step=1, xlabel=None,
         y = idx % 1
         gs = gridspec.GridSpec(num_channels, 2, width_ratios=[4, 1], height_ratios=[1]*num_channels)
         ax0 = plt.subplot(gs[x, y])
+
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
         ax0.plot(input[downsample_every_nth, idx], color='black', label="true signal")
