@@ -39,7 +39,6 @@ for d in range(num_demonstrations):
 
         # Create and fill message
         counter = tau_msg(b, counter)
-
         msg_lidar = b.recv_msg(robot_name + "_lidar", -1)
 
         data = update_data(data, msg_lidar, msg_panda, d)
@@ -58,4 +57,4 @@ for d in range(num_demonstrations):
 
 # save collected data
 print("Saving...")
-pkl.dump(data, open(osp.join(data_path, 'demos.pkl'), "wb"))
+pkl.dump(data, open(osp.join(data_path, "cluster.pkl"), "wb"))
