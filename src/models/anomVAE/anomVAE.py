@@ -49,23 +49,19 @@ trbs = 512
 tebs = 256
 rootdir = '../../../'
 
-train_set = PandaDataSet(root_dir=osp.join(rootdir, 'data/data_toy'), train=True,
-                         transform=transforms.Compose([
-            transforms.Lambda(lambda n: th.Tensor(n)),
-            transforms.Lambda(lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
-            transforms.Lambda(lambda n: n / 1000)
-        ])
-                             )
+train_set = PandaDataSet(root_dir=osp.join(rootdir, 'data/data_toy'), train=True, transform=transforms.Compose([
+    transforms.Lambda(lambda n: th.Tensor(n)),
+    transforms.Lambda(lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
+    transforms.Lambda(lambda n: n / 1000)
+]))
 train_loader = DataLoader(train_set, batch_size=trbs, shuffle=True, **kwargs)
 
-test_set = PandaDataSet(root_dir=osp.join(rootdir, 'data/data_toy'), train=False,
-                         transform=transforms.Compose([
-                             transforms.Lambda(lambda n: th.Tensor(n)),
-                             transforms.Lambda(
-                                 lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
-                             transforms.Lambda(lambda n: n / 1000)
-                         ])
-                         )
+test_set = PandaDataSet(root_dir=osp.join(rootdir, 'data/data_toy'), train=False, transform=transforms.Compose([
+    transforms.Lambda(lambda n: th.Tensor(n)),
+    transforms.Lambda(
+        lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
+    transforms.Lambda(lambda n: n / 1000)
+]))
 test_loader = DataLoader(test_set, batch_size=tebs, shuffle=True, **kwargs)
 
 

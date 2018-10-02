@@ -33,10 +33,9 @@ def main(broker):
     i = input()
 
     while runs < n_runs:    
-        runs +=1
+        runs += 1
         print()
         print("RUN:", runs)
-        data = lib.init_data_run(data, runs)
         try:
             time.sleep(0.5)
             start = time.time()
@@ -57,11 +56,6 @@ def main(broker):
                 #sys.stdout.flush()
 
         except KeyboardInterrupt:
-            lib.save_data(data, save_filename, runs)
-            print("input 0 to break")
-            i = input()
-            if i == "0": 
-                break 
-            else: continue
+            break
 if __name__ == '__main__':
     main()

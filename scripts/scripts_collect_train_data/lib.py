@@ -13,6 +13,7 @@ def path_exists(path):
         makedirs(path)
     return path
 
+
 def default():
     broker = pab.broker()
     print(broker.register_signal("franka_target_pos", pab.MsgType.target_pos))
@@ -21,8 +22,8 @@ def default():
     time.sleep(0.5)
     print(broker.request_signal("franka_state", pab.MsgType.franka_state))
     time.sleep(0.5)
-    print(broker.request_signal("realsense_images", pab.MsgType.realsense_image))
-    time.sleep(0.5)
+    # print(broker.request_signal("realsense_images", pab.MsgType.realsense_image))
+    # time.sleep(0.5)
     #print("Register signal <_des_tau> {}".format(broker.register_signal("franka_des_tau", pab.MsgType.des_tau)))
     #time.sleep(0.5)
     return broker

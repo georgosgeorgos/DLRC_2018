@@ -29,7 +29,7 @@ def ckpt_utc():
     s = str(s).split(".")[0]
     s = s.split(" ")
     s = "_".join(s)
-    ckpt = "ckpt_" + s + ".pth"
+    ckpt = "ckpt_" + s + ".pkl"
     return ckpt
 
 
@@ -123,34 +123,37 @@ def plot_correlation_matrix(x, xlabel=None, ylabel=None, title=None, save_to=Non
     plt.close()
 
 
-def plot_timeseries(input, pred, mu, std, num_std=3, downsample_step=2, xlabel=None, ylabel=None, title=None, save_to=None):
+def plot_timeseries(input, pred, std, num_std=3, downsample_step=1, xlabel=None, ylabel=None, title=None, save_to=None):
     plt.clf()
     num_samples, num_channels = input.shape
-    colors = cm.viridis(np.linspace(0, 1, num_channels))
     downsample_every_nth = [i for i in range(0, input.shape[0], downsample_step)]
 
-    fig = plt.figure(figsize=(40, 60))
+    plt.figure(figsize=(40, 60))
 
     for idx in range(num_channels):
         x = idx % num_channels
         y = idx % 1
         gs = gridspec.GridSpec(num_channels, 2, width_ratios=[4, 1], height_ratios=[1]*num_channels)
         ax0 = plt.subplot(gs[x, y])
-        plt.xlabel('time')
-        plt.ylabel('distance')
-        ax0.plot(input[downsample_every_nth, idx], color='black')
-        ax0.plot(pred[downsample_every_nth, idx], color='green')
-        ax0.plot(mu[downsample_every_nth, idx], color='red')
-        ax0.plot(mu[downsample_every_nth, idx] - std[downsample_every_nth, idx] * num_std, color='blue', alpha=0.5)
-        ax0.plot(mu[downsample_every_nth, idx] + std[downsample_every_nth, idx] * num_std, color='blue', alpha=0.5)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        ax0.plot(input[downsample_every_nth, idx], color='black', label="true signal")
+        ax0.plot(pred[downsample_every_nth, idx], color='red', label="mean signal")
+        # plot lower and upper confidence curves
+        ax0.plot(pred[downsample_every_nth, idx] - std[downsample_every_nth, idx] * num_std, color='blue', alpha=0.1)
+        ax0.plot(pred[downsample_every_nth, idx] + std[downsample_every_nth, idx] * num_std, color='blue', alpha=0.1)
 
-        ax0.fill_between([i for i in range(input[downsample_every_nth].shape[0])], mu[downsample_every_nth, idx] - std[downsample_every_nth, idx] * num_std, facecolor="blue", alpha=0.1)
-        ax0.fill_between([i for i in range(input[downsample_every_nth].shape[0])], mu[downsample_every_nth, idx] + std[downsample_every_nth, idx] * num_std, facecolor="blue", alpha=0.1)
+        ax0.fill_between(x=[i for i in range(input[downsample_every_nth].shape[0])],
+                         y1=pred[downsample_every_nth, idx] + std[downsample_every_nth, idx] * num_std,
+                         y2=pred[downsample_every_nth, idx] - std[downsample_every_nth, idx] * num_std,
+                         facecolor="blue", alpha=0.1, label="3 std. confidence interval")
+
+        if idx == 0:
+            ax0.legend(loc=1, fontsize=20)
 
         ax1 = plt.subplot(gs[x, y + 1])
-        vert_hist = np.histogram(input[downsample_every_nth, idx])
         sns.distplot(input[downsample_every_nth, idx], ax=ax1, vertical=False, bins=15, kde=False,
-                     hist_kws={"color": "blue", "range": (np.min(input), np.max(input))},
+                     hist_kws={"color": "blue", "range": (np.min(input), np.max(input)), "alpha": 0.5},
                      kde_kws={"color": "blue", "lw": 3})
         plt.xlabel('frequency')
     plt.tight_layout()

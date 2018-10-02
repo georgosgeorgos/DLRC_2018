@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from torch.utils.data import DataLoader
 import torch as th
-from loaders.load_panda import PandaDataSet
+from src.loaders.load_panda import PandaDataSet
 from src.models.NormalMLP.normalMLP import NormalMLP
 import os.path as osp
 from src.utils.utils import path_exists, ckpt_utc, plot_timeseries
@@ -25,19 +25,17 @@ ckpt = ckpt_utc()
 ckpt_dir = osp.join(path_results, 'ckpt/')
 path_exists(ckpt_dir)
 
-test_set = PandaDataSet(root_dir=osp.join(rootdir, 'data/data_toy'), train=False,
-                         transform=transforms.Compose([
-                             transforms.Lambda(lambda n: th.Tensor(n)),
-                             transforms.Lambda(
-                                 lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
-                             transforms.Lambda(lambda n: n / 1000)
-                         ])
-                         )
+test_set = PandaDataSet(root_dir=osp.join(rootdir, 'data/data_toy'), filename='data_0.pkl', train=False, transform=transforms.Compose([
+    transforms.Lambda(lambda n: th.Tensor(n)),
+    transforms.Lambda(
+        lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
+    transforms.Lambda(lambda n: n / 1000)
+]))
 test_loader = DataLoader(test_set, batch_size=tebs, shuffle=False, **kwargs)
 
 model = NormalMLP().to(device)
 
-saved_state_dict = th.load(glob.glob(osp.join(ckpt_dir, "*.pth"))[0])
+saved_state_dict = th.load(glob.glob(osp.join(ckpt_dir, "*.pkl"))[0])
 model.load_state_dict(saved_state_dict)
 
 model.eval()
@@ -78,6 +76,13 @@ pred_array = np.array(pred_list).squeeze()
 mu_array = np.array(mu_list).squeeze()
 std_array = np.array(std_list).squeeze()
 
-plot_timeseries(input_array, pred_array, mu_array, std_array, title='time series prediction',
-                save_to=osp.join(path_results, 'test_timeseries_pred.png'))
+## Simple anomaly test
+# Inject anomaly for lidar 3 (indexed-0) measurements
+# between timesteps 200-400 --> 0
+input_array[200:401, 3] = 0.
+# between timesteps 600-800 --> 2
+input_array[600:801, 3] = 2.
+
+plot_timeseries(input=input_array, pred=mu_array, std=std_array, xlabel="time", ylabel="depth (m)",
+                title='time series prediction', save_to=osp.join(path_results, 'test_timeseries_pred.png'))
 

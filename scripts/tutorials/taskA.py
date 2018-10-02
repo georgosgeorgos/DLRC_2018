@@ -6,7 +6,7 @@ import py_at_broker as pab
 
 b = pab.broker()
 print(b.request_signal("franka_lidar", pab.MsgType.franka_lidar))
-print(b.request_signal("realsense_images", pab.MsgType.realsense_image))
+req_msg_img = b.request_signal("realsense_images", pab.MsgType.realsense_image)
 
 counter = 0
 
@@ -17,7 +17,8 @@ while True:
     if counter > 5:
         break
 
-    img = b.recv_msg("realsense_images", -1)
+    if req_msg_img == True:
+        img = b.recv_msg("realsense_images", -1)
     lidar = b.recv_msg("franka_lidar", -1)
 
     lidar_list.append(lidar.get_data())
