@@ -8,11 +8,13 @@ import utils.configs as cfg
 
 
 class Loader(data.Dataset):
-    def __init__(self, path="../data_mockup/", split="train", samples=10, pivot=0, is_transform=False):
+    def __init__(self, path="../data_mockup/", filename="data_0.pkl", split="train", samples=10, pivot=0, 
+                 is_transform=False, is_joint_v=True):
         self.split   = split
         self.path    = path
         self.samples = samples
         self.index_lidar = []
+        self.is_joint_v = is_joint_v
 
         self.transform=transforms.Compose([
             transforms.Lambda(lambda n: th.Tensor(n)),
@@ -22,7 +24,7 @@ class Loader(data.Dataset):
         self.is_transform=is_transform
 
         if self.split == "train" or self.split == "val":
-            with open(path + "data_0.pkl", "rb") as f:
+            with open(path + filename, "rb") as f:
                 self.data = pkl.load(f)[0]
                 
                 self.data_lidar = self.data["lidar"]["measurements"]
@@ -47,13 +49,11 @@ class Loader(data.Dataset):
 
     def generate_index(self):
         n = self.data_lidar.shape[0]
-
         if self.split == "train":
             self.index_lidar = [i for i in range(0, int(0.8 * n))]
             shuffle(self.index_lidar)
         elif self.split == "val":
             self.index_lidar = [i for i in range(int(0.8 * n), n)]
-
         self.index_lidar = np.array(self.index_lidar)
 
     def __len__(self):
@@ -67,32 +67,24 @@ class Loader(data.Dataset):
 
         if ix < self.samples:
                 ix += self.samples
-        lidar = self.data_lidar[(ix - self.samples):ix]
 
-        if self.split == "train" or self.split == "val":
-            joint = self.data_joint[(ix - self.samples):ix]
-            lidar = lidar.flatten()
-            joint = joint.flatten()
-            
-            lidar = th.from_numpy(lidar)
-            joint = th.from_numpy(joint)
-            lidar = lidar.float()
-            joint = joint.float()
-        else:
-            # everything background
-            lidar_array = np.ones((self.samples, 9)) * 2.0
-            # lidar 3
-            k = 3
-            lidar_array[:, k] = lidar
-            lidar_array = lidar_array.flatten()
-            #lidar_array = np.array(lidar_array)
-            lidar_array = th.from_numpy(lidar_array)
-            lidar = lidar_array.float()
-            return lidar
+        Y = self.data_lidar[(ix - self.samples):ix]
+        Y = th.from_numpy(Y).float()
+
+        X = self.data_joint[(ix - self.samples):ix]
+        X = X.flatten()
+        X = th.from_numpy(X).float()
+        
+        X_v = self.data_joint_v[(ix - self.samples):ix]
+        X_v = X_v.flatten()
+        X_v = th.from_numpy(X_v).float()
+        
+        if self.is_joint_v:
+            X = th.cat([X, X_v])
 
         if self.is_transform:
             lidar = self.transform(lidar)
-        return lidar, joint
+        return Y, X
 
 if __name__ == '__main__':
 

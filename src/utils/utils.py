@@ -29,7 +29,7 @@ def ckpt_utc():
     s = str(s).split(".")[0]
     s = s.split(" ")
     s = "_".join(s)
-    ckpt = "ckpt_" + s + ".pkl"
+    ckpt = "ckpt_" + s + ".pth"
     return ckpt
 
 
@@ -123,11 +123,7 @@ def plot_correlation_matrix(x, xlabel=None, ylabel=None, title=None, save_to=Non
     plt.close()
 
 
-<<<<<<< HEAD
-def plot_timeseries(input, pred, mu, std, num_std=3, downsample_step=1, xlabel=None, ylabel=None, title=None, save_to=None):
-=======
 def plot_timeseries(input, pred, std, num_std=3, downsample_step=1, xlabel=None, ylabel=None, title=None, save_to=None):
->>>>>>> 5e5778a5e18ea3c1aa444db0cc2e5d6f5ae0147d
     plt.clf()
     num_samples, num_channels = input.shape
     downsample_every_nth = [i for i in range(0, input.shape[0], downsample_step)]
@@ -139,18 +135,7 @@ def plot_timeseries(input, pred, std, num_std=3, downsample_step=1, xlabel=None,
         y = idx % 1
         gs = gridspec.GridSpec(num_channels, 2, width_ratios=[4, 1], height_ratios=[1]*num_channels)
         ax0 = plt.subplot(gs[x, y])
-<<<<<<< HEAD
-        plt.xlabel('time')
-        plt.ylabel('distance')
-        ax0.plot(input[downsample_every_nth, idx], color='black')
-        #ax0.plot(pred[downsample_every_nth, idx], color='green')
-        ax0.plot(mu[downsample_every_nth, idx], color='red')
-        ax0.plot(mu[downsample_every_nth, idx] - std[downsample_every_nth, idx] * num_std, color='blue', alpha=0.5)
-        ax0.plot(mu[downsample_every_nth, idx] + std[downsample_every_nth, idx] * num_std, color='blue', alpha=0.5)
 
-        #ax0.fill_between([i for i in range(input[downsample_every_nth].shape[0])], mu[downsample_every_nth, idx] - std[downsample_every_nth, idx] * num_std, facecolor="blue", alpha=0.1)
-        #ax0.fill_between([i for i in range(input[downsample_every_nth].shape[0])], mu[downsample_every_nth, idx] + std[downsample_every_nth, idx] * num_std, facecolor="blue", alpha=0.1)
-=======
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
         ax0.plot(input[downsample_every_nth, idx], color='black', label="true signal")
@@ -166,7 +151,6 @@ def plot_timeseries(input, pred, std, num_std=3, downsample_step=1, xlabel=None,
 
         if idx == 0:
             ax0.legend(loc=1, fontsize=20)
->>>>>>> 5e5778a5e18ea3c1aa444db0cc2e5d6f5ae0147d
 
         ax1 = plt.subplot(gs[x, y + 1])
         sns.distplot(input[downsample_every_nth, idx], ax=ax1, vertical=False, bins=15, kde=False,

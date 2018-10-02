@@ -4,11 +4,14 @@ import numpy as np
 from torchvision import transforms
 from torch.utils.data import DataLoader
 import torch as th
-from src.loaders.load_panda_timeseries import Loader
-from src.models.cvae_gmm.cvae_gmm_selector import VAE
-from src.objectives.loss_selector import LossSelector
+from loaders.load_panda_timeseries import Loader
+from models.cvae_gmm.cvae_gmm_selector import VAE
+from objectives.loss_selector import LossSelector
 import matplotlib.pyplot as plt
 from utils.utils import plot_timeseries
+import os.path as osp
+import json
+
 
 
 def test(args):
@@ -23,10 +26,7 @@ def test(args):
     model.load_state_dict(saved_state_dict)
     
     dataset = Loader(path=args.data_dir, split="val", samples=args.n_samples_y)
-    print(args.data_dir)
-    print(args.split)
     data_loader = DataLoader(dataset=dataset, batch_size=args.batch_size_test, shuffle=False)
-    print(model)
 
     res = {"y": [], "mu": [], "std": []}
     prediction = []
@@ -40,21 +40,17 @@ def test(args):
 
         mu_c, std_c, clusters = model(x)
         # observable
-        prediction.append((y.data.numpy() - mu_c.data.numpy()) / std_c.data.numpy())
-        res["y"].append(y.data.numpy().tolist())
-        res["mu"].append(mu_c.data.numpy().tolist())
-        res["std"].append(std_c.data.numpy().tolist())
+        res["y"].append(y.data.numpy().squeeze().tolist())
+        res["mu"].append(mu_c.data.numpy().squeeze().tolist())
+        res["std"].append(std_c.data.numpy().squeeze().tolist())
 
-    prediction = np.array(prediction).squeeze()
-    import json
-    with open("res.json", "w") as f:
+    
+    with open(osp.join(args.result_dir, "res.json"), "w") as f:
         json.dump(res, f)
-        
-    import seaborn as sns
-    f, ax = plt.subplots(prediction.shape[1], 1, figsize=(20,20))
-    for i in range(prediction.shape[1]):
-        sns.distplot(prediction[:,i], kde=True, ax=ax[i])
-        ax[i].set_xlim([-3, 3])
-    plt.show()
-    np.savetxt("prediction.csv", prediction[:,3].astype(int), fmt='%i')
+
+    mu_array    = np.array(res["mu"])
+    std_array   = np.array(res["std"])
+    input_array = np.array(res["y"])
+    plot_timeseries(input=input_array, pred=mu_array, std=std_array, xlabel="time", ylabel="depth (m)",
+                title='time series prediction', save_to=osp.join(args.result_dir, 'test_timeseries_pred_selector.png'))
     print("Done!")
