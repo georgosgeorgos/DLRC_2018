@@ -46,12 +46,12 @@ def test(args):
         res["std"].append(std_c.data.numpy().squeeze().tolist())
         res["cluster"].append(clusters.data.numpy().squeeze().tolist())
     
-    with open(osp.join(args.result_dir, "res_test.json"), "w") as f:
+    with open(osp.join(args.result_dir, "res_train.json"), "w") as f:
         json.dump(res, f)
 
     mu_array    = np.array(res["mu"])
     std_array   = np.array(res["std"])
     input_array = np.array(res["y"])
     plot_timeseries(input=input_array, pred=mu_array, std=std_array, xlabel="time", ylabel="depth (m)",
-                title='time series prediction', save_to=osp.join(args.result_dir, 'test_timeseries_pred_selector_test.png'))
+                title='time series prediction', save_to=osp.join(args.result_dir, 'test_timeseries_pred_selector_train.png'))
     print("Done!")

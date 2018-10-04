@@ -63,6 +63,12 @@ class Loader(data.Dataset):
     def __len__(self):
         return len(self.index_lidar)
 
+    def routine(self, x_data, i):
+        x = x_data[(i - self.n_samples):i]
+        x = x.flatten()
+        x = th.from_numpy(x).float()
+        return x
+
     def __getitem__(self, index):
         if self.split not in ["test"]:
             i = self.index_lidar[index]
@@ -75,13 +81,8 @@ class Loader(data.Dataset):
         Y = self.data_lidar[(i - self.n_samples):i]
         Y = th.from_numpy(Y).float()
 
-        X = self.data_joint[(i - self.n_samples):i]
-        X = X.flatten()
-        X = th.from_numpy(X).float()
-        
-        X_v = self.data_joint_v[(i - self.n_samples):i]
-        X_v = X_v.flatten()
-        X_v = th.from_numpy(X_v).float()
+        X   = self.routine(self.data_joint, i)
+        X_v = self.routine(self.data_joint_v, i)
         
         if self.is_joint_v:
             X = th.cat([X, X_v])
