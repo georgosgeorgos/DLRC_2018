@@ -13,11 +13,11 @@ lidar_input_size = 9      # number lidars obs var
 joint_input_size = 7 + 7  # joint state   cond var
 n_samples_y      = 10     # length timeseries
 n_samples_z      = 10 # sample from selector
-n_clusters       = 2  # clustering component (background/self | static/dynamic)
-split            = "tra"
-ckpt_test  = "ckpt_selector.pth"
+n_clusters       = 9  # clustering component (background/self | static/dynamic)
+split            = "train"
+ckpt_test  = "ckpt_selector_9clusters.pth"
 test_every_n_epochs = 10
-flag             = "test"
+flag             = "val"
 
 result_dir = osp.join('..', 'experiments', 'Selector')
 path_exists(result_dir)
