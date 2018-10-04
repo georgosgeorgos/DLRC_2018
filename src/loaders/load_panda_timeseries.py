@@ -7,22 +7,27 @@ from torch.utils import data
 import utils.configs as cfg
 
 
-class Loader(data.Dataset):
-    def __init__(self, path="../data/", filename="train_data_correct.pkl", split="train", n_samples=10, pivot=0, 
-                 is_transform=False, is_joint_v=True):
+class PandaDataSetTimeSeries(data.Dataset):
+    def __init__(self, path         = "../data/", 
+                       filename     = "train_data_correct.pkl", 
+                       split        = "train", 
+                       n_samples    = 10, 
+                       pivot        = 0, 
+                       is_transform = False, 
+                       is_joint_v   = False):
         self.split       = split
         self.path        = path
         self.n_samples   = n_samples
         self.index_lidar = []
         self.is_joint_v  = is_joint_v
 
-        self.transform=transforms.Compose([
-            transforms.Lambda(lambda n: th.Tensor(n)),
-            transforms.Lambda(lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
-            transforms.Lambda(lambda n: n / 1000)])
+        #self.transform=transforms.Compose([
+        #    transforms.Lambda(lambda n: th.Tensor(n)),
+        #    transforms.Lambda(lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
+        #    transforms.Lambda(lambda n: n / 1000)])
 
         self.is_transform=is_transform
-
+        
         if self.split not in ["test"]:
             with open(path + filename, "rb") as f:
                 self.data = pkl.load(f)
