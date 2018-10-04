@@ -9,17 +9,21 @@ batch_size       = 64
 batch_size_test  = 1
 learning_rate    = 0.0001
 lidar_input_size = 9       # number lidars obs var
-joint_input_size = (7 + 7) # joint state   cond var
+joint_input_size = 7       # joint state   cond var
 n_samples_y      = 10      # length timeseries
 n_samples_z      = 10      # sample from selector
 n_clusters       = 2       # clustering component (background/self | static/dynamic)
 split            = "train"
-ckpt_test  = "ckpt_selector.pth"
 test_every_n_epochs = 10
 split_evaluation    = "val"
-mode
+model_type          = "gmm"
+ckpt_test  = "ckpt_" + model_type + ".pth"
+is_entropy          = False
 
-result_dir = osp.join('..', 'experiments', 'Selector')
+if is_entropy:
+	result_dir = osp.join('..', 'experiments', model_type)
+else:
+	result_dir = osp.join('..', 'experiments', model_type + "_no_entropy")
 path_exists(result_dir)
 
 ckpt_dir = osp.join(result_dir, 'ckpt/')
@@ -44,7 +48,7 @@ parser.add_argument("--num_labels",          type=int,   default=0)
 parser.add_argument("--ckpt_dir",            type=str,   default=ckpt_dir)
 parser.add_argument("--data_dir",            type=str,   default=data_dir)
 parser.add_argument("--result_dir",          type=str,   default=result_dir)
-parser.add_argument("--ckpt",                type=str,   default=ckpt_test)
+parser.add_argument("--ckpt_test",           type=str,   default=ckpt_test)
 parser.add_argument("--split",               type=str,   default=split)
 parser.add_argument("--test_every_n_epochs", type=str,   default=test_every_n_epochs)
 parser.add_argument("--split_evaluation",    type=str,   default=split_evaluation)

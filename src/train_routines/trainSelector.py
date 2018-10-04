@@ -35,7 +35,7 @@ def train(args):
     # but the time series have to be intact
     data_loader = DataLoader(dataset=dataset, batch_size=args.batch_size, shuffle=False)
 
-    dataset_val = Loader(path=args.data_dir, split="val", n_samples=args.n_samples_y)
+    dataset_val = Dataset(path=args.data_dir, split="val", n_samples=args.n_samples_y)
     data_loader_val = DataLoader(dataset=dataset_val, batch_size=args.batch_size, shuffle=False)
 
     loss_train, loss_val = [], []

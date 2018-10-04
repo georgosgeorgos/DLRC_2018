@@ -99,6 +99,9 @@ class VAE(nn.Module):
         elif self.flag=="gmm":
             mu_c  = mu_phi
             std_c = std_phi
+        else:
+            mu_c  = mu_phi
+            std_c = std_phi
         return mu_c, std_c, clusters
 
     def inference(self, y, x, n=1):
