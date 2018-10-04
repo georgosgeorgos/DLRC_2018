@@ -1,23 +1,23 @@
 import argparse
 import os.path as osp
-
+from utils.utils import path_exists
 from test_routines.testSelector import test
 from train_routines.trainSelector import train
-from utils.utils import path_exists
 
-epochs           = 40
+epochs           = 100
 batch_size       = 64
 batch_size_test  = 1
 learning_rate    = 0.0001
-lidar_input_size = 9      # number lidars obs var
-joint_input_size = 7 + 7  # joint state   cond var
-n_samples_y      = 10     # length timeseries
-n_samples_z      = 10 # sample from selector
-n_clusters       = 9  # clustering component (background/self | static/dynamic)
+lidar_input_size = 9       # number lidars obs var
+joint_input_size = (7 + 7) # joint state   cond var
+n_samples_y      = 10      # length timeseries
+n_samples_z      = 10      # sample from selector
+n_clusters       = 2       # clustering component (background/self | static/dynamic)
 split            = "train"
-ckpt_test  = "ckpt_selector_9clusters.pth"
+ckpt_test  = "ckpt_selector.pth"
 test_every_n_epochs = 10
-flag             = "val"
+split_evaluation    = "val"
+mode
 
 result_dir = osp.join('..', 'experiments', 'Selector')
 path_exists(result_dir)
@@ -47,7 +47,9 @@ parser.add_argument("--result_dir",          type=str,   default=result_dir)
 parser.add_argument("--ckpt",                type=str,   default=ckpt_test)
 parser.add_argument("--split",               type=str,   default=split)
 parser.add_argument("--test_every_n_epochs", type=str,   default=test_every_n_epochs)
-parser.add_argument("--flag",                type=str,   default=flag)
+parser.add_argument("--split_evaluation",    type=str,   default=split_evaluation)
+parser.add_argument("--model_type",          type=str,   default=model_type)
+parser.add_argument("--is_entropy",          type=str,   default=is_entropy)
 
 args = parser.parse_args()
 
