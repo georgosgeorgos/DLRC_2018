@@ -14,7 +14,7 @@ import pickle as pkl
 
 
 pf = "./robot_sampling/data_0.pkl"
-#pf = "../data/train_data_correct.pkl"
+pf = "../data/train_data_correct.pkl"
 
 class Sampler:
     def __init__(self, n=100):
@@ -61,8 +61,10 @@ class Probs:
         self.n = n
         self.l = l
         self.sampler = Sampler(self.n)
+        self.old_prob = 0
 
     def get_data(self):
+        print(1)
         y, x, _ = self.sampler.get_sample()
 
         data = {}
@@ -86,7 +88,8 @@ class Probs:
         return data
 
     def get_old_prob(self):
-        return self.old_prob()
+        print(2)
+        return self.old_prob
 
 if __name__ == '__main__':
     p =Probs()

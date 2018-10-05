@@ -129,7 +129,7 @@ def update_barchart_clustering(n_intervals):
               [Input('interval-component', 'n_intervals')])
 def update_graph_probs(n_intervals):
 
-    probs_anom = p.get_data()['prob']
+    probs_anom = p.get_old_prob()
     probs_normal = np.ones(len(probs_anom))
 
     trace = go.Scatter(
