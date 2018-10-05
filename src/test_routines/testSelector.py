@@ -17,7 +17,7 @@ def test(args):
             latent_size=args.latent_size,
             n_clusters=args.n_clusters,
             batch_size=args.batch_size_test,
-            flag=args.model_type,
+            model_type=args.model_type,
             )
     
     saved_state_dict = th.load(args.ckpt_dir + args.ckpt_test)

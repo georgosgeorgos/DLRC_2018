@@ -47,7 +47,7 @@ class VAE(nn.Module):
                  latent_size,
                  n_clusters,
                  batch_size,
-                 flag="selector"):
+                 model_type="selector"):
 
         super().__init__()
         assert type(encoder_layer_sizes) == list
@@ -68,7 +68,7 @@ class VAE(nn.Module):
         # the decoder compute the approx likelihood p_{theta}(y|z, x)
         self.cluster = Encoder(encoder_layer_sizes, latent_size, False)
 
-        self.flag = flag
+        self.model_type = model_type
         
         self.init_parameters()
 
@@ -93,10 +93,10 @@ class VAE(nn.Module):
         clusters = self.routine(clusters)
         clusters = F.softmax(clusters, dim=2)
 
-        if self.flag=="selector":
+        if self.model_type=="selector":
             mu_c  = th.sum(clusters * mu_phi,  dim=2)
             std_c = th.sum(clusters * std_phi, dim=2)
-        elif self.flag=="gmm":
+        elif self.model_type=="gmm":
             mu_c  = mu_phi
             std_c = std_phi
         else:

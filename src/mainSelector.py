@@ -16,12 +16,13 @@ n_clusters       = 2       # clustering component (background/self | static/dyna
 split            = "train"
 test_every_n_epochs = 10
 split_evaluation    = "val"
-model_type          = "gmm"
+model_type          = "selector"
 ckpt_test  = "ckpt_" + model_type + ".pth"
 is_entropy          = False
+lmbda               = 1
 
 if is_entropy:
-	result_dir = osp.join('..', 'experiments', model_type)
+	result_dir = osp.join('..', 'experiments', model_type + str(lmbda))
 else:
 	result_dir = osp.join('..', 'experiments', model_type + "_no_entropy")
 path_exists(result_dir)
@@ -54,6 +55,7 @@ parser.add_argument("--test_every_n_epochs", type=str,   default=test_every_n_ep
 parser.add_argument("--split_evaluation",    type=str,   default=split_evaluation)
 parser.add_argument("--model_type",          type=str,   default=model_type)
 parser.add_argument("--is_entropy",          type=str,   default=is_entropy)
+parser.add_argument("--lmbda",               type=int,   default=lmbda)
 
 args = parser.parse_args()
 

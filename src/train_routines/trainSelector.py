@@ -15,15 +15,16 @@ def train(args):
               args.n_samples_y, 
               args.lidar_input_size, 
               args.n_clusters, 
-              flag=args.model_type,
-              is_entropy=args.is_entropy
+              model_type=args.model_type,
+              is_entropy=args.is_entropy,
+              lmbda=args.lmbda
               )
     model = Model(
             encoder_layer_sizes=args.encoder_layer_sizes,
             latent_size=args.latent_size,
             n_clusters=args.n_clusters,
             batch_size=args.batch_size,
-            flag=args.model_type,
+            model_type=args.model_type,
             )
     model = move_to_cuda(model)
 
