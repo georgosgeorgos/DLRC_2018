@@ -37,10 +37,10 @@ class Probs:
         N = Normal(mu, std)
         prob = N.log_prob(y)
 
-        y            = y.cpu().data.numpy()
-        mu           = mu.cpu().data.numpy()
-        std          = std.cpu().data.numpy()
-        prob         = prob.cpu().data.numpy()
+        y            = y.cpu().data.numpy()[:,self.l]
+        mu           = mu.cpu().data.numpy()[:,self.l]
+        std          = std.cpu().data.numpy()[:,self.l]
+        prob         = prob.cpu().data.numpy()[:,self.l]
 
         data =  {"input": y, "mu": mu, "std": std, "prob": prob}
         return data
