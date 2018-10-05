@@ -46,7 +46,7 @@ app.layout = html.Div(
               [Input('interval-component', 'n_intervals')])
 def update_graph_lidars(n_intervals):
 
-    data = p.get_data()
+    data = p.get_data(n_intervals)
     lidar_inp = data['input']
     lidar_mean = data['mu']
     lidar_std = data['std']
@@ -129,7 +129,8 @@ def update_barchart_clustering(n_intervals):
               [Input('interval-component', 'n_intervals')])
 def update_graph_probs(n_intervals):
 
-    probs_anom = p.get_data()['prob']
+    probs_anom = p.get_data(n_intervals)['prob']
+    lidar = p.get_data(n_intervals)['input']
     probs_normal = np.ones(len(probs_anom))
 
     trace = go.Scatter(

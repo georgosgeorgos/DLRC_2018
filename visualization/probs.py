@@ -7,14 +7,13 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 import torch as th
 from visualization.normalMLP import  NormalMLP
-
 import os.path as osp
 from torch.distributions.normal import Normal
 import pickle as pkl 
 
 
 pf = "./robot_sampling/data_0.pkl"
-#pf = "../data/train_data_correct.pkl"
+pf = "../data/train_data_correct.pkl"
 
 class Sampler:
     def __init__(self, n=100):
@@ -36,17 +35,13 @@ class Sampler:
 
             self.data_joint = np.array(self.data_joint, dtype=float)
             self.data_joint_v = np.array(self.data_joint_v, dtype=float)
-
-        self.index=0
         self.n = 100
 
-    def get_sample(self):
-        if self.index == (self.data_lidar.shape[0] - self.n):
-            self.index = 0
-        sample_lidar   = self.data_lidar[(self.index):(self.index+self.n)]
-        sample_joint   = self.data_joint[(self.index):(self.index+self.n)]
-        sample_joint_v = self.data_joint_v[(self.index):(self.index+self.n)]
-        self.index += self.n
+    def get_sample(self, n_interval):
+        n_interval = n_interval % self.data_lidar.shape[0]
+        sample_lidar   = self.data_lidar[(n_interval):(n_interval+self.n)]
+        sample_joint   = self.data_joint[(n_interval):(n_interval+self.n)]
+        sample_joint_v = self.data_joint_v[(n_interval):(n_interval+self.n)]
         return (sample_lidar, sample_joint, sample_joint_v)
 
 class Probs:
@@ -56,14 +51,12 @@ class Probs:
         self.model = NormalMLP().to(self.device)
         self.model.load_state_dict(th.load("../experiments/normalMLP/ckpt/ckpt.pkl", map_location=self.device))
         self.model.eval()
-
-        self.index=0
         self.n = n
         self.l = l
         self.sampler = Sampler(self.n)
 
-    def get_data(self):
-        y, x, _ = self.sampler.get_sample()
+    def get_data(self, n_interval):
+        y, x, _ = self.sampler.get_sample(n_interval)
 
         data = {}
         x = th.from_numpy(x).to(self.device).float()
@@ -79,10 +72,7 @@ class Probs:
         std  = std.cpu().data.numpy()[:,self.l]
         prob = prob.cpu().data.numpy()[:,self.l]
 
-
-        self.old_prob = prob.copy()
-
-        data =  {"input": y, "mu": mu, "std": std}
+        data =  {"input": y, "mu": mu, "std": std, "prob": prob}
         return data
 
     def get_old_prob(self):
