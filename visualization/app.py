@@ -128,9 +128,9 @@ def update_barchart_clustering(n_intervals):
 @app.callback(Output('live-update-graph-probs', 'figure'),
               [Input('interval-component', 'n_intervals')])
 def update_graph_probs(n_intervals):
-
     probs_anom = p.get_data(n_intervals)['prob']
     lidar = p.get_data(n_intervals)['input']
+
     probs_normal = np.ones(len(probs_anom))
 
     trace = go.Scatter(

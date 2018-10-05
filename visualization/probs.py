@@ -54,6 +54,7 @@ class Probs:
         self.n = n
         self.l = l
         self.sampler = Sampler(self.n)
+        self.old_prob = 0
 
     def get_data(self, n_interval):
         y, x, _ = self.sampler.get_sample(n_interval)
@@ -76,7 +77,8 @@ class Probs:
         return data
 
     def get_old_prob(self):
-        return self.old_prob()
+        print(2)
+        return self.old_prob
 
 if __name__ == '__main__':
     p =Probs()
