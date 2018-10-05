@@ -29,6 +29,7 @@ class Sampler:
         if self.index == (self.data_lidar.shape[0] - n):
             self.index = 0
         sample = self.data_lidar[(self.index):(self.index+n), l]
+        print(self.index, (self.index+n))
         self.index += n
         return sample
 
@@ -38,7 +39,15 @@ class Sampler:
 
 if __name__ == '__main__':
     s = Sampler()
-    while True:
-        print(s.get_sample(100).shape)
-        print(s.get_sample_lidar(100).shape)
+    print(s.get_sample(100).shape)
+    print(s.get_sample_lidar(100).shape)
     print(s.get_dataset().shape)
+
+    dataset = s.get_dataset()
+    import matplotlib.pyplot as plt
+    s = Sampler()
+    for i in range(10):
+        dataset = s.get_sample_lidar(n=150, l=3)
+        plt.plot(dataset)
+        plt.ylim([0,2])
+        plt.show()
