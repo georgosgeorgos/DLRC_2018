@@ -13,7 +13,7 @@ from visualization.probs import Probs
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-p = Probs(n=1000)
+p = Probs(n=1000, l=3)
 
 ####### APP LAYOUT #########
 app.layout = html.Div(
@@ -37,10 +37,10 @@ def update_graph_lidars(n_intervals):
     # demo data
     # lidar_data = np.random.random(1000)
     # data = lidar_data[np.random.choice(np.arange(10000), 150), 3]
-    lidar_data = p.get_data()['input'][:, 3]
+    lidar_data = p.get_data()['input']
 
     probs_classes = np.random.randn(3)
-    probs_classes = np.exp(expit(probs_classes)) / np.sum(expit(probs_classes))
+    probs_classes = np.exp(probs_classes) / np.sum(np.exp(probs_classes), axis=0)
 
     trace = go.Scatter(
         x=np.arange(len(lidar_data)) + len(lidar_data) * n_intervals,

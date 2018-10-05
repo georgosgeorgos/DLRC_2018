@@ -16,7 +16,7 @@ class Probs:
         self.cuda = th.cuda.is_available()
         self.device = th.device("cuda" if self.cuda else "cpu")
         self.model = NormalMLP().to(self.device)
-        self.model.load_state_dict(th.load("../experiments/normalMLP/ckpt/ckpt.pkl"))
+        self.model.load_state_dict(th.load("../experiments/normalMLP/ckpt/ckpt.pkl", map_location=self.device))
         self.model.eval()
 
         self.index=0
@@ -26,7 +26,6 @@ class Probs:
 
     def get_data(self):
         y, x, _ = self.sampler.get_sample()
-        print(x.shape, y.shape)
 
         data = {}
         x = th.from_numpy(x).to(self.device).float()
