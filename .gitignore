@@ -1,12 +1,10 @@
 .parameter_pool_vars
-*.pkl
 *.pickle
 *.tiff
 *.png
 *.ipynb_checkpoints
 *.npy
 data/raw/
-data/
 .idea/
 *.pyc
 /models/CVAE/data/*
@@ -14,4 +12,3 @@ data/
 /utils/__pycache__
 /TRAIN_DATA/RGB/*
 /TRAIN_DATA/DEPTH/*
-#experiments/*
