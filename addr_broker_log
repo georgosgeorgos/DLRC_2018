@@ -1,0 +1,93 @@
+[2018-10-05 15:58:32.996] [address_broker_logger] [info] New address broker is created. Will listen to frontend socket address tcp://*:51468
+[2018-10-05 16:00:29.383] [address_broker_logger] [info] Signal <franka_target_pos> offered. Endpoint <tcp://10.250.144.22:45141>, pid <24534>, dtype <13>
+[2018-10-05 16:00:29.884] [address_broker_logger] [info] Signal <franka_lidar> requested.
+[2018-10-05 16:00:29.884] [address_broker_logger] [info] Signal unknown
+[2018-10-05 16:00:30.386] [address_broker_logger] [info] Signal <franka_state> requested.
+[2018-10-05 16:00:30.386] [address_broker_logger] [info] Signal unknown
+[2018-10-05 16:00:30.888] [address_broker_logger] [info] Signal <franka_des_tau> offered. Endpoint <tcp://10.250.144.22:40339>, pid <24534>, dtype <10>
+[2018-10-05 16:00:45.613] [address_broker_logger] [info] Signal <franka_state> offered. Endpoint <tcp://10.250.144.22:49152>, pid <24489>, dtype <7>
+[2018-10-05 16:00:45.613] [address_broker_logger] [info] Signal <franka_target_pos> requested.
+[2018-10-05 16:00:45.613] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.22:45141, pid 24534
+[2018-10-05 16:00:45.613] [address_broker_logger] [info] Signal <franka_gripper> requested.
+[2018-10-05 16:00:45.613] [address_broker_logger] [info] Signal unknown
+[2018-10-05 16:00:51.945] [address_broker_logger] [info] Signal <franka_target_pos> offered. Endpoint <tcp://10.250.144.22:38245>, pid <24581>, dtype <13>
+[2018-10-05 16:00:51.945] [address_broker_logger] [warning] Signal <franka_target_pos> is already declared. New signal: endpoint <tcp://10.250.144.22:38245>, pid <24581>. Already known signal: endpoint <tcp://10.250.144.22:45141>, pid <24534>
+[2018-10-05 16:00:51.946] [address_broker_logger] [info] Signal <franka_target_pos> requested.
+[2018-10-05 16:00:51.946] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.22:45141, pid 24534
+[2018-10-05 16:00:52.449] [address_broker_logger] [info] Signal <franka_lidar> requested.
+[2018-10-05 16:00:52.449] [address_broker_logger] [info] Signal unknown
+[2018-10-05 16:00:52.951] [address_broker_logger] [info] Signal <franka_state> requested.
+[2018-10-05 16:00:52.951] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.22:49152, pid 24489
+[2018-10-05 16:00:53.454] [address_broker_logger] [info] Signal <franka_des_tau> offered. Endpoint <tcp://10.250.144.22:42311>, pid <24581>, dtype <10>
+[2018-10-05 16:00:53.454] [address_broker_logger] [warning] Signal <franka_des_tau> is already declared. New signal: endpoint <tcp://10.250.144.22:42311>, pid <24581>. Already known signal: endpoint <tcp://10.250.144.22:40339>, pid <24534>
+[2018-10-05 16:00:53.455] [address_broker_logger] [info] Signal <franka_des_tau> requested.
+[2018-10-05 16:00:53.455] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.22:40339, pid 24534
+[2018-10-05 16:01:52.999] [address_broker_logger] [info] Signal <franka_target_pos> offered. Endpoint <tcp://10.250.144.22:39343>, pid <24752>, dtype <13>
+[2018-10-05 16:01:52.999] [address_broker_logger] [warning] Signal <franka_target_pos> is already declared. New signal: endpoint <tcp://10.250.144.22:39343>, pid <24752>. Already known signal: endpoint <tcp://10.250.144.22:45141>, pid <24534>
+[2018-10-05 16:01:52.999] [address_broker_logger] [info] Signal <franka_target_pos> requested.
+[2018-10-05 16:01:52.999] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.22:45141, pid 24534
+[2018-10-05 16:01:53.503] [address_broker_logger] [info] Signal <franka_lidar> requested.
+[2018-10-05 16:01:53.503] [address_broker_logger] [info] Signal unknown
+[2018-10-05 16:01:54.005] [address_broker_logger] [info] Signal <franka_state> requested.
+[2018-10-05 16:01:54.005] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.22:49152, pid 24489
+[2018-10-05 16:03:20.666] [address_broker_logger] [info] Signal <franka_state> offered. Endpoint <tcp://10.250.144.22:49152>, pid <24888>, dtype <7>
+[2018-10-05 16:03:20.667] [address_broker_logger] [warning] Signal <franka_state> is already declared. New signal: endpoint <tcp://10.250.144.22:49152>, pid <24888>. Already known signal: endpoint <tcp://10.250.144.22:49152>, pid <24489>
+[2018-10-05 16:03:20.667] [address_broker_logger] [info] Signal <franka_state> requested.
+[2018-10-05 16:03:20.667] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.22:49152, pid 24489
+[2018-10-05 16:03:20.667] [address_broker_logger] [info] Signal <franka_target_pos> requested.
+[2018-10-05 16:03:20.667] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.22:45141, pid 24534
+[2018-10-05 16:03:20.668] [address_broker_logger] [info] Signal <franka_gripper> requested.
+[2018-10-05 16:03:20.668] [address_broker_logger] [info] Signal unknown
+[2018-10-05 16:03:23.509] [address_broker_logger] [info] Signal <franka_state> offered. Endpoint <tcp://10.250.144.22:49152>, pid <24888>, dtype <7>
+[2018-10-05 16:03:23.509] [address_broker_logger] [warning] Signal <franka_state> is already declared. New signal: endpoint <tcp://10.250.144.22:49152>, pid <24888>. Already known signal: endpoint <tcp://10.250.144.22:49152>, pid <24489>
+[2018-10-05 16:03:23.510] [address_broker_logger] [info] Signal <franka_state> requested.
+[2018-10-05 16:03:23.510] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.22:49152, pid 24489
+[2018-10-05 16:03:23.510] [address_broker_logger] [info] Signal <franka_target_pos> requested.
+[2018-10-05 16:03:23.510] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.22:45141, pid 24534
+[2018-10-05 16:03:23.510] [address_broker_logger] [info] Signal <franka_gripper> requested.
+[2018-10-05 16:03:23.510] [address_broker_logger] [info] Signal unknown
+[2018-10-05 16:03:33.646] [address_broker_logger] [info] Signal <franka_target_pos> offered. Endpoint <tcp://10.250.144.22:44477>, pid <24918>, dtype <13>
+[2018-10-05 16:03:33.646] [address_broker_logger] [warning] Signal <franka_target_pos> is already declared. New signal: endpoint <tcp://10.250.144.22:44477>, pid <24918>. Already known signal: endpoint <tcp://10.250.144.22:45141>, pid <24534>
+[2018-10-05 16:03:33.647] [address_broker_logger] [info] Signal <franka_target_pos> requested.
+[2018-10-05 16:03:33.647] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.22:45141, pid 24534
+[2018-10-05 16:03:34.150] [address_broker_logger] [info] Signal <franka_lidar> requested.
+[2018-10-05 16:03:34.150] [address_broker_logger] [info] Signal unknown
+[2018-10-05 16:03:34.652] [address_broker_logger] [info] Signal <franka_state> requested.
+[2018-10-05 16:03:34.652] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.22:49152, pid 24489
+[2018-10-05 16:06:15.984] [address_broker_logger] [info] Signal <franka_target_pos> offered. Endpoint <tcp://10.250.144.22:44765>, pid <25101>, dtype <13>
+[2018-10-05 16:06:15.984] [address_broker_logger] [warning] Signal <franka_target_pos> is already declared. New signal: endpoint <tcp://10.250.144.22:44765>, pid <25101>. Already known signal: endpoint <tcp://10.250.144.22:45141>, pid <24534>
+[2018-10-05 16:06:15.985] [address_broker_logger] [info] Signal <franka_target_pos> requested.
+[2018-10-05 16:06:15.985] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.22:45141, pid 24534
+[2018-10-05 16:06:16.488] [address_broker_logger] [info] Signal <franka_lidar> requested.
+[2018-10-05 16:06:16.488] [address_broker_logger] [info] Signal unknown
+[2018-10-05 16:06:16.989] [address_broker_logger] [info] Signal <franka_state> requested.
+[2018-10-05 16:06:16.989] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.22:49152, pid 24489
+[2018-10-05 16:06:28.602] [address_broker_logger] [warning] Terminated while polling! ZMQ ERROR: Interrupted system call
+[2018-10-05 16:06:28.603] [address_broker_logger] [info] Address Broker gets destructed.
+[2018-10-05 16:07:29.001] [address_broker_logger] [info] New address broker is created. Will listen to frontend socket address tcp://*:51468
+[2018-10-05 16:07:46.856] [address_broker_logger] [info] Signal <franka_state> offered. Endpoint <tcp://10.250.144.22:49152>, pid <25322>, dtype <7>
+[2018-10-05 16:07:46.857] [address_broker_logger] [info] Signal <franka_target_pos> requested.
+[2018-10-05 16:07:46.857] [address_broker_logger] [info] Signal unknown
+[2018-10-05 16:07:46.857] [address_broker_logger] [info] Signal <franka_gripper> requested.
+[2018-10-05 16:07:46.857] [address_broker_logger] [info] Signal unknown
+[2018-10-05 16:07:49.068] [address_broker_logger] [info] Signal <franka_state> offered. Endpoint <tcp://10.250.144.22:49152>, pid <25322>, dtype <7>
+[2018-10-05 16:07:49.068] [address_broker_logger] [warning] Signal <franka_state> is already declared. New signal: endpoint <tcp://10.250.144.22:49152>, pid <25322>. Already known signal: endpoint <tcp://10.250.144.22:49152>, pid <25322>
+[2018-10-05 16:07:49.068] [address_broker_logger] [info] Signal <franka_state> requested.
+[2018-10-05 16:07:49.068] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.22:49152, pid 25322
+[2018-10-05 16:07:49.069] [address_broker_logger] [info] Signal <franka_target_pos> requested.
+[2018-10-05 16:07:49.069] [address_broker_logger] [info] Signal unknown
+[2018-10-05 16:07:49.069] [address_broker_logger] [info] Signal <franka_gripper> requested.
+[2018-10-05 16:07:49.069] [address_broker_logger] [info] Signal unknown
+[2018-10-05 16:07:51.436] [address_broker_logger] [info] Signal <franka_target_pos> offered. Endpoint <tcp://10.250.144.22:43159>, pid <25342>, dtype <13>
+[2018-10-05 16:07:51.937] [address_broker_logger] [info] Signal <franka_lidar> requested.
+[2018-10-05 16:07:51.937] [address_broker_logger] [info] Signal unknown
+[2018-10-05 16:07:52.439] [address_broker_logger] [info] Signal <franka_state> requested.
+[2018-10-05 16:07:52.439] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.22:49152, pid 25322
+[2018-10-05 16:08:01.907] [address_broker_logger] [info] Signal <franka_state> offered. Endpoint <tcp://10.250.144.22:49152>, pid <25322>, dtype <7>
+[2018-10-05 16:08:01.907] [address_broker_logger] [warning] Signal <franka_state> is already declared. New signal: endpoint <tcp://10.250.144.22:49152>, pid <25322>. Already known signal: endpoint <tcp://10.250.144.22:49152>, pid <25322>
+[2018-10-05 16:08:01.908] [address_broker_logger] [info] Signal <franka_state> requested.
+[2018-10-05 16:08:01.908] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.22:49152, pid 25322
+[2018-10-05 16:08:01.908] [address_broker_logger] [info] Signal <franka_target_pos> requested.
+[2018-10-05 16:08:01.908] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.22:43159, pid 25342
+[2018-10-05 16:08:01.908] [address_broker_logger] [info] Signal <franka_gripper> requested.
+[2018-10-05 16:08:01.908] [address_broker_logger] [info] Signal unknown

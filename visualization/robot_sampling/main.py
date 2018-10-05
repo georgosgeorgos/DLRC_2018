@@ -1,9 +1,9 @@
-import sampler as sr
-import controller as cr
+import visualization.robot_sampling.sampler as sr
+import visualization.robot_sampling.controller as cr
 
 import time
 
-import lib
+import visualization.robot_sampling.lib as lib
 import numpy as np
 from multiprocessing import Pool, Process, Queue
 
@@ -30,7 +30,6 @@ total_time = 20 # seconds
 runs = -1
 
 broker = lib.default()
-
 def f(broker):
     return broker
 

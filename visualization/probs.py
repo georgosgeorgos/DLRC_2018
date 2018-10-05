@@ -6,16 +6,18 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from torch.utils.data import DataLoader
 import torch as th
-from sampler import Sampler
-from normalMLP import NormalMLP
+from visualization.normalMLP import  NormalMLP
 import os.path as osp
 from torch.distributions.normal import Normal
 import pickle as pkl 
 
 
+pf = "./robot_sampling/data_0.pkl"
+#pf = "../data/train_data_correct.pkl"
+
 class Sampler:
     def __init__(self, n=100):
-        with open("../data/anomaly_detection_gt.pkl", "rb") as f:
+        with open(pf, "rb") as f:
             self.data = pkl.load(f)
 
             self.runs = len(self.data)
@@ -76,8 +78,14 @@ class Probs:
         std  = std.cpu().data.numpy()[:,self.l]
         prob = prob.cpu().data.numpy()[:,self.l]
 
-        data =  {"input": y, "mu": mu, "std": std, "prob": prob}
+
+        self.old_prob = prob.copy()
+
+        data =  {"input": y, "mu": mu, "std": std}
         return data
+
+    def get_old_prob(self):
+        return self.old_prob()
 
 if __name__ == '__main__':
     p =Probs()
