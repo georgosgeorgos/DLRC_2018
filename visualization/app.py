@@ -44,18 +44,19 @@ def update_graph_lidars(n_intervals):
         x=np.arange(len(lidar_data)) + len(lidar_data) * n_intervals,
         y=lidar_data,
         mode='lines',
-        fillcolor='#000000',
-        name='lidar'
+        name='lidar',
+        line=dict(color='#000000')
     )
 
     layout = Layout(
-        margin=dict(pad=0),
         yaxis=dict(
             title='Depth (m)',
             range=[0, 2]
         ),
         height=400,
-        width=1600
+        width=1200,
+        showlegend=True,
+        legend=dict(xanchor='right', yanchor='top')
     )
 
     return Figure(data=[trace], layout=layout)
@@ -93,13 +94,17 @@ def update_graph_probs(n_intervals):
 
     layout = Layout(
         xaxis=dict(
-            title='Time'),
+            title='Time'
+        ),
         yaxis=dict(
             title='Prob',
             range=[0, 1]
         ),
-        height=250,
-        width=1600
+        height=150,
+        width=1200,
+        showlegend=True,
+        legend=dict(xanchor='right', yanchor='top', bgcolor='rgba(255, 255, 255, 0.75)'),
+        margin=dict(t=5)
     )
 
     return Figure(data=[trace, trace_b], layout=layout)
