@@ -18,11 +18,19 @@ class Sampler:
 
         self.index=0
 
-    def get_sample(self):
-        if self.index == self.data_lidar.shape[0]:
-            self.index = -1
-        self.index += 1
-        return self.data_lidar[self.index]
+    def get_sample(self, n=100):
+        if self.index == (self.data_lidar.shape[0] - n):
+            self.index = 0
+        sample = self.data_lidar[(self.index):(self.index+n)]
+        self.index += n
+        return sample
+
+    def get_sample_lidar(self, n=100, l=3):
+        if self.index == (self.data_lidar.shape[0] - n):
+            self.index = 0
+        sample = self.data_lidar[(self.index):(self.index+n), l]
+        self.index += n
+        return sample
 
     def get_dataset(self):
         return self.data_lidar
@@ -30,5 +38,7 @@ class Sampler:
 
 if __name__ == '__main__':
     s = Sampler()
-    print(s.get_sample())
+    while True:
+        print(s.get_sample(100).shape)
+        print(s.get_sample_lidar(100).shape)
     print(s.get_dataset().shape)
