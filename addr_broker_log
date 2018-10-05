@@ -91,3 +91,11 @@
 [2018-10-05 16:08:01.908] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.22:43159, pid 25342
 [2018-10-05 16:08:01.908] [address_broker_logger] [info] Signal <franka_gripper> requested.
 [2018-10-05 16:08:01.908] [address_broker_logger] [info] Signal unknown
+[2018-10-05 16:46:18.787] [address_broker_logger] [warning] Terminated while polling! ZMQ ERROR: Interrupted system call
+[2018-10-05 16:46:18.787] [address_broker_logger] [info] Address Broker gets destructed.
+[2018-10-05 16:46:19.715] [address_broker_logger] [info] New address broker is created. Will listen to frontend socket address tcp://*:51468
+[2018-10-05 16:46:52.596] [address_broker_logger] [info] Signal <franka_target_pos> offered. Endpoint <tcp://10.250.144.22:34035>, pid <27860>, dtype <13>
+[2018-10-05 16:46:53.098] [address_broker_logger] [info] Signal <franka_lidar> requested.
+[2018-10-05 16:46:53.098] [address_broker_logger] [info] Signal unknown
+[2018-10-05 16:46:53.600] [address_broker_logger] [info] Signal <franka_state> requested.
+[2018-10-05 16:46:53.600] [address_broker_logger] [info] Signal unknown

@@ -12,7 +12,7 @@ from visualization.probs import Probs
 
 app = dash.Dash(__name__)
 
-N_SAMPLES = 1000
+N_SAMPLES = 100
 N_LIDAR = 3
 N_UPDATE_EVERY = 1
 N_STD = 3
