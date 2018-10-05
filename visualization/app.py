@@ -8,12 +8,12 @@ from dash.dependencies import Input, Output
 from plotly.graph_objs import *
 import numpy as np
 from scipy.special import expit, logit
-from visualization.sampler import Sampler
+from visualization.probs import Probs
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-s = Sampler()
+p = Probs(n=1000)
 
 ####### APP LAYOUT #########
 app.layout = html.Div(
@@ -21,7 +21,6 @@ app.layout = html.Div(
         html.H4('Lidars visualizations'),
         dcc.Graph(id='live-update-graph-lidars'),
         dcc.Graph(id='live-update-graph-probs'),
-
         dcc.Interval(
             id='interval-component',
             interval=1 * 1000,  # seconds
@@ -36,9 +35,12 @@ app.layout = html.Div(
 def update_graph_lidars(n_intervals):
 
     # demo data
-    # lidar_data = np.random.random(100)
+    # lidar_data = np.random.random(1000)
     # data = lidar_data[np.random.choice(np.arange(10000), 150), 3]
-    lidar_data = s.get_sample_lidar(n=1000)
+    lidar_data = p.get_data()['input'][:, 3]
+
+    probs_classes = np.random.randn(3)
+    probs_classes = np.exp(expit(probs_classes)) / np.sum(expit(probs_classes))
 
     trace = go.Scatter(
         x=np.arange(len(lidar_data)) + len(lidar_data) * n_intervals,
@@ -48,18 +50,36 @@ def update_graph_lidars(n_intervals):
         line=dict(color='#000000')
     )
 
-    layout = Layout(
-        yaxis=dict(
-            title='Depth (m)',
-            range=[0, 2]
-        ),
-        height=400,
-        width=1200,
-        showlegend=True,
-        legend=dict(xanchor='right', yanchor='top')
+    trace2 = go.Bar(
+        y=['thyself', 'background', 'other agents'],
+        x=probs_classes,
+        orientation='h',
+        marker=dict(
+            color=['#D2B4DE', '#D1F2EB',
+                   '#F7DC6F'])
     )
 
-    return Figure(data=[trace], layout=layout)
+    # layout = Layout(
+    #     yaxis=dict(
+    #         title='Depth (m)',
+    #         range=[0, 2]
+    #     ),
+    #     height=400,
+    #     width=1200,
+    #     showlegend=True,
+    #     legend=dict(xanchor='right', yanchor='top')
+    # )
+
+    fig = tools.make_subplots(rows=1, cols=2, column_width=[4,1])
+
+    fig.append_trace(trace, 1, 1)
+    fig.append_trace(trace2, 1, 2)
+
+    fig['layout'].update(height=400, width=1300)
+
+    return fig
+
+    # return Figure(data=[trace], layout=layout)
 
 
 @app.callback(Output('live-update-graph-probs', 'figure'),
@@ -101,10 +121,10 @@ def update_graph_probs(n_intervals):
             range=[0, 1]
         ),
         height=150,
-        width=1200,
+        width=955,
         showlegend=True,
         legend=dict(xanchor='right', yanchor='top', bgcolor='rgba(255, 255, 255, 0.75)'),
-        margin=dict(t=5)
+        margin=dict(t=3)
     )
 
     return Figure(data=[trace, trace_b], layout=layout)
