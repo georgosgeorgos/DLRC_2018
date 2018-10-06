@@ -1,6 +1,6 @@
 import time
 import sys
-import lib
+import visualization.robot_sampling.lib as lib
 import numpy as np
 
 def main():
