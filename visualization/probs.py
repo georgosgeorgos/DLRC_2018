@@ -1,6 +1,11 @@
+import sys
+sys.path.append('/home/georgos/DLRC_2018/')
+
 import numpy as np
 import torch as th
 import glob
+import src
+import visualization
 from torch import nn, optim
 from torch.utils.data import DataLoader
 from torchvision import transforms
@@ -10,12 +15,7 @@ from visualization.normalMLP import  NormalMLP
 import os.path as osp
 from torch.distributions.normal import Normal
 import pickle as pkl 
-
 from src.models.clusteringVAE.model_gmm_selector import VAE as ModelCluster
-
-pf = "./robot_sampling/data_0.pkl"
-pf = "../data/train_data_correct.pkl"
-
 import pickle as pkl
 from random import shuffle
 from torchvision import transforms
@@ -25,28 +25,8 @@ from torch.utils import data
 import src.utils.utils as cfg
 
 
-class PandaDataSetTimeSeries(data.Dataset):
-
-
-    def routine(self, x_data, i):
-        x = x_data[(i - self.n_samples):i]
-        x = x.flatten()
-        x = th.from_numpy(x).float()
-        return x
-
-    def __getitem__(self, index):
-        if self.split not in ["test"]:
-            i = self.index_lidar[index]
-        else:
-            i = index
-
-        if i < self.n_samples:
-            i += self.n_samples
-
-        Y = self.data_lidar[(i - self.n_samples):i]
-        Y = th.from_numpy(Y).float()
-
-        X = self.routine(self.data_joint, i)
+pf = "./robot_sampling/data_0.pkl"
+pf = "../data/train_data_correct.pkl"
 
 class Sampler:
     def __init__(self, n=100):
@@ -77,8 +57,26 @@ class Sampler:
         sample_joint_v = self.data_joint_v[(n_interval*self.n):((n_interval*self.n)+self.n)]
         return (sample_lidar, sample_joint, sample_joint_v)
 
-    def get_sample_clustering(self, n_interval):
-        return None
+    def get_sample_clustering(self, n_interval, n_sample_y=10):
+        sample_lidar_clustering   = []
+        sample_joint_clustering   = []
+        sample_joint_v_clustering = []
+        start = n_interval*self.n
+        end   = start + self.n
+        if start < n_sample_y:
+            start = n_sample_y
+            end = end * n_sample_y
+
+        for sample in range(start, end, 1):
+            sample_lidar_clustering.append(self.data_lidar[(sample-n_sample_y+1):(sample+1)])
+            sample_joint_clustering.append(self.data_joint[(sample-n_sample_y+1):(sample+1)].flatten())
+            sample_joint_v_clustering.append(self.data_joint_v[(sample-n_sample_y+1):(sample+1)].flatten())
+
+        sample_lidar_clustering   = np.array(sample_lidar_clustering)
+        sample_joint_clustering   = np.array(sample_joint_clustering)
+        sample_joint_v_clustering = np.array(sample_joint_v_clustering)
+        return (sample_lidar_clustering, sample_joint_clustering, sample_joint_v_clustering)
+
 
 class Probs:
     def __init__(self, n=100, l=3):
@@ -99,6 +97,7 @@ class Probs:
         self.n_samples_y = 10
         self.latent_size=self.lidar_input_size * self.n_clusters
         self.encoder_layer_sizes = [self.joint_input_size*self.n_samples_y, 256, 256]
+        self.test = "cdf"
 
         self.modelCluster = ModelCluster(
             encoder_layer_sizes=self.encoder_layer_sizes,
@@ -111,33 +110,58 @@ class Probs:
         self.modelCluster.load_state_dict(th.load("../experiments/selector_no_entropy/ckpt/ckpt_selector.pth", map_location=self.device))
         self.modelCluster.eval().cpu()
 
-    def get_data(self, n_interval):
-        y, x, _ = self.sampler.get_sample_anomaly(n_interval)
-
+    def routine_tensor(self, x):
         x = th.from_numpy(x).to(self.device).float()
-        y = th.from_numpy(y).to(self.device).float()
+        return x
 
-        mu, logvar = self.modelAnomalyDetection(x)
-        std  = th.exp(0.5 * logvar)
-        N    = Normal(mu, std)
-        z = np.abs((y - mu) / std)
-        z > 4 # outlier
-        # four or five sigma
-        # too low or too high two side confidence interval do with z variable
-        prob = 1 - N.cdf(y) 
+    def routine_array(self, x):
+        x = x.cpu().data.numpy()
+        return x
 
-        #_, _, clusters = self.modelCluster(x[:10,:])
+    def outlier_test(self, y, mu, std):
+        N = Normal(mu, std)
+        if self.test == "z":
+            z = np.abs((y - mu) / std)
+            outlier = z[z > 3]
+        else:
+            prob = 1 - N.cdf(y)
+        return prob
 
-        y    = y.cpu().data.numpy()[:,self.l]
-        mu   = mu.cpu().data.numpy()[:,self.l]
-        std  = std.cpu().data.numpy()[:,self.l]
-        prob = prob.cpu().data.numpy()[:,self.l]
-        #cluster = clusters.data.numpy().squeeze()[:,self.l]
+    def get_data(self, n_interval):
+        y_an, x_an, _ = self.sampler.get_sample_anomaly(n_interval)
+        x_an = self.routine_tensor(x_an)
+        y_an = self.routine_tensor(y_an)
 
-        data =  {"input": y, "mu": mu, "std": std, "prob": prob} #"cluster": cluster}
+        y_cl, x_cl, _ = self.sampler.get_sample_clustering(n_interval)
+        x_cl = self.routine_tensor(x_cl)
+        y_cl = self.routine_tensor(y_cl)
+        
+        mu_an, logvar_an = self.modelAnomalyDetection(x_an)
+        std_an  = th.exp(0.5 * logvar_an)
+
+        prob_an = self.outlier_test(y_an, mu_an, std_an)
+
+        print(x_an.size(),y_an.size(),x_cl.size(),y_cl.size()) 
+
+        _, _, clst = self.modelCluster(x_cl)
+        #print(y_an[-1])
+        #print(y_cl[-1][-1])
+
+        y_an    = self.routine_array(y_an)[:,self.l]
+        mu_an   = self.routine_array(mu_an)[:,self.l]
+        std_an  = self.routine_array(std_an)[:,self.l]
+        prob_an = self.routine_array(prob_an)[:,self.l]
+        
+        clst    = self.routine_array(clst)[:,self.l]
+
+        data =  {"input": y_an, "mu": mu_an, "std": std_an, "prob": prob_an, "cluster": clst}
         return data
 
 if __name__ == '__main__':
-    p =Probs()
+    p =Probs(n=100)
     d =p.get_data(3)
-    print(d)
+    print(d["cluster"])
+    print(d["cluster"].argmax(axis=1))
+
+    for key in d:
+        print(d[key].shape)
