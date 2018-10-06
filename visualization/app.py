@@ -8,7 +8,7 @@ from dash.dependencies import Input, Output
 from plotly.graph_objs import *
 import numpy as np
 from scipy.special import expit, logit
-from visualization.probs import Probs
+from sampler import Sampler_anomaly_clustering
 
 app = dash.Dash(__name__)
 
@@ -17,7 +17,7 @@ N_LIDAR = 3
 N_UPDATE_EVERY = 1
 N_STD = 3
 
-p = Probs(n=N_SAMPLES, l=N_LIDAR)
+p = Sampler_anomaly_clustering(n=N_SAMPLES, l=N_LIDAR)
 
 ####### APP LAYOUT #########
 app.layout = html.Div(

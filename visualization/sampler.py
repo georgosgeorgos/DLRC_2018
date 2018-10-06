@@ -1,34 +1,29 @@
 import sys
 sys.path.append('/home/georgos/DLRC_2018/')
+import src
+import visualization
+from src.models.NormalMLP.normalMLP import  NormalMLP
+from src.models.clusteringVAE.model_gmm_selector import VAE as ModelCluster
 
 import numpy as np
 import torch as th
 import glob
-import src
-import visualization
 from torch import nn, optim
 from torch.utils.data import DataLoader
 from torchvision import transforms
-from torch.utils.data import DataLoader
 import torch as th
-from visualization.normalMLP import  NormalMLP
 import os.path as osp
 from torch.distributions.normal import Normal
 import pickle as pkl 
-from src.models.clusteringVAE.model_gmm_selector import VAE as ModelCluster
-import pickle as pkl
 from random import shuffle
-from torchvision import transforms
-import numpy as np
-import torch as th
+
 from torch.utils import data
 import src.utils.utils as cfg
-
 
 pf = "./robot_sampling/data_0.pkl"
 pf = "../data/train_data_correct.pkl"
 
-class Sampler:
+class Sampler_data:
     def __init__(self, n=100):
         with open(pf, "rb") as f:
             self.data = pkl.load(f)
@@ -78,14 +73,14 @@ class Sampler:
         return (sample_lidar_clustering, sample_joint_clustering, sample_joint_v_clustering)
 
 
-class Probs:
+class Sampler_anomaly_clustering:
     def __init__(self, n=100, l=3):
         self.cuda = th.cuda.is_available()
         self.device = th.device("cuda" if self.cuda else "cpu")
         self.n = n
         self.l = l
 
-        self.sampler = Sampler(self.n)
+        self.sampler = Sampler_data(self.n)
 
         self.modelAnomalyDetection = NormalMLP().to(self.device)
         self.modelAnomalyDetection.load_state_dict(th.load("../experiments/normalMLP/ckpt/ckpt.pkl", map_location=self.device))
@@ -127,6 +122,11 @@ class Probs:
             prob = 1 - N.cdf(y)
         return prob
 
+    def prob_normalize(self, clst , prob):
+	    clst[:,0] *= (1-prob)
+	    clst[:,1] *= (1-prob)
+	    return clst
+
     def get_data(self, n_interval):
         y_an, x_an, _ = self.sampler.get_sample_anomaly(n_interval)
         x_an = self.routine_tensor(x_an)
@@ -140,12 +140,7 @@ class Probs:
         std_an  = th.exp(0.5 * logvar_an)
 
         prob_an = self.outlier_test(y_an, mu_an, std_an)
-
-        print(x_an.size(),y_an.size(),x_cl.size(),y_cl.size()) 
-
         _, _, clst = self.modelCluster(x_cl)
-        #print(y_an[-1])
-        #print(y_cl[-1][-1])
 
         y_an    = self.routine_array(y_an)[:,self.l]
         mu_an   = self.routine_array(mu_an)[:,self.l]
@@ -153,15 +148,17 @@ class Probs:
         prob_an = self.routine_array(prob_an)[:,self.l]
         
         clst    = self.routine_array(clst)[:,self.l]
+        clst_n  = self.prob_normalize(clst, prob_an)
 
-        data =  {"input": y_an, "mu": mu_an, "std": std_an, "prob": prob_an, "cluster": clst}
-        return data
+        res =  {"input": y_an, "mu": mu_an, "std": std_an, "prob": prob_an, "cluster": clst, "cluster_n": clst_n}
+        return res
 
 if __name__ == '__main__':
-    p =Probs(n=100)
-    d =p.get_data(3)
-    print(d["cluster"])
-    print(d["cluster"].argmax(axis=1))
+    p =Sampler_anomaly_clustering(n=100)
+    res =p.get_data(3)
+    print(res["cluster"])
+    print(res["cluster"].argmax(axis=1))
+    print(res["cluster_n"].sum(axis=1), res["prob"])
 
-    for key in d:
-        print(d[key].shape)
+    for key in res:
+        print(res[key].shape)
