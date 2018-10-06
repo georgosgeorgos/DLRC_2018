@@ -35,6 +35,9 @@ class Encoder(nn.Module):
         self.linear_log_var = nn.Linear(layer_sizes[-1], latent_size)
 
     def forward(self, y, x=None):
+        return self.mu_phi, self.log_var_phi
+
+    def forward(self, y, x=None):
         if self.conditional:
             y = th.cat((y, x), dim=1)
 

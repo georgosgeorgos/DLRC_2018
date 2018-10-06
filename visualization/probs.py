@@ -69,7 +69,11 @@ class Probs:
         mu, logvar = self.model(x)
         std  = th.exp(0.5 * logvar)
         N    = Normal(mu, std)
-        prob = 1 - N.cdf(y)
+        z = np.abs((y - mu) / std)
+        z > 4 # outlier
+        # four or five sigma
+        # too low or too high two side confidence interval do with z variable
+        prob = 1 - N.cdf(y) 
 
         y    = y.cpu().data.numpy()[:,self.l]
         mu   = mu.cpu().data.numpy()[:,self.l]
