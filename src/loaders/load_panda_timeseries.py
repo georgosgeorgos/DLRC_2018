@@ -1,39 +1,42 @@
 import pickle as pkl
-from random import shuffle
+import random
 from torchvision import transforms
 import numpy as np
 import torch as th
 from torch.utils import data
+import glob
+import torch as th
+from libtiff import TIFF
+from torch.utils.data import Dataset
 #import utils.configs as cfg
 
 
 class PandaDataSetTimeSeries(data.Dataset):
-    def __init__(self, path         = "../../data/", 
+    def __init__(self, path         = "../../data/",
+                       path_images  = "../../data/TRAIN_DATA/"           , 
                        filename     = "train_data_correct.pkl", 
                        split        = "train", 
                        n_samples    = 10, 
                        pivot        = 0, 
                        is_transform = False, 
                        is_joint_v   = False,
-                       is_flatten_y = False):
+                       is_label_y = False):
         self.split        = split
         self.n_samples    = n_samples
         self.index_lidar  = []
         self.is_joint_v   = is_joint_v
-        self.is_flatten_y = is_flatten_y
-        #self.transform=transforms.Compose([
-        #    transforms.Lambda(lambda n: th.Tensor(n)),
-        #    transforms.Lambda(lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
-        #    transforms.Lambda(lambda n: n / 1000)])
+        self.is_label_y   = is_label_y
 
         self.is_transform=is_transform
         
         if self.split not in ["test"]:
             with open(path + filename, "rb") as f:
                 self.data = pkl.load(f)
+            self.img_list = glob.glob(path_images + "TRAIN/" + "*")
         else:
             with open(path + "clustering_gt.pkl", "rb") as f:
                 self.data = pkl.load(f)
+            self.img_list = glob.glob(path_images + "TEST/" + "*")
 
         self.runs = len(self.data)
         self.data_lidar   = []
@@ -49,7 +52,6 @@ class PandaDataSetTimeSeries(data.Dataset):
         self.data_lidar[self.data_lidar > 2.0] = 2.0
 
         self.data_joint = np.array(self.data_joint, dtype=float)
-        # joint vel [rad/s]
         self.data_joint_v = np.array(self.data_joint_v, dtype=float)
 
         self.n = self.data_lidar.shape[0]
@@ -57,7 +59,7 @@ class PandaDataSetTimeSeries(data.Dataset):
     def generate_index(self):
         if self.split == "train":
             self.index_lidar = [i for i in range(0, int(0.8 * self.n))]
-            shuffle(self.index_lidar)
+            random.shuffle(self.index_lidar)
         elif self.split == "val":
             self.index_lidar = [i for i in range(int(0.8 * self.n), self.n)]
         else:
@@ -71,26 +73,40 @@ class PandaDataSetTimeSeries(data.Dataset):
     def routine(self, x_data, i):
         x = x_data[(i - self.n_samples):i]
         x = x.flatten()
+        # x = x.T.flatten()
         x = th.from_numpy(x).float()
         return x
 
-    def generate_collision_labels(self, y, p=0.5, t=0.050):
-        labels = np.zeros((y.shape[1], 2))
-        if np.random.random() < p:
-            index=np.random.randint(0, 2, y.shape[1])
-            cols = [i for i in range(y.shape[1])]
-            cols = np.array([cols[i] for i in range(y.shape[1]) if index[i] == 1], dtype=int)
-            if cols is not []:
-                #t = np.random.random(len(cols)) * t
-                #t = t.reshape(-1, 1)
-                y[:, cols] = t #(1 + 0.1 * np.random.randn(self.n_samples, len(cols))) * t.T
-            else:
-                index=np.zeros(y.shape[1]).astype(int)
-        else:
-            index=np.zeros(y.shape[1]).astype(int)
+    def read_image(self, index, is_depth=True):
+        img_array = []
+        path_file = self.img_list[(index - self.n_samples):index] 
+        for i in path_file:
+            tiff = TIFF.open(path_file, mode='r') 
+            img = tiff.read_image()
+            if is_depth:
+                img = img / 1000
+            img = img.astype(float)
+            img = np.reshape(img, (1, img.shape[0], img.shape[1]))
+            tiff.close()
+            if img_array is []:
+                img_array = img.copy()
+            img_array = np.hstack([img_array, img])
+        return img_array
 
-        for i in range(len(index)):
-            labels[i,index[i]] = 1
+    def generate_collision_labels(self, y, p=0.3, t=0.040):
+        cols = [i for i in range(y.shape[1])]
+        if np.random.random() < p:
+            index=np.random.choice(cols, np.random.randint(1, y.shape[1]//2), replace=False)
+            y[:, index] = 0 #(1 + 0.1 * np.random.randn(index.shape[0])) * t
+        else:
+            index=[]
+
+        labels = np.zeros((y.shape[1], 2), dtype=int)
+        for c in cols:
+            if c in index:
+                labels[c,1] = 1
+            else:
+                labels[c,0] = 1
         return y, labels
 
 
@@ -103,11 +119,13 @@ class PandaDataSetTimeSeries(data.Dataset):
         if i < self.n_samples:
                 i += self.n_samples
 
+        depth = self.read_image(i)
+
         Y = self.data_lidar[(i - self.n_samples):i]
-        if self.is_flatten_y:
+        if self.is_label_y:
             Y, labels = self.generate_collision_labels(Y)
             labels    = th.from_numpy(labels).float()
-            Y = Y.flatten()
+            Y = Y.T.flatten()
 
         Y = th.from_numpy(Y).float()
 
@@ -117,10 +135,10 @@ class PandaDataSetTimeSeries(data.Dataset):
         if self.is_joint_v:
             X = th.cat([X, X_v])
 
-        if self.is_transform:
-            lidar = self.transform(lidar)
+        #if self.is_transform:
+        #    lidar = self.transform(lidar)
 
-        if self.is_flatten_y:
+        if self.is_label_y:
             return Y, X, labels
 
         return Y, X
