@@ -123,9 +123,11 @@ class Sampler_anomaly_clustering:
         return prob
 
     def prob_normalize(self, clst , prob):
-	    clst[:,0] *= (1-prob)
-	    clst[:,1] *= (1-prob)
-	    return clst
+        clst_n = np.zeros((clst.shape[0], 3))
+        clst_n[:,0] = clst[:,0] * (1 - prob)
+        clst_n[:,1] = clst[:,1] * (1 - prob)
+        clst_n[:,2] = prob
+        return clst_n
 
     def get_data(self, n_interval):
         y_an, x_an, _ = self.sampler.get_sample_anomaly(n_interval)
@@ -158,7 +160,7 @@ if __name__ == '__main__':
     res =p.get_data(3)
     print(res["cluster"])
     print(res["cluster"].argmax(axis=1))
-    print(res["cluster_n"].sum(axis=1), res["prob"])
+    print(res["cluster_n"].sum(axis=1))
 
     for key in res:
         print(res[key].shape)
