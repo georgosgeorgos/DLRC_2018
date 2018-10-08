@@ -8,14 +8,14 @@ from dash.dependencies import Input, Output
 from plotly.graph_objs import *
 import numpy as np
 from scipy.special import expit, logit
-from demo.sampler_app import Sampler_anomaly_clustering
+from demo.sampler_app import SamplerAnomalyDetection
 import json
 
 app = dash.Dash(__name__)
 
 N_SAMPLES = 1
 N_LIDAR = 3
-N_INTERVAL_UPDATE = 1  # in seconds
+N_INTERVAL_UPDATE = 0.5
 N_STD = 3
 list_lidar_depth = []
 list_lidar_depth_mean = []
@@ -24,7 +24,7 @@ list_prob_anomaly = []
 list_prob_normal = []
 N_MAX_INTERVALS = 100
 
-p = Sampler_anomaly_clustering(n=N_SAMPLES, l=N_LIDAR)
+p = SamplerAnomalyDetection(n=N_SAMPLES, l=N_LIDAR)
 
 ####### APP LAYOUT #########
 app.layout = html.Div(
@@ -42,9 +42,9 @@ app.layout = html.Div(
         html.Div([
             dcc.Graph(id='live-update-bar-chart-clustering-two-classes')
         ], className="three columns"),
-        html.Div([
-            dcc.Graph(id='live-update-bar-chart-clustering-three-classes')
-        ], className="three columns"),
+        # html.Div([
+        #     dcc.Graph(id='live-update-bar-chart-clustering-three-classes')
+        # ], className="three columns"),
         html.Div(id='store-data', style={'display': 'none'})
     ], className="row")
 )
@@ -199,36 +199,36 @@ def update_barchart_clustering_two(n, json_data):
     return Figure(data=[trace], layout=layout)
 
 
-@app.callback(Output('live-update-bar-chart-clustering-three-classes', 'figure'),
-              [
-                  Input('interval-component', 'n_intervals'),
-                  Input('store-data', 'children')
-              ])
-def update_barchart_clustering_three(n, json_data):
-    data = json.loads(json_data)
-    probs_classes = data['cluster_n'][0]
-
-    trace = go.Bar(
-        y=['background', 'thyself', 'other agents'],
-        x=probs_classes,
-        orientation='h',
-        marker=dict(
-            color=['#D6DBDF', '#273746',
-                   '#b30000']),
-        width=1
-    )
-
-    layout = Layout(
-        xaxis=dict(
-            title='Class probability',
-            range=[0, 1]
-        ),
-        height=400,
-        title='Clustering of exteroceptive signals into three classes',
-        showlegend=False
-    )
-
-    return Figure(data=[trace], layout=layout)
+# @app.callback(Output('live-update-bar-chart-clustering-three-classes', 'figure'),
+#               [
+#                   Input('interval-component', 'n_intervals'),
+#                   Input('store-data', 'children')
+#               ])
+# def update_barchart_clustering_three(n, json_data):
+#     data = json.loads(json_data)
+#     probs_classes = data['cluster_n'][0]
+#
+#     trace = go.Bar(
+#         y=['background', 'thyself', 'other agents'],
+#         x=probs_classes,
+#         orientation='h',
+#         marker=dict(
+#             color=['#D6DBDF', '#273746',
+#                    '#b30000']),
+#         width=1
+#     )
+#
+#     layout = Layout(
+#         xaxis=dict(
+#             title='Class probability',
+#             range=[0, 1]
+#         ),
+#         height=400,
+#         title='Clustering of exteroceptive signals into three classes',
+#         showlegend=False
+#     )
+#
+#     return Figure(data=[trace], layout=layout)
 
 
 

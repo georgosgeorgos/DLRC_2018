@@ -25,7 +25,7 @@ pf = "./robot_sampling/data_0.pkl"
 pf = "../data/train_data_correct.pkl"
 
 
-class Sampler_data:
+class SamplerData:
     def __init__(self, n=100):
         with open(pf, "rb") as f:
             self.data = pkl.load(f)
@@ -82,14 +82,14 @@ class Sampler_data:
         return (sample_lidar_clustering, sample_joint_clustering, sample_joint_v_clustering)
 
 
-class Sampler_anomaly_clustering:
+class SamplerAnomalyDetection:
     def __init__(self, n=100, l=3):
         self.cuda = th.cuda.is_available()
         self.device = 'cpu'  # '#th.device("cuda" if self.cuda else "cpu")
         self.n = n
         self.l = l
 
-        self.sampler = Sampler_data(self.n)
+        self.sampler = SamplerData(self.n)
 
         self.modelAnomalyDetection = NormalMLP().to(self.device)
         self.modelAnomalyDetection.load_state_dict(
@@ -169,7 +169,7 @@ class Sampler_anomaly_clustering:
 
 
 if __name__ == '__main__':
-    p = Sampler_anomaly_clustering(n=100)
+    p = SamplerAnomalyDetection(n=100)
     res = p.get_data(3)
     print(res["cluster"])
     print(res["cluster"].argmax(axis=1))
