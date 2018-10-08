@@ -8,11 +8,11 @@ from dash.dependencies import Input, Output
 from plotly.graph_objs import *
 import numpy as np
 from scipy.special import expit, logit
-from sampler_app import Sampler_anomaly_clustering
+from demo.sampler_app import Sampler_anomaly_clustering
 
 app = dash.Dash(__name__)
 
-N_SAMPLES = 10
+N_SAMPLES = 5
 N_LIDAR = 3
 N_UPDATE_EVERY = 1
 N_STD = 3
@@ -46,7 +46,6 @@ app.layout = html.Div(
 @app.callback(Output('live-update-graph-lidars', 'figure'),
               [Input('interval-component', 'n_intervals')])
 def update_graph_lidars(n_intervals):
-
     data = p.get_data(n_intervals)
     lidar_inp = data['input']
     lidar_mean = data['mu']
@@ -100,12 +99,15 @@ def update_graph_lidars(n_intervals):
 @app.callback(Output('live-update-bar-chart-clustering', 'figure'),
               [Input('interval-component', 'n_intervals')])
 def update_barchart_clustering(n_intervals):
+    # Demo data
+    # probs_classes = np.random.randn(3)
+    # probs_classes = np.exp(probs_classes) / np.sum(np.exp(probs_classes), axis=0)
 
-    probs_classes = np.random.randn(3)
-    probs_classes = np.exp(probs_classes) / np.sum(np.exp(probs_classes), axis=0)
+    data = p.get_data(n_intervals)
+    probs_classes = data['cluster_n'][-1]
 
     trace = go.Bar(
-        y=['thyself', 'background', 'other agents'],
+        y=['background', 'thyself', 'other agents'],
         x=probs_classes,
         orientation='h',
         marker=dict(
@@ -172,7 +174,6 @@ def update_graph_probs(n_intervals):
     )
 
     return Figure(data=[trace, trace_b], layout=layout)
-
 
 
 ################################
