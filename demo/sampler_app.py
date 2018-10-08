@@ -46,7 +46,10 @@ class Sampler_data:
         self.n = n
 
     def get_sample_anomaly(self, n_interval):
-        n_interval = n_interval % self.data_lidar.shape[0]
+
+        max_n_interval = self.data_lidar.shape[0] / self.n - 1
+        n_interval = int(n_interval % max_n_interval)
+
         sample_lidar   = self.data_lidar[(n_interval*self.n):((n_interval*self.n)+self.n)]
         sample_joint   = self.data_joint[(n_interval*self.n):((n_interval*self.n)+self.n)]
         sample_joint_v = self.data_joint_v[(n_interval*self.n):((n_interval*self.n)+self.n)]
@@ -56,6 +59,10 @@ class Sampler_data:
         sample_lidar_clustering   = []
         sample_joint_clustering   = []
         sample_joint_v_clustering = []
+
+        max_n_interval = self.data_lidar.shape[0] / self.n - 1
+        n_interval = int(n_interval % max_n_interval)
+
         start = n_interval*self.n
         end   = start + self.n
         if start < n_sample_y:
@@ -76,7 +83,7 @@ class Sampler_data:
 class Sampler_anomaly_clustering:
     def __init__(self, n=100, l=3):
         self.cuda = th.cuda.is_available()
-        self.device = th.device("cuda" if self.cuda else "cpu")
+        self.device = 'cpu' #'#th.device("cuda" if self.cuda else "cpu")
         self.n = n
         self.l = l
 
