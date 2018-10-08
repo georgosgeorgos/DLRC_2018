@@ -17,10 +17,10 @@ from torch.distributions import Normal
 # for every lidar (9) exists a (k) component clustering to cluster its measurements
 
 class Encoder(nn.Module):
-    def __init__(self, layer_sizes, latent_size, flag=True):
+    def __init__(self, layer_sizes, latent_size, is_uq=True):
 
         super().__init__()
-        self.flag = flag
+        self.is_uq = is_uq
         self.MLP = nn.Sequential()
 
         for i, (in_size, out_size) in enumerate( zip(layer_sizes[:-1], layer_sizes[1:]) ):
@@ -28,7 +28,7 @@ class Encoder(nn.Module):
             self.MLP.add_module(name="A%i"%(i), module=nn.Tanh())
 
         self.linear_means = nn.Linear(layer_sizes[-1], latent_size)
-        if self.flag:
+        if self.is_uq:
             self.linear_log_var = nn.Linear(layer_sizes[-1], latent_size)
 
     def forward(self, x):
@@ -36,7 +36,7 @@ class Encoder(nn.Module):
 
         self.mu_phi = self.linear_means(x)
 
-        if self.flag:
+        if self.is_uq:
             self.log_var_phi = self.linear_log_var(x)
             return self.mu_phi, self.log_var_phi
         return self.mu_phi
