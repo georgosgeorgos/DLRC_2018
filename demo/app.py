@@ -12,7 +12,7 @@ from sampler_app import Sampler_anomaly_clustering
 
 app = dash.Dash(__name__)
 
-N_SAMPLES = 100
+N_SAMPLES = 10
 N_LIDAR = 3
 N_UPDATE_EVERY = 1
 N_STD = 3
@@ -29,7 +29,8 @@ app.layout = html.Div(
             dcc.Interval(
                 id='interval-component',
                 interval=N_UPDATE_EVERY * 1000,  # seconds
-                n_intervals=0
+                n_intervals=0,
+                max_intervals=10
             )
         ], className="nine columns"),
 
