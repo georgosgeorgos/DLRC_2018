@@ -9,13 +9,20 @@ from plotly.graph_objs import *
 import numpy as np
 from scipy.special import expit, logit
 from demo.sampler_app import Sampler_anomaly_clustering
+import json
 
 app = dash.Dash(__name__)
 
-N_SAMPLES = 5
+N_SAMPLES = 1
 N_LIDAR = 3
-N_UPDATE_EVERY = 1
+N_INTERVAL_UPDATE = 1  # in seconds
 N_STD = 3
+list_lidar_depth = []
+list_lidar_depth_mean = []
+list_lidar_depth_std = []
+list_prob_anomaly = []
+list_prob_normal = []
+N_MAX_INTERVALS = 100
 
 p = Sampler_anomaly_clustering(n=N_SAMPLES, l=N_LIDAR)
 
@@ -23,139 +30,124 @@ p = Sampler_anomaly_clustering(n=N_SAMPLES, l=N_LIDAR)
 app.layout = html.Div(
     html.Div([
         html.Div([
-            html.H3('Lidars visualizations'),
             dcc.Graph(id='live-update-graph-lidars'),
             dcc.Graph(id='live-update-graph-probs'),
             dcc.Interval(
                 id='interval-component',
-                interval=N_UPDATE_EVERY * 1000,  # seconds
-                n_intervals=0,
-                max_intervals=10
+                interval=N_INTERVAL_UPDATE * 1000,
+                n_intervals=N_MAX_INTERVALS
             )
-        ], className="nine columns"),
+        ], className="six columns"),
 
         html.Div([
-            html.H3('Clustering'),
-            dcc.Graph(id='live-update-bar-chart-clustering')
+            dcc.Graph(id='live-update-bar-chart-clustering-two-classes')
         ], className="three columns"),
-
+        html.Div([
+            dcc.Graph(id='live-update-bar-chart-clustering-three-classes')
+        ], className="three columns"),
+        html.Div(id='store-data', style={'display': 'none'})
     ], className="row")
 )
 
 
-@app.callback(Output('live-update-graph-lidars', 'figure'),
+@app.callback(Output('store-data', 'children'),
               [Input('interval-component', 'n_intervals')])
-def update_graph_lidars(n_intervals):
-    data = p.get_data(n_intervals)
-    lidar_inp = data['input']
-    lidar_mean = data['mu']
-    lidar_std = data['std']
+def update_data(n):
+    data = p.get_data(n)
+    return json.dumps(data)
+
+
+@app.callback(Output('live-update-graph-lidars', 'figure'),
+              [
+                  Input('interval-component', 'n_intervals'),
+                  Input('store-data', 'children')
+              ])
+def update_graph_lidars(n, json_data):
+    data = json.loads(json_data)
+
+    list_lidar_depth.append(data['input'][0])
+    list_lidar_depth_mean.append(data['mu'][0])
+    list_lidar_depth_std.append(data['std'][0])
+
+    timesteps = np.arange(len(list_lidar_depth))
 
     trace_inp = go.Scatter(
-        x=np.arange(len(lidar_inp)) + len(lidar_inp) * n_intervals,
-        y=lidar_inp,
+        x=timesteps,
+        y=list_lidar_depth,
         mode='lines',
         name='lidar',
-        line=dict(color='#000000')
+        line=dict(color='#000000', smoothing=0.5, shape='spline')
     )
 
     trace_mean = go.Scatter(
-        x=np.arange(len(lidar_mean)) + len(lidar_mean) * n_intervals,
-        y=lidar_mean,
+        x=timesteps,
+        y=list_lidar_depth_mean,
         mode='lines',
         name='mean',
-        line=dict(color='#E74C3C')
+        line=dict(color='#E74C3C', smoothing=0.5, shape='spline')
     )
 
     trace_upper_std = go.Scatter(
-        x=np.arange(len(lidar_std)) + len(lidar_std) * n_intervals,
-        y=lidar_mean + N_STD * lidar_std,
+        x=timesteps,
+        y=np.array(list_lidar_depth_mean) + N_STD * np.array(list_lidar_depth_std),
         mode='lines',
         name='conf interval',
-        line=dict(color='#D6EAF8')
+        fill='tonexty',
+        fillcolor='rgba(174, 214, 241, 0.5)',
+        line=dict(color='rgba(174, 214, 241, 0.5)')
     )
 
     trace_lower_std = go.Scatter(
-        x=np.arange(len(lidar_std)) + len(lidar_std) * n_intervals,
-        y=lidar_mean - N_STD * lidar_std,
+        x=timesteps,
+        y=np.array(list_lidar_depth_mean) - N_STD * np.array(list_lidar_depth_std),
         mode='lines',
-        line=dict(color='#D6EAF8')
+        showlegend=False,
+        fillcolor='rgba(174, 214, 241, 0.5)',
+        line=dict(color='rgba(174, 214, 241, 0.5)')
     )
 
     layout = Layout(
         yaxis=dict(
-            title='Depth (m)',
-            range=[0, 2]
+            title='Depth (m)'
         ),
         height=400,
         showlegend=True,
+        title='Lidar measurements',
         legend=dict(xanchor='right', yanchor='top'),
-        margin=dict(r=0)
     )
 
-    return Figure(data=[trace_inp, trace_mean, trace_upper_std, trace_lower_std], layout=layout)
-
-
-@app.callback(Output('live-update-bar-chart-clustering', 'figure'),
-              [Input('interval-component', 'n_intervals')])
-def update_barchart_clustering(n_intervals):
-    # Demo data
-    # probs_classes = np.random.randn(3)
-    # probs_classes = np.exp(probs_classes) / np.sum(np.exp(probs_classes), axis=0)
-
-    data = p.get_data(n_intervals)
-    probs_classes = data['cluster_n'][-1]
-
-    trace = go.Bar(
-        y=['background', 'thyself', 'other agents'],
-        x=probs_classes,
-        orientation='h',
-        marker=dict(
-            color=['#D2B4DE', '#D1F2EB',
-                   '#F7DC6F']),
-        width=1
-    )
-
-    layout = Layout(
-        xaxis=dict(
-            title='Class probability',
-            range=[0, 1]
-        ),
-        height=400,
-        showlegend=False
-    )
-
-    return Figure(data=[trace], layout=layout)
+    return Figure(data=[trace_lower_std, trace_upper_std, trace_inp, trace_mean], layout=layout)
 
 
 @app.callback(Output('live-update-graph-probs', 'figure'),
-              [Input('interval-component', 'n_intervals')])
-def update_graph_probs(n_intervals):
-    probs_anom = p.get_data(n_intervals)['prob']
-    lidar = p.get_data(n_intervals)['input']
-
-    probs_normal = np.ones(len(probs_anom))
+              [
+                  Input('interval-component', 'n_intervals'),
+                  Input('store-data', 'children')
+              ])
+def update_graph_probs(n, json_data):
+    data = json.loads(json_data)
+    probs_anom = data['prob'][0]
+    list_prob_anomaly.append(probs_anom)
+    list_prob_normal.append(1)
+    timesteps = np.arange(len(list_prob_anomaly))
 
     trace = go.Scatter(
-        x=np.arange(len(probs_normal)) + len(probs_normal) * n_intervals,
-        y=probs_normal,
+        x=timesteps,
+        y=list_prob_normal,
         mode='lines',
         fill='tozeroy',
-        fillcolor='#cce6ff',
+        fillcolor='#ABEBC6',
         name='normal',
-        line=dict(smoothing=1., shape='spline')
+        line=dict(color='#239B56', smoothing=0.5, shape='spline')
     )
 
-    # demo data
-    # probs_anom = expit(np.random.randn(N_SAMPLES))
-
     trace_b = go.Scatter(
-        x=np.arange(len(probs_anom)) + len(probs_anom) * n_intervals,
-        y=probs_anom,
+        x=timesteps,
+        y=list_prob_anomaly,
         mode='lines',
         fill='tozeroy',
         fillcolor='#ffcccc',
-        line=dict(color='#b30000', smoothing=1., shape='spline'),
+        line=dict(color='#b30000', smoothing=0.5, shape='spline'),
         name='anomalous'
     )
 
@@ -167,13 +159,77 @@ def update_graph_probs(n_intervals):
             title='Prob',
             range=[0, 1]
         ),
-        height=150,
+        height=250,
         showlegend=True,
-        legend=dict(xanchor='right', yanchor='top', bgcolor='rgba(255, 255, 255, 0.75)'),
-        margin=dict(t=3, r=0)
+        title='Stage one: Anomaly Detection',
+        legend=dict(xanchor='right', yanchor='top', bgcolor='rgba(255, 255, 255, 0.5)'),
     )
 
     return Figure(data=[trace, trace_b], layout=layout)
+
+
+@app.callback(Output('live-update-bar-chart-clustering-two-classes', 'figure'),
+              [
+                  Input('interval-component', 'n_intervals'),
+                  Input('store-data', 'children')
+              ])
+def update_barchart_clustering_two(n, json_data):
+    data = json.loads(json_data)
+    probs_classes = data['cluster'][0]
+
+    trace = go.Bar(
+        y=['background', 'thyself'],
+        x=probs_classes,
+        orientation='h',
+        marker=dict(
+            color=['#D6DBDF', '#273746']),
+        width=1
+    )
+
+    layout = Layout(
+        xaxis=dict(
+            title='Class probability',
+            range=[0, 1]
+        ),
+        height=400,
+        title='Stage two: Clustering into two classes',
+        showlegend=False
+    )
+
+    return Figure(data=[trace], layout=layout)
+
+
+@app.callback(Output('live-update-bar-chart-clustering-three-classes', 'figure'),
+              [
+                  Input('interval-component', 'n_intervals'),
+                  Input('store-data', 'children')
+              ])
+def update_barchart_clustering_three(n, json_data):
+    data = json.loads(json_data)
+    probs_classes = data['cluster_n'][0]
+
+    trace = go.Bar(
+        y=['background', 'thyself', 'other agents'],
+        x=probs_classes,
+        orientation='h',
+        marker=dict(
+            color=['#D6DBDF', '#273746',
+                   '#b30000']),
+        width=1
+    )
+
+    layout = Layout(
+        xaxis=dict(
+            title='Class probability',
+            range=[0, 1]
+        ),
+        height=400,
+        title='Clustering of exteroceptive signals into three classes',
+        showlegend=False
+    )
+
+    return Figure(data=[trace], layout=layout)
+
 
 
 ################################
