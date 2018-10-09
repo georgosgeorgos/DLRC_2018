@@ -1,34 +1,42 @@
-# -*- coding: utf-8 -*-
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
-from plotly import tools
 from dash.dependencies import Input, Output
 from plotly.graph_objs import *
 import numpy as np
-from scipy.special import expit, logit
 from demo.sampler_app import SamplerAnomalyDetection
 import json
+import time
 from collections import defaultdict
+import py_at_broker as pab
+import src.utils.configs as cfg
 
 app = dash.Dash(__name__)
+
+broker = pab.broker()
+broker.request_signal("franka_lidar", pab.MsgType.franka_lidar)
+time.sleep(0.5)
 
 N_SAMPLES = 1
 N_INTERVAL_UPDATE = 1.
 N_STD = 3
 N_MAX_INTERVALS = 100
-N_LIDAR_IDX = [3, 7]
+N_LIDAR_IDX = [3]
 
+# Lists that store data coming in over time
 list_lidar_depth = defaultdict(list)
 list_lidar_depth_mean = defaultdict(list)
 list_lidar_depth_std = defaultdict(list)
-
 list_prob_anomaly = defaultdict(list)
 list_prob_normal = defaultdict(list)
 
 p = SamplerAnomalyDetection(n=N_SAMPLES)
 
+
+################################
+#### APP LAYOUT
+################################
 
 def lidar_viz(lidar_id):
     return html.Div([
@@ -53,6 +61,18 @@ def lidar_viz(lidar_id):
             dcc.Graph(id='live-update-bar-chart-clustering-two-classes-lidar{}'.format(lidar_id))
         ], className="three columns"),
     ], className="row")
+
+
+app.layout = html.Div(
+    [
+        dcc.Interval(
+            id='interval-component',
+            interval=N_INTERVAL_UPDATE * 1000,
+            n_intervals=N_MAX_INTERVALS
+        )] +
+    [lidar_viz(id) for id in N_LIDAR_IDX] +
+    [html.Div(id='store-data-lidars', style={'display': 'none'})]
+)
 
 
 ################################
@@ -139,7 +159,16 @@ def create_callback_lidar_graph(id):
     def callback(n, json_data):
         data = json.loads(json_data)
 
-        list_lidar_depth[id].append(data['input'][-1][id])
+        # list_lidar_depth[id].append(data['input'][-1][id])
+
+        msg_lidar = broker.recv_msg("franka_lidar", -1)
+
+        ### TODO: Move preprocess shit in sampler!
+        lidar_depth = list(msg_lidar.get_data())[id]
+        lidar_depth = min(lidar_depth, cfg.LIDAR_MAX_RANGE)
+        lidar_depth /= 1000
+        list_lidar_depth[id].append(lidar_depth)
+
         list_lidar_depth_mean[id].append(data['mu'][-1][id])
         list_lidar_depth_std[id].append(data['std'][-1][id])
 
@@ -195,21 +224,6 @@ def create_callback_lidar_graph(id):
     return callback
 
 
-################################
-#### APP LAYOUT
-################################
-app.layout = html.Div(
-    [
-        dcc.Interval(
-            id='interval-component',
-            interval=N_INTERVAL_UPDATE * 1000,
-            n_intervals=N_MAX_INTERVALS
-        )] +
-    [lidar_viz(id) for id in N_LIDAR_IDX] +
-    [html.Div(id='store-data-lidars', style={'display': 'none'})]
-)
-
-
 @app.callback(Output('store-data-lidars', 'children'),
               [Input('interval-component', 'n_intervals')])
 def update_data(n):
@@ -249,14 +263,7 @@ def update_data(n):
 #     return Figure(data=[trace], layout=layout)
 
 
-################################
-#### START APP
-################################
-
-app.css.append_css({
-    'external_url': 'https://codepen.io/chriddyp/pen/bWLwgP.css'
-})
-
+# Create separate callbacks for each lidar
 for lidar_idx in N_LIDAR_IDX:
     app.callback(Output('live-update-bar-chart-clustering-two-classes-lidar{}'.format(lidar_idx), 'figure'),
                  [
@@ -273,6 +280,10 @@ for lidar_idx in N_LIDAR_IDX:
                      Input('interval-component', 'n_intervals'),
                      Input('store-data-lidars', 'children')
                  ])(create_callback_lidar_graph(lidar_idx))
+
+app.css.append_css({
+    'external_url': 'https://codepen.io/chriddyp/pen/bWLwgP.css'
+})
 
 if __name__ == '__main__':
     app.run_server(debug=True, threaded=True)

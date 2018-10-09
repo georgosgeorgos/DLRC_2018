@@ -1,0 +1,35 @@
+[2018-10-09 13:42:30.164] [address_broker_logger] [info] New address broker is created. Will listen to frontend socket address tcp://*:51468
+[2018-10-09 13:43:08.533] [address_broker_logger] [info] Signal <franka_state> offered. Endpoint <tcp://10.250.144.22:49152>, pid <6460>, dtype <7>
+[2018-10-09 13:43:08.533] [address_broker_logger] [info] Signal <franka_target_pos> requested.
+[2018-10-09 13:43:08.533] [address_broker_logger] [info] Signal unknown
+[2018-10-09 13:43:08.533] [address_broker_logger] [info] Signal <franka_gripper> requested.
+[2018-10-09 13:43:08.533] [address_broker_logger] [info] Signal unknown
+[2018-10-09 13:43:11.863] [address_broker_logger] [info] Signal <franka_state> offered. Endpoint <tcp://10.250.144.22:49152>, pid <6460>, dtype <7>
+[2018-10-09 13:43:11.863] [address_broker_logger] [warning] Signal <franka_state> is already declared. New signal: endpoint <tcp://10.250.144.22:49152>, pid <6460>. Already known signal: endpoint <tcp://10.250.144.22:49152>, pid <6460>
+[2018-10-09 13:43:11.864] [address_broker_logger] [info] Signal <franka_state> requested.
+[2018-10-09 13:43:11.864] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.22:49152, pid 6460
+[2018-10-09 13:43:11.864] [address_broker_logger] [info] Signal <franka_target_pos> requested.
+[2018-10-09 13:43:11.864] [address_broker_logger] [info] Signal unknown
+[2018-10-09 13:43:11.864] [address_broker_logger] [info] Signal <franka_gripper> requested.
+[2018-10-09 13:43:11.864] [address_broker_logger] [info] Signal unknown
+[2018-10-09 13:44:51.419] [address_broker_logger] [info] Signal <franka_lidar> offered. Endpoint <tcp://10.250.144.42:49152>, pid <1172>, dtype <12>
+[2018-10-09 13:45:43.991] [address_broker_logger] [info] Signal <franka_lidar> offered. Endpoint <tcp://10.250.144.42:49152>, pid <1245>, dtype <12>
+[2018-10-09 13:45:43.991] [address_broker_logger] [warning] Signal <franka_lidar> is already declared. New signal: endpoint <tcp://10.250.144.42:49152>, pid <1245>. Already known signal: endpoint <tcp://10.250.144.42:49152>, pid <1172>
+[2018-10-09 13:45:43.992] [address_broker_logger] [info] Signal <franka_lidar> requested.
+[2018-10-09 13:45:43.992] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.42:49152, pid 1172
+[2018-10-09 13:51:40.413] [address_broker_logger] [info] Signal <franka_lidar> requested.
+[2018-10-09 13:51:40.413] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.42:49152, pid 1172
+[2018-10-09 13:51:42.768] [address_broker_logger] [info] Signal <franka_lidar> requested.
+[2018-10-09 13:51:42.768] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.42:49152, pid 1172
+[2018-10-09 13:53:16.430] [address_broker_logger] [info] Signal <franka_lidar> requested.
+[2018-10-09 13:53:16.430] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.42:49152, pid 1172
+[2018-10-09 13:53:18.798] [address_broker_logger] [info] Signal <franka_lidar> requested.
+[2018-10-09 13:53:18.798] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.42:49152, pid 1172
+[2018-10-09 14:02:26.175] [address_broker_logger] [info] Signal <franka_lidar> requested.
+[2018-10-09 14:02:26.175] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.42:49152, pid 1172
+[2018-10-09 14:02:28.439] [address_broker_logger] [info] Signal <franka_lidar> requested.
+[2018-10-09 14:02:28.439] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.42:49152, pid 1172
+[2018-10-09 14:03:41.819] [address_broker_logger] [info] Signal <franka_lidar> requested.
+[2018-10-09 14:03:41.819] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.42:49152, pid 1172
+[2018-10-09 14:03:44.156] [address_broker_logger] [info] Signal <franka_lidar> requested.
+[2018-10-09 14:03:44.156] [address_broker_logger] [info] Found the requested signal. Endpoint tcp://10.250.144.42:49152, pid 1172
