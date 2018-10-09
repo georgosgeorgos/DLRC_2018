@@ -17,6 +17,8 @@ app = dash.Dash(__name__)
 broker = pab.broker()
 broker.request_signal("franka_lidar", pab.MsgType.franka_lidar)
 time.sleep(0.5)
+broker.request_signal("franka_state", pab.MsgType.franka_state)
+time.sleep(0.5)
 
 N_SAMPLES = 1
 N_INTERVAL_UPDATE = 1.
@@ -159,16 +161,7 @@ def create_callback_lidar_graph(id):
     def callback(n, json_data):
         data = json.loads(json_data)
 
-        # list_lidar_depth[id].append(data['input'][-1][id])
-
-        msg_lidar = broker.recv_msg("franka_lidar", -1)
-
-        ### TODO: Move preprocess shit in sampler!
-        lidar_depth = list(msg_lidar.get_data())[id]
-        lidar_depth = min(lidar_depth, cfg.LIDAR_MAX_RANGE)
-        lidar_depth /= 1000
-
-        list_lidar_depth[id].append(lidar_depth)
+        list_lidar_depth[id].append(data['input'][-1][id])
         list_lidar_depth_mean[id].append(data['mu'][-1][id])
         list_lidar_depth_std[id].append(data['std'][-1][id])
 
@@ -227,7 +220,12 @@ def create_callback_lidar_graph(id):
 @app.callback(Output('store-data-lidars', 'children'),
               [Input('interval-component', 'n_intervals')])
 def update_data(n):
-    data = p.get_data(n)
+
+    msg_lidar = broker.recv_msg("franka_lidar", -1)
+    msg_state = broker.recv_msg("franka_state", -1)
+
+    data = p.get_data(msg_lidar, msg_state, n, is_robot=True)
+
     return json.dumps(data)
 
 
