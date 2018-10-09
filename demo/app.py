@@ -5,7 +5,7 @@ import plotly.graph_objs as go
 from dash.dependencies import Input, Output
 from plotly.graph_objs import *
 import numpy as np
-from demo.sampler_app import SamplerAnomalyDetection
+from demo.sampler_app import SamplerAnomalyClustering
 import json
 import time
 from collections import defaultdict
@@ -31,7 +31,7 @@ list_lidar_depth_std = defaultdict(list)
 list_prob_anomaly = defaultdict(list)
 list_prob_normal = defaultdict(list)
 
-p = SamplerAnomalyDetection(n=N_SAMPLES)
+p = SamplerAnomalyClustering(n=N_SAMPLES)
 
 
 ################################
@@ -167,8 +167,8 @@ def create_callback_lidar_graph(id):
         lidar_depth = list(msg_lidar.get_data())[id]
         lidar_depth = min(lidar_depth, cfg.LIDAR_MAX_RANGE)
         lidar_depth /= 1000
-        list_lidar_depth[id].append(lidar_depth)
 
+        list_lidar_depth[id].append(lidar_depth)
         list_lidar_depth_mean[id].append(data['mu'][-1][id])
         list_lidar_depth_std[id].append(data['std'][-1][id])
 

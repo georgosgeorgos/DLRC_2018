@@ -84,7 +84,7 @@ class SamplerData:
         return (sample_lidar_clustering, sample_joint_clustering, sample_joint_v_clustering)
 
 
-class SamplerAnomalyDetection:
+class SamplerAnomalyClustering:
     def __init__(self, n=100, l=[i for i in range(9)]):
         self.cuda = th.cuda.is_available()
         self.device = 'cpu'  # '#th.device("cuda" if self.cuda else "cpu")
@@ -101,7 +101,7 @@ class SamplerAnomalyDetection:
         self.n_clusters = 2
         self.lidar_input_size = 9
         self.joint_input_size = 7
-        self.n_samples_y = 10
+        self.n_samples_y = 1
         self.latent_size = self.lidar_input_size * self.n_clusters
         self.encoder_layer_sizes = [self.joint_input_size * self.n_samples_y, 256, 256]
         self.test = "cdf"
@@ -142,14 +142,22 @@ class SamplerAnomalyDetection:
         clst_n[:, 2] = prob
         return clst_n
 
-    def get_data(self, n_interval):
-        y_an, x_an, _ = self.sampler.get_sample_anomaly(n_interval)
-        x_an = self.routine_tensor(x_an)
-        y_an = self.routine_tensor(y_an)
+    def get_data(self, y, x, n_interval, is_robot=True):
+        if not is_robot:
+            y, x, _ = self.sampler.get_sample_anomaly(n_interval)
+        else:
+            y /= 1000
+            y[y > 2.0] = 2.0
+        x_an = self.routine_tensor(x)
+        y_an = self.routine_tensor(y)
 
-        y_cl, x_cl, _ = self.sampler.get_sample_clustering(n_interval)
-        x_cl = self.routine_tensor(x_cl)
-        y_cl = self.routine_tensor(y_cl)
+        if not is_robot:
+            y, x, _ = self.sampler.get_sample_clustering(n_interval)
+        else:
+            y /= 1000
+            y[y > 2.0] = 2.0
+        x_cl = self.routine_tensor(x)
+        y_cl = self.routine_tensor(y)
 
         mu_an, logvar_an = self.modelAnomalyDetection(x_an)
         std_an = th.exp(0.5 * logvar_an)
