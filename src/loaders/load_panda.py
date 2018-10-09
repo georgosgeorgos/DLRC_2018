@@ -6,9 +6,10 @@ from torch.utils.data import Dataset
 
 
 class PandaDataSet(Dataset):
-    def __init__(self, root_dir=None, filename=None, train=None, test_split=0.2, transform=None):
+    def __init__(self, root_dir=None, root_img_dir=None, filename=None, train=None, test_split=0.2, transform=None):
 
         self.root_dir = root_dir
+        self.root_img_dir = root_img_dir
         self.train = train
         self.test_split = test_split
         self.transform = transform
