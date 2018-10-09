@@ -10,7 +10,7 @@ batch_size_test  = 1
 learning_rate    = 0.0001
 lidar_input_size = 9       # number lidars obs var
 joint_input_size = 7       # joint state   cond var
-n_samples_y      = 10      # length timeseries
+n_samples_y      = 1      # length timeseries
 n_samples_z      = 10      # sample from selector
 n_clusters       = 2       # clustering component (background/self | static/dynamic)
 split            = "train"
@@ -21,7 +21,7 @@ ckpt_test  = "ckpt_" + model_type + ".pth"
 is_entropy          = False
 is_multimodal       = True
 lmbda               = 1
-variant             = "multimodal"
+variant             = "1_sample"
 
 if is_entropy:
 	result_dir = osp.join('..', 'experiments', model_type + str(lmbda) + variant)

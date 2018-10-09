@@ -63,17 +63,17 @@ class VAE(nn.Module):
         self.batch_size = batch_size
         self.n_clusters = n_clusters
         self.input_size = self.latent_size // self.n_clusters
+        self.model_type = model_type
+        self.is_multimodal=is_multimodal
 
         # the encoder builds deterministic moments for the approx posterior q_{phi}(z|y, x)
         # the encoder is typically a MLP
         self.encoder     = Encoder(encoder_layer_sizes, latent_size, True)
-        self.encoder_cnn = EncoderCNN(latent_size, True)
+        if self.is_multimodal:
+            self.encoder_cnn = EncoderCNN(latent_size, True)
         # the decoder compute the approx likelihood p_{theta}(y|z, x)
         self.cluster = Encoder(encoder_layer_sizes, latent_size, False)
 
-        self.model_type = model_type
-        self.is_multimodal=is_multimodal
-        
         self.init_parameters()
 
     def init_parameters(self):
@@ -88,7 +88,8 @@ class VAE(nn.Module):
 
     def forward(self, x, x_d=None):
         mu_phi, log_var_phi     = self.encoder(x)
-        mu_phi_d, log_var_phi_d = self.encoder_cnn(x_d)
+        if self.is_multimodal:
+            mu_phi_d, log_var_phi_d = self.encoder_cnn(x_d)
         clusters = self.cluster(x)
 
         if self.is_multimodal:
