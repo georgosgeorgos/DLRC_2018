@@ -145,7 +145,7 @@ def create_callback_anomaly_clustering(id):
                 title='Prob',
                 range=[0, 1]
             ),
-            height=250,
+            height=400,
             showlegend=True,
             title='Stage one: Anomaly Detection',
             legend=dict(xanchor='right', yanchor='top', bgcolor='rgba(255, 255, 255, 0.5)'),
