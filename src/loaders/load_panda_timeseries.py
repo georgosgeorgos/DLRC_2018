@@ -8,25 +8,27 @@ import glob
 import torch as th
 from libtiff import TIFF
 from torch.utils.data import Dataset
-#import utils.configs as cfg
+import sys
+sys.path.append('/home/georgos/DLRC_2018/')
+import src.utils.configs as cfg
 
 
 class PandaDataSetTimeSeries(data.Dataset):
     def __init__(self, path         = "../../data/",
-                       path_images  = "../../data/TRAIN_DATA/"           , 
+                       path_images  = "../../data/TRAIN_DATA/DEPTH/", 
                        filename     = "train_data_correct.pkl", 
                        split        = "train", 
                        n_samples    = 10, 
                        pivot        = 0, 
                        is_transform = False, 
                        is_joint_v   = False,
-                       is_label_y = False):
-        self.split        = split
-        self.n_samples    = n_samples
-        self.index_lidar  = []
-        self.is_joint_v   = is_joint_v
-        self.is_label_y   = is_label_y
+                       is_label_y   = False):
 
+        self.split       = split
+        self.n_samples   = n_samples
+        self.index_lidar = []
+        self.is_joint_v  = is_joint_v
+        self.is_label_y  = is_label_y
         self.is_transform=is_transform
         
         if self.split not in ["test"]:
@@ -54,8 +56,11 @@ class PandaDataSetTimeSeries(data.Dataset):
         self.data_joint = np.array(self.data_joint, dtype=float)
         self.data_joint_v = np.array(self.data_joint_v, dtype=float)
 
+        self.img_list = np.array(self.img_list)
+
         self.n = self.data_lidar.shape[0]
-        
+        self.base = "/".join(self.img_list[0].split("/")[:-1])
+
     def generate_index(self):
         if self.split == "train":
             self.index_lidar = [i for i in range(0, int(0.8 * self.n))]
@@ -72,31 +77,34 @@ class PandaDataSetTimeSeries(data.Dataset):
 
     def routine(self, x_data, i):
         x = x_data[(i - self.n_samples):i]
-        x = x.flatten()
-        # x = x.T.flatten()
+        #x = x.flatten()
+        x = x.T.flatten()
         x = th.from_numpy(x).float()
         return x
 
-    def read_image(self, index, is_depth=True):
-        img_array = []
-        path_file = self.img_list[(index - self.n_samples):index] 
-        for i in path_file:
+    def read_images(self, index, is_depth=True):
+        img_array = None
+        for ix in range((index-self.n_samples), index):
+            path_file = self.base + "/" + str(ix) + ".tiff"
             tiff = TIFF.open(path_file, mode='r') 
             img = tiff.read_image()
             if is_depth:
                 img = img / 1000
+                img[img > 2.0] = 2.0
             img = img.astype(float)
             img = np.reshape(img, (1, img.shape[0], img.shape[1]))
             tiff.close()
-            if img_array is []:
+            if img_array is None:
                 img_array = img.copy()
-            img_array = np.hstack([img_array, img])
+            else:
+                img_array = np.vstack([img_array, img])
         return img_array
 
     def generate_collision_labels(self, y, p=0.3, t=0.040):
         cols = [i for i in range(y.shape[1])]
         if np.random.random() < p:
-            index=np.random.choice(cols, np.random.randint(1, y.shape[1]//2), replace=False)
+            index=np.random.choice(cols, np.random.randint(1, y.shape[1]//2), 
+                                   replace=False)
             y[:, index] = 0 #(1 + 0.1 * np.random.randn(index.shape[0])) * t
         else:
             index=[]
@@ -119,16 +127,16 @@ class PandaDataSetTimeSeries(data.Dataset):
         if i < self.n_samples:
                 i += self.n_samples
 
-        depth = self.read_image(i)
+        depth = self.read_images(i)
 
         Y = self.data_lidar[(i - self.n_samples):i]
+
         if self.is_label_y:
             Y, labels = self.generate_collision_labels(Y)
             labels    = th.from_numpy(labels).float()
             Y = Y.T.flatten()
 
         Y = th.from_numpy(Y).float()
-
         X   = self.routine(self.data_joint, i)
         X_v = self.routine(self.data_joint_v, i)
         
@@ -136,18 +144,15 @@ class PandaDataSetTimeSeries(data.Dataset):
             X = th.cat([X, X_v])
 
         #if self.is_transform:
-        #    lidar = self.transform(lidar)
-
         if self.is_label_y:
-            return Y, X, labels
+            return Y, X, depth, labels
 
-        return Y, X
+        return Y, X, depth
 
 if __name__ == '__main__':
 
     data = PandaDataSetTimeSeries()
-    print(len(data))
-    print(data[100])
+    print(data.read_images(29).shape)
     #print(data[100])
     #data = Loader("tr")
     #print(data[100])

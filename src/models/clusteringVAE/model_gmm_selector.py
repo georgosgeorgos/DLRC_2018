@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 from torch.distributions import Normal
+from models.clusteringVAE.model_cnn_gmm_selector import EncoderCNN
 # we frame all the problem as an unsupervised learning problem.
 # we want to use a Conditional Variational Auto-Encoder to tackle the problem.
 
@@ -47,7 +48,8 @@ class VAE(nn.Module):
                  latent_size,
                  n_clusters,
                  batch_size,
-                 model_type="selector"):
+                 model_type="selector",
+                 is_multimodal=True):
 
         super().__init__()
         assert type(encoder_layer_sizes) == list
@@ -64,11 +66,13 @@ class VAE(nn.Module):
 
         # the encoder builds deterministic moments for the approx posterior q_{phi}(z|y, x)
         # the encoder is typically a MLP
-        self.encoder = Encoder(encoder_layer_sizes, latent_size, True)
+        self.encoder     = Encoder(encoder_layer_sizes, latent_size, True)
+        self.encoder_cnn = EncoderCNN(latent_size, True)
         # the decoder compute the approx likelihood p_{theta}(y|z, x)
         self.cluster = Encoder(encoder_layer_sizes, latent_size, False)
 
         self.model_type = model_type
+        self.is_multimodal=is_multimodal
         
         self.init_parameters()
 
@@ -82,9 +86,14 @@ class VAE(nn.Module):
         x = x.reshape(-1, self.n_clusters, self.input_size).permute(0,2,1)
         return x
 
-    def forward(self, x):
-        mu_phi, log_var_phi = self.encoder(x)
+    def forward(self, x, x_d=None):
+        mu_phi, log_var_phi     = self.encoder(x)
+        mu_phi_d, log_var_phi_d = self.encoder_cnn(x_d)
         clusters = self.cluster(x)
+
+        if self.is_multimodal:
+            mu_phi      = mu_phi      + mu_phi_d
+            log_var_phi = log_var_phi + log_var_phi_d
 
         mu_phi  = self.routine(mu_phi)
         std_phi = th.exp(0.5 * log_var_phi)
