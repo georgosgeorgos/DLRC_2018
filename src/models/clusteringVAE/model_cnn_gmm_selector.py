@@ -5,7 +5,7 @@ from torch.autograd import Variable
 from torch.distributions import Normal
 import sys
 sys.path.append('/home/georgos/DLRC_2018/')
-models.autoencoder.autoencoder import Autoencoder
+from src.models.autoencoder.autoencoder import Autoencoder
 
 class EncoderCNN(nn.Module):
     def __init__(self,  
