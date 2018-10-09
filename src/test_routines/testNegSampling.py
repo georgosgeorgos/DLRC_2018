@@ -24,7 +24,7 @@ def test(args):
     dataset = Dataset(path=args.data_dir, 
                       split=args.split_evaluation, 
                       n_samples=args.n_samples_y, 
-                      is_flatten_y=True)
+                      is_label_y=True)
 
     data_loader = DataLoader(dataset=dataset, batch_size=args.batch_size_test, shuffle=False)
 
@@ -33,8 +33,10 @@ def test(args):
     
     dataset.generate_index()
     acc = []
+    lbl_list  = []
+    pred_list = []
     for itr, batch in enumerate(data_loader):
-        y, x, labels = batch
+        y, x, lbl = batch
 
         state = th.cat([y, x], dim=1)
         pred = model(state)
@@ -43,13 +45,11 @@ def test(args):
         y = y.view(-1, args.n_samples_y, args.lidar_input_size)
         y = y[:,-1,:]
 
-        pred   = pred.argmax(dim=2)
-        #labels = labels.argmax(dim=2)
-        print(pred.data.numpy())
-        print(labels.data.numpy())
-
-
-        acc.append([labels, pred])
+        pred = pred.argmax(dim=2)
+        lbl  = lbl.argmax(dim=2)
+        
+        lbl_list.append(lbl.data.numpy()[0])
+        pred_list.append(pred.data.numpy()[0])
 
         if args.model_type == "gmm":
             index = clusters.argmax(dim=2).squeeze()
@@ -62,7 +62,14 @@ def test(args):
 
             mu_c  = mu_new
             std_c = std_new
-    print(acc)
+
+
+    lbl_array = np.array(lbl_list)
+    pred_array = np.array(pred_list)
+    np.savetxt("lbl.npy", lbl_list)
+    np.savetxt("pred.npy", pred_list)
+
+    print((lbl_array == pred_array).mean())
         # observable
         #res["y"].append(y.data.numpy().squeeze().tolist())
         #res["mu"].append(mu_c.data.numpy().squeeze().tolist())

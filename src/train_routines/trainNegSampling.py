@@ -4,14 +4,15 @@ import torch as th
 from torch import nn, optim
 from loaders.load_panda_timeseries import PandaDataSetTimeSeries as Dataset
 from models.clusteringVAE.model_gmm_selector import Encoder as Model
-from objectives.loss_gmm_selector import LossSelector as Loss
+from objectives.loss_neg_sampling import lossNegSampling as Loss
 from torch.utils.data import DataLoader
 from utils.utils import move_to_cuda, ckpt_utc, path_exists, tensor_to_variable
+
 
 def train(args):
 
     ckpt = ckpt_utc()
-    loss_fn = nn.BCEWithLogitsLoss()
+    loss_fn = Loss()
     model = Model(
             layer_sizes=args.encoder_layer_sizes,
             latent_size=args.latent_size,
@@ -22,7 +23,11 @@ def train(args):
     optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
     optimizer.zero_grad()
 
-    dataset = Dataset(path=args.data_dir, split=args.split, n_samples=args.n_samples_y, is_flatten_y=True)
+    dataset = Dataset(path=args.data_dir, 
+                      split=args.split, 
+                      n_samples=args.n_samples_y, 
+                      is_label_y=True)
+
     # randomize an auxiliary index because we want to use random sample of time-series (10 time steps)
     # but the time series have to be intact
     data_loader = DataLoader(dataset=dataset, batch_size=args.batch_size, shuffle=False)
@@ -32,6 +37,7 @@ def train(args):
 
     loss_train, loss_val = [], []
 
+
     for epoch in range(args.epochs):
         model.train()
         dataset.generate_index()
@@ -39,15 +45,16 @@ def train(args):
         loss_epoch = []
         for itr, batch in enumerate(data_loader):
             # observable
-            y, x, labels = batch
+            y, x, lbl = batch
             y = tensor_to_variable(y)
             x = tensor_to_variable(x)
-            print(y[0], labels[0])
+            lbl = tensor_to_variable(lbl)
             state = th.cat([y, x], dim=1)
-            pred = model(state)
-            pred = pred.reshape(-1, args.n_clusters, args.lidar_input_size).permute(0,2,1)
-            #print(labels.data.numpy().sum(axis=2))
-            loss = loss_fn(pred, labels)
+
+            pred  = model(state)
+            pred  = pred.reshape(-1, args.n_clusters, args.lidar_input_size).permute(0,2,1)
+            
+            loss = loss_fn(pred, lbl)
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
@@ -63,11 +70,13 @@ def train(args):
             loss_epoch = []
             with th.no_grad():
                 for itr, batch in enumerate(data_loader):
-                    y, x, labels = batch
+                    y, x, lbl = batch
                     state = th.cat([y, x], dim=1)
+
                     pred = model(state)
                     pred = pred.reshape(-1, args.n_clusters, args.lidar_input_size).permute(0,2,1)
-                    loss = loss_fn(pred, labels)
+
+                    loss = loss_fn(pred, lbl)
                     loss_epoch.append(loss.cpu().data.numpy())
 
             print("val loss:", np.mean(loss_epoch))
