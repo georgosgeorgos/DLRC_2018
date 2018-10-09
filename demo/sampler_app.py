@@ -147,9 +147,11 @@ class SamplerAnomalyClustering:
         if not is_robot:
             y, x, _ = self.sampler.get_sample_anomaly(n_interval)
         else:
-            y = np.array(msg_lidar.get_data())
-            x = np.array(msg_state.get_j_pos())
-            y /= 1000
+            y = np.array(list(msg_lidar.get_data()), dtype=float)
+            y = y.reshape((1, -1))
+            x = np.array(list(msg_state.get_j_pos()))
+            x = x.reshape((1, -1))
+            y = y / 1000
             y[y > 2.0] = 2.0
         x_an = self.routine_tensor(x)
         y_an = self.routine_tensor(y)
@@ -157,9 +159,13 @@ class SamplerAnomalyClustering:
         if not is_robot:
             y, x, _ = self.sampler.get_sample_clustering(n_interval)
         else:
-            y = np.array(msg_lidar.get_data())
-            x = np.array(msg_state.get_j_pos())
-            y /= 1000
+            y = np.array(list(msg_lidar.get_data()), dtype=float)
+            y = y.reshape((1, -1))
+            x = np.array(list(msg_state.get_j_pos()))
+            ## temp
+            x = np.array([x for _ in range(self.n_samples_y)]).flatten()
+            x = x.reshape((1, -1))
+            y = y / 1000
             y[y > 2.0] = 2.0
         x_cl = self.routine_tensor(x)
         y_cl = self.routine_tensor(y)

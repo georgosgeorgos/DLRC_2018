@@ -132,8 +132,8 @@ def create_callback_anomaly_clustering(id):
             y=list_prob_anomaly[id],
             mode='lines',
             fill='tozeroy',
-            fillcolor='#ffcccc',
-            line=dict(color='#b30000', smoothing=0.5, shape='spline'),
+            fillcolor='rgba(240, 128, 128, 0.25)',
+            line=dict(color='rgba(240, 128, 128, 0.25)', smoothing=0.5, shape='spline'),
             name='anomalous'
         )
 
@@ -220,11 +220,10 @@ def create_callback_lidar_graph(id):
               [Input('interval-component', 'n_intervals')])
 def update_data(n):
 
-    # msg_lidar = broker.recv_msg("franka_lidar", -1)
+    msg_lidar = broker.recv_msg("franka_lidar", -1)
+    msg_state = broker.recv_msg("franka_state", -1)
 
-    # msg_state = broker.recv_msg("franka_state", -1)
-
-    data = p.get_data(None, None, n, is_robot=False)
+    data = p.get_data(msg_lidar, msg_state, n, is_robot=True)
 
     return json.dumps(data)
 
