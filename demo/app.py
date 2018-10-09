@@ -15,9 +15,9 @@ import src.utils.configs as cfg
 app = dash.Dash(__name__)
 
 broker = pab.broker()
-broker.request_signal("franka_lidar", pab.MsgType.franka_lidar)
+print(broker.request_signal("franka_lidar", pab.MsgType.franka_lidar))
 time.sleep(0.5)
-broker.request_signal("franka_state", pab.MsgType.franka_state)
+print(broker.request_signal("franka_state", pab.MsgType.franka_state))
 time.sleep(0.5)
 
 N_SAMPLES = 1
@@ -44,14 +44,13 @@ def lidar_viz(lidar_id):
     return html.Div([
         html.H3("Status LiDAR Sensor: {}".format(lidar_id), style={
             "font-weight": "bold",
-            "padding": 5,
             "text-align": "center",
-            "margin-left": 5,
+            "margin": 5,
             "border": 2,
             "border-radius": 5,
-            "border-color": "#000000",
+            "border-color": "#808B96",
             "color": "#FFFFFF",
-            "background-color": "#000000"
+            "background-color": "#808B96"
         }
                 ),
         html.Div([
@@ -221,10 +220,11 @@ def create_callback_lidar_graph(id):
               [Input('interval-component', 'n_intervals')])
 def update_data(n):
 
-    msg_lidar = broker.recv_msg("franka_lidar", -1)
-    msg_state = broker.recv_msg("franka_state", -1)
+    # msg_lidar = broker.recv_msg("franka_lidar", -1)
 
-    data = p.get_data(msg_lidar, msg_state, n, is_robot=True)
+    # msg_state = broker.recv_msg("franka_state", -1)
+
+    data = p.get_data(None, None, n, is_robot=False)
 
     return json.dumps(data)
 

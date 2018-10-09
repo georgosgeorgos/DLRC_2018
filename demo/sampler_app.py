@@ -112,6 +112,7 @@ class SamplerAnomalyClustering:
             n_clusters=self.n_clusters,
             batch_size=self.n,
             model_type="selector",
+            is_multimodal=False
         )
 
         self.modelCluster.load_state_dict(
