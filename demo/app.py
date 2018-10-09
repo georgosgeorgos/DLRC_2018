@@ -15,10 +15,10 @@ from collections import defaultdict
 app = dash.Dash(__name__)
 
 N_SAMPLES = 1
-N_INTERVAL_UPDATE = 0.5
+N_INTERVAL_UPDATE = 1.
 N_STD = 3
 N_MAX_INTERVALS = 100
-N_LIDAR_IDX = [3]
+N_LIDAR_IDX = [3, 7]
 
 list_lidar_depth = defaultdict(list)
 list_lidar_depth_mean = defaultdict(list)
@@ -34,7 +34,14 @@ def lidar_viz(lidar_id):
     return html.Div([
         html.H3("Status LiDAR Sensor: {}".format(lidar_id), style={
             "font-weight": "bold",
-            "margin-left": 10
+            "padding": 5,
+            "text-align": "center",
+            "margin-left": 5,
+            "border": 2,
+            "border-radius": 5,
+            "border-color": "#000000",
+            "color": "#FFFFFF",
+            "background-color": "#000000"
         }
                 ),
         html.Div([
@@ -72,7 +79,7 @@ def create_callback_probs_clustering(id):
                 range=[0, 1]
             ),
             height=400,
-            title='Stage two: Clustering into two classes',
+            title='Stage two: Clustering',
             showlegend=False
         )
 
