@@ -25,6 +25,7 @@ def train(args):
             n_clusters=args.n_clusters,
             batch_size=args.batch_size,
             model_type=args.model_type,
+            is_multimodal=args.is_multimodal
             )
     model = move_to_cuda(model)
 
@@ -48,9 +49,10 @@ def train(args):
         loss_epoch = []
         for itr, batch in enumerate(data_loader):
             # observable
-            y, x = batch
-            y = tensor_to_variable(y)
-            x = tensor_to_variable(x)
+            y, x, depth = batch
+            y     = tensor_to_variable(y)
+            x     = tensor_to_variable(x)
+            depth = tensor_to_variable(depth)
             mu_c, std_c, clusters = model(x)
 
             loss = loss_fn(y, mu_c, std_c, clusters)

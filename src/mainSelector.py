@@ -19,12 +19,14 @@ split_evaluation    = "val"
 model_type          = "selector"
 ckpt_test  = "ckpt_" + model_type + ".pth"
 is_entropy          = False
+is_multimodal       = True
 lmbda               = 1
+variant             = "multimodal"
 
 if is_entropy:
-	result_dir = osp.join('..', 'experiments', model_type + str(lmbda))
+	result_dir = osp.join('..', 'experiments', model_type + str(lmbda) + variant)
 else:
-	result_dir = osp.join('..', 'experiments', model_type + "_no_entropy")
+	result_dir = osp.join('..', 'experiments', model_type + "_no_entropy" + variant)
 path_exists(result_dir)
 
 ckpt_dir = osp.join(result_dir, 'ckpt/')
@@ -55,6 +57,7 @@ parser.add_argument("--test_every_n_epochs", type=str,   default=test_every_n_ep
 parser.add_argument("--split_evaluation",    type=str,   default=split_evaluation)
 parser.add_argument("--model_type",          type=str,   default=model_type)
 parser.add_argument("--is_entropy",          type=str,   default=is_entropy)
+parser.add_argument("--is_multimodal",          type=str,   default=is_multimodal)
 parser.add_argument("--lmbda",               type=int,   default=lmbda)
 
 args = parser.parse_args()

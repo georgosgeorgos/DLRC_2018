@@ -1,4 +1,5 @@
 import torch.nn as nn
+import torch as th
 
 class Autoencoder(nn.Module):
     def __init__(self):
@@ -69,4 +70,10 @@ class Autoencoder(nn.Module):
         #print(x.size())
 
         return x, x_hidden
+
+if __name__ == '__main__':
+
+    a = Autoencoder() 
+    x = th.zeros((1,  1, 240, 320))
+    a(x)
 
