@@ -23,6 +23,8 @@ import src.utils.utils as cfg
 
 pf = "./robot_sampling/data_0.pkl"
 pf = "../data/train_data_correct.pkl"
+# pf = "../data/anomaly_detection_gt.pkl"
+# pf = "../data/clustering_gt.pkl"
 
 
 class SamplerData:
@@ -83,7 +85,7 @@ class SamplerData:
 
 
 class SamplerAnomalyDetection:
-    def __init__(self, n=100, l=3):
+    def __init__(self, n=100, l=[i for i in range(9)]):
         self.cuda = th.cuda.is_available()
         self.device = 'cpu'  # '#th.device("cuda" if self.cuda else "cpu")
         self.n = n
@@ -161,10 +163,10 @@ class SamplerAnomalyDetection:
         prob_an = self.routine_array(prob_an)[:, self.l]
 
         clst = self.routine_array(clst)[:, self.l]
-        clst_n = self.prob_normalize(clst, prob_an)
+        #clst_n = self.prob_normalize(clst, prob_an)
 
         res = {"input": y_an.tolist(), "mu": mu_an.tolist(), "std": std_an.tolist(), "prob": prob_an.tolist(),
-               "cluster": clst.tolist(), "cluster_n": clst_n.tolist()}
+               "cluster": clst.tolist()}
         return res
 
 
