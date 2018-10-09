@@ -101,7 +101,7 @@ class SamplerAnomalyClustering:
         self.n_clusters = 2
         self.lidar_input_size = 9
         self.joint_input_size = 7
-        self.n_samples_y = 1
+        self.n_samples_y = 10
         self.latent_size = self.lidar_input_size * self.n_clusters
         self.encoder_layer_sizes = [self.joint_input_size * self.n_samples_y, 256, 256]
         self.test = "cdf"

@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 from torch.distributions import Normal
-from models.clusteringVAE.model_cnn_gmm_selector import EncoderCNN
+from src.models.clusteringVAE.model_cnn_gmm_selector import EncoderCNN
 # we frame all the problem as an unsupervised learning problem.
 # we want to use a Conditional Variational Auto-Encoder to tackle the problem.
 
