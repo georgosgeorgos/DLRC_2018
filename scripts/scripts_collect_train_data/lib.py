@@ -18,8 +18,8 @@ def default():
     broker = pab.broker()
     print(broker.register_signal("franka_target_pos", pab.MsgType.target_pos))
     time.sleep(0.5)
-    print(broker.request_signal("franka_lidar", pab.MsgType.franka_lidar))
-    time.sleep(0.5)
+    #print(broker.request_signal("franka_lidar", pab.MsgType.franka_lidar))
+    #time.sleep(0.5)
     print(broker.request_signal("franka_state", pab.MsgType.franka_state))
     time.sleep(0.5)
     #print("Register signal <_des_tau> {}".format(broker.register_signal("franka_des_tau", pab.MsgType.des_tau)))
@@ -29,7 +29,7 @@ def default():
     return broker
 
 
-def pos_msg(pos, broker, counter, time2go=3):
+def pos_msg(pos, broker, counter, time2go=4):
     msg = pab.target_pos_msg()
     msg.set_ctrl_t(pab.CtrlType.Cartesian)
     msg.set_pos(pos)
@@ -40,6 +40,16 @@ def pos_msg(pos, broker, counter, time2go=3):
     counter += 1
     return counter
 
+def pos_j_msg(pos, broker, counter, time2go=4):
+    msg = pab.target_pos_msg()
+    msg.set_ctrl_t(pab.CtrlType.Joint)
+    msg.set_pos(pos)
+    msg.set_timestamp(time.clock_gettime(time.CLOCK_MONOTONIC))
+    msg.set_fnumber(counter)
+    msg.set_time_to_go(time2go)
+    broker.send_msg("franka_target_pos", msg)
+    counter += 1
+    return counter
 
 def tau_msg(broker, counter):
     msg = pab.des_tau_msg()
@@ -65,26 +75,16 @@ def build_position_orientation(X, Y, Z, alpha):
     pos = np.array([X, Y, Z] + q)
     return pos
 
-# def pos_j_msg(pos, broker):
-#     msg = pab.target_pos_msg()
-#     msg.set_ctrl_t(pab.CtrlType.Joint)
-#     msg.set_pos(pos)
-#     msg.set_timestamp(time.clock_gettime(time.CLOCK_MONOTONIC))
-#     msg.set_fnumber(counter)
-#     msg.set_time_to_go(time2go)
-#     broker.send_msg("franka_target_pos", msg)
-
-
 def sample():
     #WallMin = [0.28, -0.78, 0.02]
     #WallMax = [0.82,  0.78, 1.08]
-    WallMin = [0.38, -0.58, 0.2]
-    WallMax = [0.68,  0.58, 0.8]
+    WallMin = [0.38, -0.58, 0.06]
+    WallMax = [0.76,  0.58, 0.8]
 
     X = np.random.uniform(WallMin[0], WallMax[0], 1)[0]
     Y = np.random.uniform(WallMin[1], WallMax[1], 1)[0]
     Z = np.random.uniform(WallMin[2], WallMax[2], 1)[0]
-    alpha = np.random.uniform(-0.01, 0.01, 1)[0]
+    alpha = np.random.uniform(-1, 1, 1)[0]
     return X, Y, Z, alpha
 
 

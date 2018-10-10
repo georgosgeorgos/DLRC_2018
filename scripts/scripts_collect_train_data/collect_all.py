@@ -60,7 +60,7 @@ def main():
         try:
             time.sleep(2.0)
             start = time.time()
-
+            
             while time.time() - start < total_time:
                 X, Y, Z, alpha = lib.sample()
 
