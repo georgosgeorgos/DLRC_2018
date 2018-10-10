@@ -21,10 +21,9 @@ from random import shuffle
 from torch.utils import data
 import src.utils.utils as cfg
 
-pf = "./robot_sampling/data_0.pkl"
-pf = "../data/train_data_correct.pkl"
+# pf = "../data/train_data_correct.pkl"
 # pf = "../data/anomaly_detection_gt.pkl"
-# pf = "../data/clustering_gt.pkl"
+pf = "../data/clustering_gt.pkl"
 
 
 class SamplerData:
