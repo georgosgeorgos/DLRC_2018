@@ -28,6 +28,9 @@ parser.add_argument('--n_lidars', type=int, default=9, metavar='N',
                     help='lidar size (default: 9)')
 parser.add_argument('--n_joints', type=int, default=7, metavar='N',
                     help='joint size (default: 7)')
+parser.add_argument('--n_input_size', type=int, default=16, metavar='N',
+                    help='input size: it must be equal to n_lidars + M * n_joints, '
+                         'where M=states of joints (e.g. pos, vel, ...) (default: 16)')
 parser.add_argument('--n_hidden', type=int, default=32, metavar='N',
                     help='hidden size (default: 128)')
 parser.add_argument('--code_size', type=int, default=9, metavar='N',
@@ -79,11 +82,11 @@ class VAE(nn.Module):
     def __init__(self):
         super(VAE, self).__init__()
 
-        self.fc1 = nn.Linear(args.n_lidars + 2 * args.n_joints, args.n_hidden)
+        self.fc1 = nn.Linear(args.n_input_size, args.n_hidden)
         self.fc21 = nn.Linear(args.n_hidden, args.code_size)
         self.fc22 = nn.Linear(args.n_hidden, args.code_size)
         self.fc3 = nn.Linear(args.code_size, args.n_hidden)
-        self.fc4 = nn.Linear(args.n_hidden, args.n_lidars + 2 * args.n_joints)
+        self.fc4 = nn.Linear(args.n_hidden, args.n_input_size)
 
     def encode(self, *input):
         h1 = th.tanh(self.fc1(input[0]))
@@ -102,7 +105,7 @@ class VAE(nn.Module):
         return th.tanh(self.fc4(h3))
 
     def forward(self, x):
-        mu, logvar = self.encode(x.view(-1, args.n_lidars + 2 * args.n_joints))
+        mu, logvar = self.encode(x.view(-1, args.n_input_size))
         z = self.reparameterize(mu, logvar)
         return z, self.decode(z), mu, logvar
 
@@ -113,7 +116,7 @@ optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
 # Reconstruction + KL divergence losses summed over all elements and batch
 def loss_function(recon_x, x, mu, logvar):
-    BCE = F.mse_loss(recon_x, x.view(-1, args.n_lidars + 2 * args.n_joints), reduction='sum')
+    MSE = F.mse_loss(recon_x, x.view(-1, args.n_input_size), reduction='sum')
 
     # see Appendix B from Generative_Models paper:
     # Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
@@ -121,7 +124,7 @@ def loss_function(recon_x, x, mu, logvar):
     # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
     KLD = -0.5 * th.sum(1 + logvar - mu.pow(2) - logvar.exp())
 
-    return BCE + KLD
+    return MSE + KLD
 
 
 def train(epoch):

@@ -52,13 +52,13 @@ def cumulative_moving_average(x=None, x_new=None, n=None):
 
 def plot_eval(x=None, y=None, xlabel=None, ylabel=None, title=None, save_to=None):
     plt.clf()
-    plt.figure(figsize=(7, 5))
+    plt.figure(figsize=(25, 6))
     plt.plot(x, y)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.title(title)
     plt.savefig(save_to, format='png')
-    plt.tight_layout()
+    # plt.tight_layout()
     plt.close()
 
 
@@ -123,7 +123,7 @@ def plot_correlation_matrix(x, xlabel=None, ylabel=None, title=None, save_to=Non
     plt.close()
 
 
-def plot_timeseries(input, pred, std, num_std=3, downsample_step=1, xlabel=None, ylabel=None, title=None, save_to=None):
+def plot_input_pred_timeseries(input, pred, std, num_std=3, downsample_step=1, xlabel=None, ylabel=None, title=None, save_to=None):
     plt.clf()
     num_samples, num_channels = input.shape
     downsample_every_nth = [i for i in range(0, input.shape[0], downsample_step)]
