@@ -9,7 +9,7 @@ from demo.sampler_app import SamplerAnomalyClustering
 import json
 import time
 from collections import defaultdict
-import py_at_broker as pab
+# import py_at_broker as pab
 import src.utils.configs as cfg
 
 N_SAMPLES = 1
@@ -19,14 +19,16 @@ N_LIDAR_IDX = [3]
 USE_MOCKUP_DATA = True
 ANOMALY_THRESHOLD = .95
 ROBOT_NAME = 'franka'
+N_MAX_INTERVAL = 1e+12
 
 app = dash.Dash(__name__)
-broker = pab.broker()
 
-print(broker.request_signal(ROBOT_NAME+'_lidar', pab.MsgType.franka_lidar))
-time.sleep(0.5)
-print(broker.request_signal(ROBOT_NAME+'_state', pab.MsgType.franka_state))
-time.sleep(0.5)
+if not USE_MOCKUP_DATA:
+    broker = pab.broker()
+    print(broker.request_signal(ROBOT_NAME+'_lidar', pab.MsgType.franka_lidar))
+    time.sleep(0.5)
+    print(broker.request_signal(ROBOT_NAME+'_state', pab.MsgType.franka_state))
+    time.sleep(0.5)
 
 # Lists that store data coming in over time
 list_lidar_depth = defaultdict(list)
@@ -74,6 +76,7 @@ app.layout = html.Div(
         dcc.Interval(
             id='interval-component',
             interval=N_INTERVAL_UPDATE * 1000,
+            max_intervals=N_MAX_INTERVAL
         )] +
     [lidar_viz(id) for id in N_LIDAR_IDX] +
     [html.Div(id='store-data-lidars', style={'display': 'none'})]

@@ -51,6 +51,10 @@ class SamplerData:
     def get_sample_anomaly(self, n_interval):
 
         max_n_interval = self.data_lidar.shape[0] / self.n - 1
+        # TODO: FIXME georgos
+        # TypeError: unsupported operand type(s) for %: 'NoneType' and 'float'
+        #
+        # This error occurs when mockup data is used
         n_interval = int(n_interval % max_n_interval)
 
         sample_lidar = self.data_lidar[(n_interval * self.n):((n_interval * self.n) + self.n)]
