@@ -17,7 +17,8 @@ path_results = osp.join(rootdir, 'experiments', 'anomVAE')
 
 d_train_input = defaultdict(list)
 d_train_input_recon = defaultdict(list)
-N_UNIT_TIMESTEP = .25
+N_UNIT_TIMESTEP = .15
+N_WINDOW_SIZE = 50
 INPUT_IDX = 3
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -57,9 +58,10 @@ def read_data(n):
 
 @app.callback(
     Output(component_id='graph', component_property='figure'),
-    [Input(component_id='store-data-json', component_property='children')]
+    [Input(component_id='interval', component_property='n_intervals'),
+     Input(component_id='store-data-json', component_property='children')]
 )
-def update_subplots(row_json):
+def update_subplots(n, row_json):
     data = json.loads(row_json)
 
     row = data['input']
@@ -68,13 +70,20 @@ def update_subplots(row_json):
     d_train_input[INPUT_IDX].append(row[INPUT_IDX])
     d_train_input_recon[INPUT_IDX].append(row_recon[INPUT_IDX])
 
-    trace1 = go.Scatter(y=np.array(d_train_input[INPUT_IDX]), name='train input lidar 3')
-    trace2 = go.Scatter(y=np.array(d_train_input_recon[INPUT_IDX]), name='train recon input lidar 3')
-    fig = tools.make_subplots(rows=2, cols=1,
-                              print_grid=True)
+    fig = tools.make_subplots(rows=1, cols=1,
+                              print_grid=False)
 
+    if n < N_WINDOW_SIZE:
+        timesteps = np.arange(len(d_train_input[INPUT_IDX]))
+        trace1 = go.Scatter(x=timesteps, y=np.array(d_train_input[INPUT_IDX]),
+                            name='train input lidar 3')
+        # trace2 = go.Scatter(y=np.array(d_train_input_recon[INPUT_IDX]), name='train recon input lidar 3')
+    else:
+        timesteps = np.array([j for j in range(n - N_WINDOW_SIZE + 1, n + 1)])
+        trace1 = go.Scatter(x=timesteps, y=np.array(d_train_input[INPUT_IDX])[timesteps],
+                            name='train input lidar 3')
     fig.append_trace(trace1, 1, 1)
-    fig.append_trace(trace2, 1, 1)
+    # fig.append_trace(trace2, 1, 1)
 
     fig['layout'].update(height=400, title='anomVAE', xaxis={'domain': [0, 1.]})
 
