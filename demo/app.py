@@ -15,7 +15,7 @@ import src.utils.configs as cfg
 N_SAMPLES = 1
 N_INTERVAL_UPDATE = 1.25
 N_STD = 3
-N_LIDAR_IDX = [3, 0]
+N_LIDAR_IDX = [3]
 USE_MOCKUP_DATA = True
 ANOMALY_THRESHOLD = .95
 ROBOT_NAME = 'franka'
@@ -170,6 +170,14 @@ def create_callback_anomaly_graph(id):
             name='other agent'
         )
 
+        trace_anom_threshold = go.Scatter(
+            x=timesteps,
+            y=np.ones_like(timesteps) * ANOMALY_THRESHOLD,
+            mode='lines',
+            line=dict(color='#17202A'),
+            name='anomaly threshold'
+        )
+
         layout = Layout(
             yaxis=dict(
                 title='Prob',
@@ -181,7 +189,7 @@ def create_callback_anomaly_graph(id):
             legend=dict(xanchor='right', yanchor='top', bgcolor='rgba(255, 255, 255, .8)'),
         )
 
-        return Figure(data=[trace_normal, trace_anom, trace_anom_decision], layout=layout)
+        return Figure(data=[trace_normal, trace_anom, trace_anom_decision, trace_anom_threshold], layout=layout)
 
     return callback
 
