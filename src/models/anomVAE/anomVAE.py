@@ -28,11 +28,11 @@ parser.add_argument('--n_lidars', type=int, default=9, metavar='N',
                     help='lidar size (default: 9)')
 parser.add_argument('--n_joints', type=int, default=7, metavar='N',
                     help='joint size (default: 7)')
-parser.add_argument('--n_hidden', type=int, default=256, metavar='N',
-                    help='hidden size (default: 256)')
-parser.add_argument('--code_size', type=int, default=2, metavar='N',
-                    help='code size (default: 2)')
-parser.add_argument('--lr', type=float, default=1e-3, metavar='N',
+parser.add_argument('--n_hidden', type=int, default=32, metavar='N',
+                    help='hidden size (default: 128)')
+parser.add_argument('--code_size', type=int, default=9, metavar='N',
+                    help='code size (default: 9)')
+parser.add_argument('--lr', type=float, default=1e-4, metavar='N',
                     help='learning rate (default: 1e-3)')
 parser.add_argument('--epochs', type=int, default=200, metavar='N',
                     help='number of epochs to train (default: 150)')
@@ -128,12 +128,11 @@ def train(epoch):
     model.train()
     train_loss = 0.
 
-    for batch_idx, (x, y, z) in enumerate(train_loader):
+    for batch_idx, (x, y, _) in enumerate(train_loader):
         x = x.to(device).float()
         y = y.to(device).float()
-        z = z.to(device).float()
 
-        input_concat = th.cat((x, y, z), dim=1)
+        input_concat = th.cat((x, y), dim=1)
 
         optimizer.zero_grad()
         latent_batch, recon_batch, mu, logvar = model(input_concat)
@@ -164,14 +163,13 @@ def test(epoch):
     test_rel_err = []
 
     with th.no_grad():
-        for i, (x, y, z) in enumerate(test_loader):
+        for i, (x, y, _) in enumerate(test_loader):
             bs, _, = y.size()
 
             x = x.to(device).float()
             y = y.to(device).float()
-            z = z.to(device).float()
 
-            input_concat = th.cat((x, y, z), dim=1)
+            input_concat = th.cat((x, y), dim=1)
 
             latent, input_recon, mu, logvar = model(input_concat)
             test_loss += loss_function(input_recon, input_concat, mu, logvar).item()
