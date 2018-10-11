@@ -50,15 +50,15 @@ def cumulative_moving_average(x=None, x_new=None, n=None):
     return (x_new + n * x) / (n + 1)
 
 
-def plot_eval(x=None, y=None, xlabel=None, ylabel=None, title=None, save_to=None):
+def plot_eval(x=None, y=None, xlabel=None, ylabel=None, title=None, figsize=(7,5), save_to=None):
     plt.clf()
-    plt.figure(figsize=(25, 6))
+    plt.figure(figsize=figsize)
     plt.plot(x, y)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.title(title)
     plt.savefig(save_to, format='png')
-    # plt.tight_layout()
+    plt.tight_layout()
     plt.close()
 
 

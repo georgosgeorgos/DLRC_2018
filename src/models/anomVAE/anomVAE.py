@@ -20,24 +20,24 @@ from src.utils import configs as cfg
 ############################################################
 
 parser = argparse.ArgumentParser(description='VAE for Anomaly Detection')
-parser.add_argument('--trbs', type=int, default=256, metavar='N',
+parser.add_argument('--trbs', type=int, default=512, metavar='N',
                     help='input batch size for training (default: 256)')
-parser.add_argument('--tebs', type=int, default=128, metavar='N',
+parser.add_argument('--tebs', type=int, default=512, metavar='N',
                     help='input batch size for testing (default: 128)')
 parser.add_argument('--n_lidars', type=int, default=9, metavar='N',
                     help='lidar size (default: 9)')
 parser.add_argument('--n_joints', type=int, default=7, metavar='N',
                     help='joint size (default: 7)')
-parser.add_argument('--n_input_size', type=int, default=16, metavar='N',
+parser.add_argument('--n_input_size', type=int, default=9, metavar='N',
                     help='input size: it must be equal to n_lidars + M * n_joints, '
                          'where M=states of joints (e.g. pos, vel, ...) (default: 16)')
-parser.add_argument('--n_hidden', type=int, default=32, metavar='N',
-                    help='hidden size (default: 128)')
-parser.add_argument('--code_size', type=int, default=9, metavar='N',
-                    help='code size (default: 9)')
-parser.add_argument('--lr', type=float, default=1e-4, metavar='N',
+parser.add_argument('--n_hidden', type=int, default=512, metavar='N',
+                    help='hidden size (default: 512)')
+parser.add_argument('--code_size', type=int, default=4, metavar='N',
+                    help='code size (default: 3)')
+parser.add_argument('--lr', type=float, default=1e-3, metavar='N',
                     help='learning rate (default: 1e-3)')
-parser.add_argument('--epochs', type=int, default=200, metavar='N',
+parser.add_argument('--epochs', type=int, default=120, metavar='N',
                     help='number of epochs to train (default: 150)')
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='enables CUDA training')
@@ -93,12 +93,9 @@ class VAE(nn.Module):
         return self.fc21(h1), self.fc22(h1)
 
     def reparameterize(self, mu, logvar):
-        if self.training:
-            std = th.exp(0.5 * logvar)
-            eps = th.randn_like(std)
-            return eps.mul(std).add_(mu)
-        else:
-            return mu
+        std = th.exp(0.5 * logvar)
+        eps = th.randn_like(std)
+        return eps.mul(std).add_(mu)
 
     def decode(self, z):
         h3 = th.tanh(self.fc3(z))
@@ -132,10 +129,11 @@ def train(epoch):
     train_loss = 0.
 
     for batch_idx, (x, y, _) in enumerate(train_loader):
-        x = x.to(device).float()
-        y = y.to(device).float()
+        x = x.to(device).float()  # joint positions
+        y = y.to(device).float()  # lidar measurements
 
-        input_concat = th.cat((x, y), dim=1)
+        # input_concat = th.cat((x, y), dim=1)
+        input_concat = y
 
         optimizer.zero_grad()
         latent_batch, recon_batch, mu, logvar = model(input_concat)
@@ -172,7 +170,8 @@ def test(epoch):
             x = x.to(device).float()
             y = y.to(device).float()
 
-            input_concat = th.cat((x, y), dim=1)
+            # input_concat = th.cat((x, y), dim=1)
+            input_concat = y
 
             latent, input_recon, mu, logvar = model(input_concat)
             test_loss += loss_function(input_recon, input_concat, mu, logvar).item()
