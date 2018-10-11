@@ -8,21 +8,23 @@ def main(broker):
     print("start random_trajectory")
     counter    = 0
     n_runs     = 360
-    threshold  = 0.98
+    threshold  = 0.50
     total_time = 30 # seconds
     is_joint   = True
     #______________________________________________________
     default_pos_c = np.array([0.62, 0.00, 0.56])
     counter = lib.pos_msg(default_pos_c, broker, counter)
+    pos_    = lib.build_init_j(broker)
+    sleep(0.5)
     print("Press ENTER")
     b=input()
-    pos_    = lib.build_init_j(broker)
-    counter=lib.pos_j_msg(pos_, broker, counter)
     #______________________________________________________
     for run in range(n_runs):
         print("RUN:", run)
+        pos_j=lib.build_self_j(broker, pos_)
+        counter=lib.pos_j_msg(pos_j, broker, counter, time2go=3)
+        sleep(1.0)
         try:
-            sleep(0.5)
             start=time()
             while time() - start < total_time:
                 X, Y, Z, alpha=lib.sample()
@@ -32,7 +34,7 @@ def main(broker):
                 else:
                     pos=lib.build_position_orientation(X, Y, Z, alpha)
                     if is_joint:
-                        pos_j=lib.build_generic_j(broker, pos_)
+                        pos_j=lib.build_generic_j(broker)
                         counter=lib.pos_j_msg(pos_j, broker, counter)
                         sleep(0.5)
 
