@@ -12,20 +12,21 @@ from collections import defaultdict
 import py_at_broker as pab
 import src.utils.configs as cfg
 
-app = dash.Dash(__name__)
-
-broker = pab.broker()
-print(broker.request_signal("franka_lidar", pab.MsgType.franka_lidar))
-time.sleep(0.5)
-print(broker.request_signal("franka_state", pab.MsgType.franka_state))
-time.sleep(0.5)
-
 N_SAMPLES = 1
-N_INTERVAL_UPDATE = 0.75
+N_INTERVAL_UPDATE = 1.25
 N_STD = 3
-N_LIDAR_IDX = [3]
+N_LIDAR_IDX = [3, 0]
 USE_MOCKUP_DATA = True
 ANOMALY_THRESHOLD = .95
+ROBOT_NAME = 'franka'
+
+app = dash.Dash(__name__)
+broker = pab.broker()
+
+print(broker.request_signal(ROBOT_NAME+'_lidar', pab.MsgType.franka_lidar))
+time.sleep(0.5)
+print(broker.request_signal(ROBOT_NAME+'_state', pab.MsgType.franka_state))
+time.sleep(0.5)
 
 # Lists that store data coming in over time
 list_lidar_depth = defaultdict(list)
@@ -36,7 +37,7 @@ list_prob_normal = defaultdict(list)
 list_prob_background = defaultdict(list)
 list_prob_self = defaultdict(list)
 
-p = SamplerAnomalyClustering(n=N_SAMPLES)
+sampler = SamplerAnomalyClustering(n=N_SAMPLES)
 
 
 ################################
@@ -47,24 +48,24 @@ def lidar_viz(lidar_id):
     return html.Div([
         # visualize sensors belonging to other agent state and either self or background
         html.Div([
-            html.H3("Status LiDAR Sensor: {}".format(lidar_id), style={
-                "font-weight": "bold",
-                # "text-align": "center",
-                "margin": 10,
-                "border": 2,
-                "border-radius": 3,
-                "border-color": "#808B96",
+            html.Div([
+                html.H3("Status LiDAR: {}".format(lidar_id), style={
+                    "font": "Helvetica",
+                    "color": "#FFFFFF"
+                }
+                        )], style={
+                "font": "Helvetica",
+                "padding": 3,
+                "text-align": "center",
+                "border-radius": 5,
+                "border-color": "#2C3E50",
                 "color": "#FFFFFF",
-                "background-color": "#808B96"
-            }
-                    ),
+                "background-color": "#2C3E50",
+            }),
             dcc.Graph(id='live-update-graph-lidar{}'.format(lidar_id)),
             dcc.Graph(id='live-update-graph-anom-lidar{}'.format(lidar_id)),
             dcc.Graph(id='live-update-graph-normal-lidar{}'.format(lidar_id)),
         ], className="six columns"),
-        # html.Div([
-        #     dcc.Graph(id='live-update-bar-chart-clustering-two-classes-lidar{}'.format(lidar_id))
-        # ], className="three columns"),
     ], className="row")
 
 
@@ -82,35 +83,6 @@ app.layout = html.Div(
 ################################
 #### CALLBACKS
 ################################
-
-def create_callback_probs_clustering(id):
-    def callback(n, json_data):
-        data = json.loads(json_data)
-        probs_classes = data['cluster'][-1][id]
-
-        trace = go.Bar(
-            y=['background', 'thyself'],
-            x=probs_classes,
-            orientation='h',
-            marker=dict(
-                color=['#D6DBDF', '#273746']),
-            width=1
-        )
-
-        layout = Layout(
-            xaxis=dict(
-                title='Class probability',
-                range=[0, 1]
-            ),
-            height=400,
-            title='Stage two: Clustering',
-            showlegend=False
-        )
-
-        return Figure(data=[trace], layout=layout)
-
-    return callback
-
 
 def create_callback_normal_graph(id):
     def callback(n, json_data):
@@ -278,23 +250,18 @@ def create_callback_lidar_graph(id):
               [Input('interval-component', 'n_intervals')])
 def update_data(n):
     if USE_MOCKUP_DATA:
-        data = p.get_data(None, None, n, is_robot=False)
+        data = sampler.get_data(None, None, n, is_robot=False)
     else:
         msg_lidar = broker.recv_msg("franka_lidar", -1)
         msg_state = broker.recv_msg("franka_state", -1)
 
-        data = p.get_data(msg_lidar, msg_state, n, is_robot=True)
+        data = sampler.get_data(msg_lidar, msg_state, n, is_robot=True)
 
     return json.dumps(data)
 
 
 # Create separate callbacks for each lidar
 for lidar_idx in N_LIDAR_IDX:
-    # app.callback(Output('live-update-bar-chart-clustering-two-classes-lidar{}'.format(lidar_idx), 'figure'),
-    #              [
-    #                  Input('interval-component', 'n_intervals'),
-    #                  Input('store-data-lidars', 'children')
-    #              ])(create_callback_probs_clustering(lidar_idx))
     app.callback(Output('live-update-graph-normal-lidar{}'.format(lidar_idx), 'figure'),
                  [
                      Input('interval-component', 'n_intervals'),
