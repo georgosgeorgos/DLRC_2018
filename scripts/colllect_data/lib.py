@@ -13,13 +13,12 @@ def path_exists(path):
         makedirs(path)
     return path
 
-
 def default():
     broker = pab.broker()
     print(broker.register_signal("franka_target_pos", pab.MsgType.target_pos))
     time.sleep(0.5)
-    #print(broker.request_signal("franka_lidar", pab.MsgType.franka_lidar))
-    #time.sleep(0.5)
+    print(broker.request_signal("franka_lidar", pab.MsgType.franka_lidar))
+    time.sleep(0.5)
     print(broker.request_signal("franka_state", pab.MsgType.franka_state))
     time.sleep(0.5)
     #print("Register signal <_des_tau> {}".format(broker.register_signal("franka_des_tau", pab.MsgType.des_tau)))
@@ -27,7 +26,6 @@ def default():
     # print(broker.request_signal("realsense_images", pab.MsgType.realsense_image))
     # time.sleep(0.5)
     return broker
-
 
 def pos_msg(pos, broker, counter, time2go=4):
     msg = pab.target_pos_msg()
@@ -61,6 +59,22 @@ def tau_msg(broker, counter):
     counter += 1
     return counter
 
+def build_init_j(broker):
+    state = broker.recv_msg("franka_state", -1)
+    joint_state = np.array(state.get_j_pos())
+    pos_ = joint_state.copy()
+    pos_[5] -= 0.5
+    pos_[3] -= 0.5
+    pos_[1] += 0.5
+    return pos_
+
+def build_generic_j(broker, pos_):
+    state = broker.recv_msg("franka_state", -1)
+    joint_state = np.array(state.get_j_pos())
+    joint_state[5] = pos_[5] * np.random.random()
+    joint_state[3] = pos_[3] * np.random.random()
+    joint_state[1] = pos_[1] * np.random.random()
+    return joint_state
 
 def build_position(X,Y,Z):
     pos = np.array([X, Y, Z])
@@ -89,15 +103,18 @@ def sample():
 
 
 def collect_rgb_depth(img, img_counter, path_rgb='./RGB/', path_depth='./DEPTH/'):
+
     rgb = np.reshape(img.get_rgb(), img.get_shape_rgb())
     rgb = Image.fromarray(rgb)
     path_exists(path_rgb)
     rgb.save(path_rgb + str(img_counter) + '.png')
+
     path_exists(path_depth)
     depth = np.reshape(img.get_depth(), img.get_shape_depth())
     tiff = TIFF.open(path_depth + str(img_counter) + '.tiff', mode='w')
     tiff.write_image(depth)
     tiff.close()
+    
     img_counter += 1
     return img_counter
 
