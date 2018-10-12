@@ -23,8 +23,8 @@ def default():
     time.sleep(0.5)
     #print("Register signal <_des_tau> {}".format(broker.register_signal("franka_des_tau", pab.MsgType.des_tau)))
     #time.sleep(0.5)
-    # print(broker.request_signal("realsense_images", pab.MsgType.realsense_image))
-    # time.sleep(0.5)
+    print(broker.request_signal("realsense_images", pab.MsgType.realsense_image))
+    time.sleep(0.5)
     return broker
 
 def pos_msg(pos, broker, counter, time2go=4):
@@ -65,15 +65,30 @@ def build_init_j(broker):
     pos_ = joint_state.copy()
     pos_[5] -= 0.5
     pos_[3] -= 0.5
-    pos_[1] += 0.5
+    pos_[2] -= 0.5
+    #pos_[1] += 0.5
     return pos_
 
-def build_generic_j(broker, pos_):
+def build_self_j(broker, pos_):
     state = broker.recv_msg("franka_state", -1)
     joint_state = np.array(state.get_j_pos())
-    joint_state[5] = pos_[5] * np.random.random()
-    joint_state[3] = pos_[3] * np.random.random()
-    joint_state[1] = pos_[1] * np.random.random()
+    joint_state[5] = pos_[5] 
+    joint_state[3] = pos_[3]
+    if np.random.random() < 0.5:
+        joint_state[2] = pos_[2]
+    else:
+        joint_state[2] = pos_[2] + 0.5 
+    #joint_state[1] = pos_[1]
+    return joint_state
+
+def build_generic_j(broker):
+    state = broker.recv_msg("franka_state", -1)
+    joint_state = np.array(state.get_j_pos())
+    for j in range(len(joint_state)-1):
+        joint_state[j] += np.random.random() * 0.5
+    #joint_state[3] += np.random.random()
+    #joint_state[2] += np.random.random()
+    #joint_state[1] += np.random.random()
     return joint_state
 
 def build_position(X,Y,Z):
@@ -93,12 +108,12 @@ def sample():
     #WallMin = [0.28, -0.78, 0.02]
     #WallMax = [0.82,  0.78, 1.08]
     WallMin = [0.38, -0.58, 0.06]
-    WallMax = [0.76,  0.58, 0.8]
+    WallMax = [0.70,  0.58, 0.8]
 
     X = np.random.uniform(WallMin[0], WallMax[0], 1)[0]
     Y = np.random.uniform(WallMin[1], WallMax[1], 1)[0]
     Z = np.random.uniform(WallMin[2], WallMax[2], 1)[0]
-    alpha = np.random.uniform(-1, 1, 1)[0]
+    alpha = np.random.uniform(-0.1, 0.1, 1)[0]
     return X, Y, Z, alpha
 
 
