@@ -18,7 +18,7 @@ path_results = osp.join(rootdir, 'experiments', 'anomVAE')
 d_train_input = defaultdict(list)
 d_train_input_recon = defaultdict(list)
 N_UNIT_TIMESTEP = .15
-N_WINDOW_SIZE = 50
+N_WINDOW_SIZE = 10
 INPUT_IDX = 3
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -79,13 +79,13 @@ def update_subplots(n, row_json):
                             name='train input lidar 3')
         # trace2 = go.Scatter(y=np.array(d_train_input_recon[INPUT_IDX]), name='train recon input lidar 3')
     else:
-        timesteps = np.array([j for j in range(n - N_WINDOW_SIZE + 1, n + 1)])
+        timesteps = np.arange(start=n - N_WINDOW_SIZE + 1, stop=n + 1, step=1)
         trace1 = go.Scatter(x=timesteps, y=np.array(d_train_input[INPUT_IDX])[timesteps],
                             name='train input lidar 3')
     fig.append_trace(trace1, 1, 1)
     # fig.append_trace(trace2, 1, 1)
 
-    fig['layout'].update(height=400, title='anomVAE', xaxis={'domain': [0, 1.]})
+    fig['layout'].update(title='anomVAE stuff', xaxis={'domain': [0, 1.]})
 
     return fig
 
