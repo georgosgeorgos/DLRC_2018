@@ -16,6 +16,8 @@ import torch as th
 import os.path as osp
 from torch.distributions.normal import Normal
 import pickle as pkl
+import py_at_broker as pab
+import time
 from random import shuffle
 
 from torch.utils import data
@@ -149,26 +151,26 @@ class SamplerAnomalyClustering:
         if not is_robot:
             y, x, _ = self.sampler.get_sample_anomaly(n_interval)
         else:
-            y = np.array(list(msg_lidar.get_data()), dtype=float)
+            y = np.random.random((1, 9))  # np.array(list(msg_lidar.get_data()), dtype=float)
             y = y.reshape((1, -1))
             x = np.array(list(msg_state.get_j_pos()))
             x = x.reshape((1, -1))
-            y = y / 1000
-            y[y > 2.0] = 2.0
+            # y = y / 1000
+            # y[y > 2.0] = 2.0
         x_an = self.routine_tensor(x)
         y_an = self.routine_tensor(y)
 
         if not is_robot:
             y, x, _ = self.sampler.get_sample_clustering(n_interval)
         else:
-            y = np.array(list(msg_lidar.get_data()), dtype=float)
+            y = np.random.random((1, 9))  # np.array(list(msg_lidar.get_data()), dtype=float)
             y = y.reshape((1, -1))
             x = np.array(list(msg_state.get_j_pos()))
             ## temp
             x = np.array([x for _ in range(self.n_samples_y)]).flatten()
             x = x.reshape((1, -1))
-            y = y / 1000
-            y[y > 2.0] = 2.0
+            # y = y / 1000
+            # y[y > 2.0] = 2.0
         x_cl = self.routine_tensor(x)
         y_cl = self.routine_tensor(y)
 
@@ -184,19 +186,8 @@ class SamplerAnomalyClustering:
         prob_an = self.routine_array(prob_an)[:, self.l]
 
         clst = self.routine_array(clst)[:, self.l]
-        #clst_n = self.prob_normalize(clst, prob_an)
+        # clst_n = self.prob_normalize(clst, prob_an)
 
         res = {"input": y_an.tolist(), "mu": mu_an.tolist(), "std": std_an.tolist(), "prob": prob_an.tolist(),
                "cluster": clst.tolist()}
         return res
-
-
-if __name__ == '__main__':
-    p = SamplerAnomalyDetection(n=100)
-    res = p.get_data(3)
-    print(res["cluster"])
-    print(res["cluster"].argmax(axis=1))
-    print(res["cluster_n"].sum(axis=1))
-
-    for key in res:
-        print(res[key].shape)
