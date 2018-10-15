@@ -17,20 +17,21 @@ def main(broker):
     data = lib.init_data_run(data, k)
     start = time.time()
     lidars = []
-    while True:
+    while i < 10e7:
         print("ok")
         try:
+            print("ok")
     #________________________________________________________________
             # request data
-            lidar     = broker.recv_msg("franka_lidar", -1)
-            print(lidar)
+            #lidar     = broker.recv_msg("franka_lidar", -1)
+            #print(lidar)
             new_state = broker.recv_msg("franka_state", -1)
             img       = broker.recv_msg("realsense_images", -1)
-            lidars.append(list(lidar.get_data()))
             # update data for lidar and state
-            data = lib.update_data(data, lidar, new_state, k)
+            #data = lib.update_data(data, lidar, new_state, k)
             # save images
             img_counter = lib.collect_rgb_depth(img, img_counter)
+
             print("\rtimesteps: {}".format(i), end="")
             sys.stdout.flush()
             if i % save_every==0 and i !=0: 
