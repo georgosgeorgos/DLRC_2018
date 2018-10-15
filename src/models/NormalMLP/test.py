@@ -9,7 +9,7 @@ import torch as th
 from src.loaders.load_panda import PandaDataSet
 from src.models.NormalMLP.normalMLP import NormalMLP
 import os.path as osp
-from src.utils.utils import path_exists, ckpt_utc, plot_timeseries
+from src.utils.utils import path_exists, ckpt_utc, plot_input_pred_timeseries
 from src.utils import configs as cfg
 from torch.distributions.normal import Normal
 
@@ -99,6 +99,6 @@ std_array = np.array(std_list).squeeze()
 print(input_array.shape)
 
 
-plot_timeseries(input=input_array, pred=mu_array, std=std_array, xlabel="time", ylabel="depth (m)",
-                title='time series prediction', save_to=osp.join(path_results, 'test_timeseries_pred_anom_real.png'))
+plot_input_pred_timeseries(input=input_array, pred=mu_array, std=std_array, xlabel="time", ylabel="depth (m)",
+                           title='time series prediction', save_to=osp.join(path_results, 'test_timeseries_pred_anom_real.png'))
 

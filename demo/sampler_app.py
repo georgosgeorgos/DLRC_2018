@@ -21,11 +21,9 @@ from random import shuffle
 from torch.utils import data
 import src.utils.utils as cfg
 
-pf = "./robot_sampling/data_0.pkl"
-pf = "../data/train_data_correct.pkl"
+# pf = "../data/train_data_correct.pkl"
 # pf = "../data/anomaly_detection_gt.pkl"
-# pf = "../data/clustering_gt.pkl"
-
+pf = "../data/clustering_gt.pkl"
 
 class SamplerData:
     def __init__(self, n=100):
@@ -52,6 +50,10 @@ class SamplerData:
     def get_sample_anomaly(self, n_interval):
 
         max_n_interval = self.data_lidar.shape[0] / self.n - 1
+        # TODO: FIXME georgos
+        # TypeError: unsupported operand type(s) for %: 'NoneType' and 'float'
+        #
+        # This error occurs when mockup data is used
         n_interval = int(n_interval % max_n_interval)
 
         sample_lidar = self.data_lidar[(n_interval * self.n):((n_interval * self.n) + self.n)]
@@ -147,9 +149,11 @@ class SamplerAnomalyClustering:
         if not is_robot:
             y, x, _ = self.sampler.get_sample_anomaly(n_interval)
         else:
-            y = np.array(msg_lidar.get_data())
-            x = np.array(msg_state.get_j_pos())
-            y /= 1000
+            y = np.array(list(msg_lidar.get_data()), dtype=float)
+            y = y.reshape((1, -1))
+            x = np.array(list(msg_state.get_j_pos()))
+            x = x.reshape((1, -1))
+            y = y / 1000
             y[y > 2.0] = 2.0
         x_an = self.routine_tensor(x)
         y_an = self.routine_tensor(y)
@@ -157,9 +161,13 @@ class SamplerAnomalyClustering:
         if not is_robot:
             y, x, _ = self.sampler.get_sample_clustering(n_interval)
         else:
-            y = np.array(msg_lidar.get_data())
-            x = np.array(msg_state.get_j_pos())
-            y /= 1000
+            y = np.array(list(msg_lidar.get_data()), dtype=float)
+            y = y.reshape((1, -1))
+            x = np.array(list(msg_state.get_j_pos()))
+            ## temp
+            x = np.array([x for _ in range(self.n_samples_y)]).flatten()
+            x = x.reshape((1, -1))
+            y = y / 1000
             y[y > 2.0] = 2.0
         x_cl = self.routine_tensor(x)
         y_cl = self.routine_tensor(y)
