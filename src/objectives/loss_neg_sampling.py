@@ -8,22 +8,22 @@ class lossNegSampling(nn.Module):
     def __init__(self):
         super(lossNegSampling, self).__init__()
         self.m = nn.Sigmoid()
-        self.loss = nn.BCELoss() #nn.CrossEntropyLoss()
+        self.loss = nn.CrossEntropyLoss()
 
     def forward(self, pred, lbl):
         #pred = pred.permute(0,2,1)
         #lbl  = lbl.permute(0,2,1)
-        lbl   = lbl.cpu().data.numpy()
+        #lbl  = lbl.cpu().data.numpy()
         #pred_ = th.zeros((pred.size()[0], pred.size()[1]))
-        pred  = self.m(pred)
-        pred  = pred.cpu().data.numpy()
+        #pred = self.m(pred)
+        #pred = pred[:,:,1]
+        #pred = pred.cpu().data.numpy()
+        #pred_ = pred[lbl==1]
+        #lbl   = lbl.argmax(axis=2)
+        #pred_ = pred_.reshape(lbl.shape)
 
-        pred_ = pred[lbl==1]
-        lbl   = lbl.argmax(axis=2)
-        pred_ = pred_.reshape(lbl.shape)
-
-        pred_ = Variable(th.from_numpy(pred_), requires_grad=True)
-        lbl   = th.from_numpy(lbl).float()
-        
-        loss = self.loss(pred_, lbl)
+        #pred_ = Variable(th.from_numpy(pred_), requires_grad=True)
+        #lbl   = th.from_numpy(lbl).float()
+        loss = self.loss(pred, lbl)
+        #print(loss)
         return loss

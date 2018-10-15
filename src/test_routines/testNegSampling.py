@@ -15,16 +15,19 @@ def test(args):
     model = Model(
             layer_sizes=args.encoder_layer_sizes,
             latent_size=args.latent_size,
-            is_uq=False
+            is_uq=False,
             )
     
     saved_state_dict = th.load(args.ckpt_dir + args.ckpt_test)
     model.load_state_dict(saved_state_dict)
 
     dataset = Dataset(path=args.data_dir, 
+                      path_images=args.data_dir + "TRAIN_DATA/DEPTH/", 
                       split=args.split_evaluation, 
                       n_samples=args.n_samples_y, 
-                      is_label_y=True)
+                      is_label_y=args.is_label_y,
+                      is_multimodal=args.is_multimodal
+                      )
 
     data_loader = DataLoader(dataset=dataset, batch_size=args.batch_size_test, shuffle=False)
 
@@ -46,7 +49,6 @@ def test(args):
         y = y[:,-1,:]
 
         pred = pred.argmax(dim=2)
-        lbl  = lbl.argmax(dim=2)
         
         lbl_list.append(lbl.data.numpy()[0])
         pred_list.append(pred.data.numpy()[0])
@@ -63,11 +65,10 @@ def test(args):
             mu_c  = mu_new
             std_c = std_new
 
-
     lbl_array = np.array(lbl_list)
     pred_array = np.array(pred_list)
-    np.savetxt("lbl.npy", lbl_list)
-    np.savetxt("pred.npy", pred_list)
+    np.save("lbl.npy", lbl_array)
+    np.save("pred.npy", pred_array)
 
     print((lbl_array == pred_array).mean())
         # observable
