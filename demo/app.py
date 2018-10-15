@@ -13,13 +13,13 @@ import py_at_broker as pab
 import src.utils.configs as cfg
 
 N_SAMPLES = 1
-N_INTERVAL_UPDATE = 0.5
+N_INTERVAL_UPDATE = 1.
 N_STD = 3
-N_LIDAR_IDX = [3]
+N_LIDAR_IDX = [3, 5]
 USE_MOCKUP_DATA = True
 ANOMALY_THRESHOLD = .95
 ROBOT_NAME = 'franka'
-N_MAX_INTERVAL = 1e+12
+N_MAX_INTERVAL = 1e+16
 N_WINDOW_SIZE = 10
 DEBUG = False
 N_HEIGHT_SECONDARY_GRAPH = 275
@@ -178,23 +178,34 @@ def create_callback_anomaly_graph(id):
             showlegend=False
         )
 
-        # mask_anom_thresh = np.array(list_prob_anomaly[id])[timesteps] > ANOMALY_THRESHOLD
-        #
+        mask = np.array(list_prob_anomaly[id])[timesteps] > ANOMALY_THRESHOLD
+
         # trace_anom_decision = go.Scatter(
-        #     x=timesteps[mask_anom_thresh],
-        #     y=np.array(list_prob_anomaly[id])[mask_anom_thresh],
-        #     mode='lines',
-        #     fill='tozeroy',
-        #     fillcolor='rgba(240, 128, 128, .8)',
-        #     line=dict(color='rgba(240, 128, 128, .8)', smoothing=0.5, shape='spline'),
+        #     x=timesteps[mask],
+        #     y=(np.array(list_prob_anomaly[id])[timesteps])[mask],
+        #     mode='markers',
+        #     marker=dict(color='rgba(240, 128, 128, 1.)', size=20),
+        #     # fill='tozeroy',
+        #     # fillcolor='rgba(240, 128, 128, .8)',
+        #     # line=dict(color='rgba(240, 128, 128, .8)', smoothing=0.5, shape='spline'),
         #     name='other agent'
         # )
+
+        trace_anom_decision = go.Scatter(
+            x=timesteps[mask],
+            y=(np.array(list_prob_anomaly[id])[timesteps])[mask],
+            mode='lines',
+            fill='tozeroy',
+            fillcolor='rgba(240, 128, 128, 1.)',
+            line=dict(color='rgba(240, 128, 128, 1.)', smoothing=0.5, shape='spline'),
+            name='other agent'
+        )
 
         trace_anom_threshold = go.Scatter(
             x=timesteps,
             y=(np.ones_like(timesteps) * ANOMALY_THRESHOLD),
             mode='lines',
-            line=dict(color='#17202A'),
+            line=dict(color='#17202A', dash='dash', width=1),
             name='anomaly threshold'
         )
 
@@ -209,7 +220,7 @@ def create_callback_anomaly_graph(id):
             legend=dict(xanchor='right', yanchor='top', bgcolor='rgba(255, 255, 255, .8)'),
         )
 
-        return Figure(data=[trace_normal, trace_anom, trace_anom_threshold], layout=layout)
+        return Figure(data=[trace_normal, trace_anom, trace_anom_decision, trace_anom_threshold], layout=layout)
 
     return callback
 

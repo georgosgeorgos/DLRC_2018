@@ -25,7 +25,6 @@ import src.utils.utils as cfg
 # pf = "../data/anomaly_detection_gt.pkl"
 pf = "../data/clustering_gt.pkl"
 
-
 class SamplerData:
     def __init__(self, n=100):
         with open(pf, "rb") as f:
