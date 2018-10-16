@@ -34,29 +34,10 @@ for d in range(num_demonstrations):
         msg_panda = b.recv_msg(robot_name + "_state", -1)
         recv_stop = time.clock_gettime(time.CLOCK_MONOTONIC)
 
-        # Check that the messages we're getting are not too old, reset the
-        # entire script if we get out of sync
-        if (2 * recv_stop - recv_start - msg_panda.get_timestamp()) > max_sync_jitter:
-            print("De-synced, messages too old\n Resetting...")
-
         # Create and fill message
         counter = tau_msg(b, counter)
-        msg_lidar = b.recv_msg(robot_name + "_lidar", -1)
-
-        data = update_data(data, msg_lidar, msg_panda, d)
 
         print("\rtimesteps: {}".format(t), end="")
         sys.stdout.flush()
 
     end = time.time()
-    print("\n### Demo took {:.4f} seconds.".format(end-start))
-    data[d]["lidar"]['freq'] = num_timesteps / (end - start)
-
-    plt.plot(data[d]["lidar"]["measurements"])
-    plt.show()
-    plt.hist(data[d]["lidar"]["measurements"])
-    plt.show()
-
-# save collected data
-print("Saving...")
-pkl.dump(data, open(osp.join(data_path, "cluster.pkl"), "wb"))

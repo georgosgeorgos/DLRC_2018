@@ -1,4 +1,5 @@
 import dash
+import sys
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
@@ -13,24 +14,22 @@ import py_at_broker as pab
 import src.utils.configs as cfg
 
 N_SAMPLES = 1
-N_INTERVAL_UPDATE = 1.
+N_INTERVAL_UPDATE = .75
 N_STD = 3
-N_LIDAR_IDX = [3, 5]
-USE_MOCKUP_DATA = True
+N_LIDAR_IDX = [3]
+OFFLINE = False
 ANOMALY_THRESHOLD = .95
 ROBOT_NAME = 'franka'
-N_MAX_INTERVAL = 1e+16
+N_MAX_INTERVAL = 1e+50
 N_WINDOW_SIZE = 10
 DEBUG = False
 N_HEIGHT_SECONDARY_GRAPH = 275
 N_HEIGHT_PRIMARY_GRAPH = 400
+MAX_SYNC_JITTER = 0.2
 
-if not USE_MOCKUP_DATA:
+if not OFFLINE:
     broker = pab.broker()
-    print(broker.request_signal(ROBOT_NAME + '_lidar', pab.MsgType.franka_lidar))
-    time.sleep(0.5)
-    print(broker.request_signal(ROBOT_NAME + '_state', pab.MsgType.franka_state))
-    time.sleep(0.5)
+    print("Request signal <{}_state> {}".format(ROBOT_NAME,broker.request_signal(ROBOT_NAME + '_state', pab.MsgType.franka_state)))
 
 # Lists that store data coming in over time
 list_lidar_depth = defaultdict(list)
@@ -292,11 +291,19 @@ def create_callback_lidar_graph(id):
 @app.callback(Output('store-data-lidars', 'children'),
               [Input('interval', 'n_intervals')])
 def update_data(n):
-    if USE_MOCKUP_DATA:
+    if OFFLINE:
         data = sampler.get_data(None, None, n, is_robot=False)
     else:
-        msg_lidar = broker.recv_msg(ROBOT_NAME + "_lidar", -1)
+        recv_start = time.clock_gettime(time.CLOCK_MONOTONIC)
         msg_state = broker.recv_msg(ROBOT_NAME + "_state", -1)
+        recv_stop = time.clock_gettime(time.CLOCK_MONOTONIC)
+        if (2 * recv_stop - recv_start - msg_state.get_timestamp()) > MAX_SYNC_JITTER:
+            print("De-synced, messages too old\n Resetting...")
+
+        # msg_lidar = broker.recv_msg(ROBOT_NAME + "_lidar", -1)
+        msg_lidar = None
+
+        # print('joint positions: {}'.format(list(msg_state.get_j_pos())))
 
         data = sampler.get_data(msg_lidar, msg_state, n, is_robot=True)
 
