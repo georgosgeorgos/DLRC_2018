@@ -13,15 +13,15 @@ from collections import defaultdict
 import py_at_broker as pab
 import src.utils.configs as cfg
 
-N_SAMPLES = 1
-N_INTERVAL_UPDATE = .75
+N_SAMPLES = 10
+N_INTERVAL_UPDATE = 1.
 N_STD = 3
 N_LIDAR_IDX = [3]
-OFFLINE = False
+OFFLINE = True
 ANOMALY_THRESHOLD = .95
 ROBOT_NAME = 'franka'
 N_MAX_INTERVAL = 1e+50
-N_WINDOW_SIZE = 10
+# N_WINDOW_SIZE = 100
 DEBUG = False
 N_HEIGHT_SECONDARY_GRAPH = 275
 N_HEIGHT_PRIMARY_GRAPH = 400
@@ -29,7 +29,8 @@ MAX_SYNC_JITTER = 0.2
 
 if not OFFLINE:
     broker = pab.broker()
-    print("Request signal <{}_state> {}".format(ROBOT_NAME,broker.request_signal(ROBOT_NAME + '_state', pab.MsgType.franka_state)))
+    print("Request signal <{}_state> {}".format(ROBOT_NAME,
+                                                broker.request_signal(ROBOT_NAME + '_state', pab.MsgType.franka_state)))
 
 # Lists that store data coming in over time
 list_lidar_depth = defaultdict(list)
@@ -40,7 +41,7 @@ list_prob_normal = defaultdict(list)
 list_prob_background = defaultdict(list)
 list_prob_self = defaultdict(list)
 
-sampler = SamplerAnomalyClustering(n=N_SAMPLES)
+sampler = SamplerAnomalyClustering(n=N_SAMPLES, l=[3])
 
 app = dash.Dash(__name__)
 
@@ -228,14 +229,20 @@ def create_callback_lidar_graph(id):
     def callback(n, json_data):
         data = json.loads(json_data)
 
-        list_lidar_depth[id].append(data['input'][-1][id])
-        list_lidar_depth_mean[id].append(data['mu'][-1][id])
-        list_lidar_depth_std[id].append(data['std'][-1][id])
+        print(data['input'])
 
-        if n < N_WINDOW_SIZE:
-            timesteps = np.arange(len(list_lidar_depth[id]))
-        else:
-            timesteps = np.arange(start=n - N_WINDOW_SIZE, stop=n, step=1)
+        list_lidar_depth[id] = list_lidar_depth[id] + data['input'][:N_SAMPLES][id]
+        list_lidar_depth_mean[id] = list_lidar_depth_mean[id] + data['mu'][:N_SAMPLES][id]
+        list_lidar_depth_std[id] = list_lidar_depth_std[id] + data['std'][:N_SAMPLES][id]
+
+        # if n < N_WINDOW_SIZE:
+        #     timesteps = np.arange(len(list_lidar_depth[id]))
+        # else:
+        #     timesteps = np.arange(start=n - N_WINDOW_SIZE, stop=n, step=1)
+
+        timesteps = np.arange(start=n * N_SAMPLES, stop=n * N_SAMPLES + N_SAMPLES, step=1)
+        print(len(data['input'][:N_SAMPLES][id]), len(list_lidar_depth[id]))
+        print(timesteps)
 
         trace_inp = go.Scatter(
             x=timesteps,
@@ -312,16 +319,16 @@ def update_data(n):
 
 # Create separate callbacks for each lidar
 for lidar_idx in N_LIDAR_IDX:
-    app.callback(Output('live-update-graph-normal-lidar{}'.format(lidar_idx), 'figure'),
-                 [
-                     Input('interval', 'n_intervals'),
-                     Input('store-data-lidars', 'children')
-                 ])(create_callback_normal_graph(lidar_idx)),
-    app.callback(Output('live-update-graph-anom-lidar{}'.format(lidar_idx), 'figure'),
-                 [
-                     Input('interval', 'n_intervals'),
-                     Input('store-data-lidars', 'children')
-                 ])(create_callback_anomaly_graph(lidar_idx))
+    # app.callback(Output('live-update-graph-normal-lidar{}'.format(lidar_idx), 'figure'),
+    #              [
+    #                  Input('interval', 'n_intervals'),
+    #                  Input('store-data-lidars', 'children')
+    #              ])(create_callback_normal_graph(lidar_idx)),
+    # app.callback(Output('live-update-graph-anom-lidar{}'.format(lidar_idx), 'figure'),
+    #              [
+    #                  Input('interval', 'n_intervals'),
+    #                  Input('store-data-lidars', 'children')
+    #              ])(create_callback_anomaly_graph(lidar_idx))
     app.callback(Output('live-update-graph-lidar{}'.format(lidar_idx), 'figure'),
                  [
                      Input('interval', 'n_intervals'),
