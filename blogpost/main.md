@@ -1,72 +1,75 @@
-
-
-
-
 # Unsupervised Perception of Dynamic Environments
 
+* Team: Boring Panda
+* Members: Daniel, Giorgio
 
+When we started to work on this project, one month ago, we decided to focus on the Machine Learning part. And reading some papers, a simple observation arose naturally:
 
-Simple observation: Machine Learning for Robotics doesn't (yet) work. Why? And most important, can we do something to fix this problem?
+Machine Learning for Robotics doesn't (yet) work and, when works, it works for specif cases well tuned. Why? How can we fix this problem?
 
-Question: Is it possible to sense a dynamic environment using learning techniques?
+More in general and related to the Robotic field, we asked us this question:
 
-Answer: Yes, but we need some assumptions.
+**Is it possible to sense a dynamic environment using learning techniques?**
+
+Before exploring our solution to this problem, we need to understand the difference between a Geometry based approach and a Learning based approach.
 
 ## Geometry based and Learning based approach
+
+The Robotic field has been historically reluctant to use Machine Learning techniques. With the advent of Deep Learning, the situation isn't improved. And it's easy to understand why! Typically in Robotics we deal with tasks well defined. Applying Geometry, Control theory and a lot of engineering, it's possible to obtain impressive practical results: why should we use methods that are approximated, without convergence theorems, and somehow obscures?
 
 | ![](./images/geometry_based.jpg)                             | ![](./images/learning_based.jpg)                             |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | Geometry based approach: we build a specific model of our system, and on top of it we use machine learning to solve specific tasks. | Learning based approach: we build a statistical model, and on top of it we inject geometrical constraints and task dependent informations. |
 
-
-
-The Robotic field was historically reluctant to use Machine Learning techniques. With the advent of Deep Learning, the situation isn't improved. And it's easy to understand why! Typically in Robotics we deal with tasks well defined: applying Geometry, Control theory and lot of engineering, it's possible to obtain impressive practical results: why should we use methods that are approximated, without clear convergence and obscure?
-
 Difficult to debate with them, I agree. No need for Machine Learning, we only need curve fitting for specific tasks; we have a sufficient amount of Machines already. So done? Not so fast! 
 
-Let's say that the task is not so well defined; let's say that we don't have perfect knowledge of our robotic agents; and in particular, let's say that we live in a Dynamic Environment. That's it: in real life, things can change around us in any moment. For this scenario, classical methods are not sufficient. Now Machine Learning can help.
+Let's say that the task is not so well defined; let's say that we don't have perfect knowledge of our robotic agents; and in particular, let's say that we live in a Dynamic Environment. For this scenario, classical methods are not sufficient. Now Machine Learning can help.
 
-We decided to explore this idea and to answer a simple question: how to deal with an Environment that evolves continuously? How to deal with Dynamics in our environment ?
+### The path toward statistical modeling
 
-We decided to explore the possibility to perceive a Dynamic Environment using Machine Learning.
+So we decided to explore the possibility to perceive a Dynamic Environment using Machine Learning.
 
-It was immediately clear that a classical Supervised approach was not well suited for this task: classification algorithms assume same data distribution between train and test set (it is possible to work with Domain Adaptation techniques, but they assume always some similarity in terms of distribution). So we started to think to use Unsupervised Learning, a form of ML that learns structure in data without labels. The idea was nice, but...we cannot output a number and stop...we needed also to consider some form of uncertainty around our prediction. However, we are trying to predict something in an Environment that changes, and we don't know how it will change!
+It was immediately clear that a classical Supervised approach was not well suited for this task: discriminative algorithms assume same data distribution between train and test set (it is possible to work with Domain Adaptation techniques, but they assume always some similarity in terms of distribution). And they output a number, something not adapt to a dynamic scenario.
 
-## Preliminary
+So we started to think to use **Statistical Unsupervised Learning**, a form of ML that learns structure in data without manual labeling. The idea was nice. With one model we could be able to sense the environment without using heuristics to label sensor data and quantify uncertainty around our prediction. However, we are trying to predict something in an Environment that changes, and we don't know how it will change!
+
+## Preliminary results
 
 After some brainstorming with our mentor, the path was clear: we decided to build a sensing framework, using unsupervised learning techniques, in a statistical setup.
 
-Before to continue it's important to clarify the difference between Geometry based and Learning based approach.
+Instead to conjecture how to do, we decided to start collecting data and seeing if it was possible to detect some patterns. The first result was cheering: collecting lidar data on a given trajectory, we started to see a clear multi modal pattern.
 
-Now we needed only: data, model, GPU, and a lot of hard work!
-
-Instead to conjecture, we decided to start collecting data and see if it was possible to detect some patterns. The first result was cheering: collecting lidar data on a given trajectory, we started to see a clear multi modal pattern.
-
-
+TODO: RESIZE TO HALF THE ORIGINAL DIMENSION
 
 |           ![](./images/jointplot_trajectory0.png)            |
 | :----------------------------------------------------------: |
-| Data collected moving the robotic arm on a given trajectory. For any lidar (9) we show the temporal trace and relative histogram with density estimation. |
+| Data collected moving the robotic arm on a given trajectory. For any lidar we show the temporal trace in mm and the relative histogram with density estimation. |
 
+| ![](./images/measurements_lidar3_with_thresh.png)            |
+| ------------------------------------------------------------ |
+| Controlled experiment to analyze different patterns for background, self and other. |
 
-
-So Multi modality? Why not to try with a Gaussian Mixture Model (GMM)? GMMs are a classical tool for statistical clustering and they seemed a perfect tool for our problem. In formula:
+So Multi modality? Why not try with a Mixture Model? Mixture Models are a classical tool for statistical clustering and they seemed a good and simple idea for our problem. In general a Mixture Model can be defined as:
 $$
 \begin{align}
 p(y) &= \sum_k \pi_k \mathcal P_k(y \vert \mu, \sigma)
 \end{align}
 $$
-So we tried a simple GMM on a simplified scenario: we collected time-series data in static and dynamic environment; every sample is a 10 consecutive points in this time series; and we built a low dimensional handcrafted feature representation. In particular, given a time series x(t), we built a simple handcrafted feature representation using
+So we tried a simple Gaussian Mixture Model on a simplified scenario: we collected time-series data in static and dynamic environment; every sample is a 10 consecutive points in this time series; and we built a low dimensional handcrafted feature representation. In particular, given a time series x(t), we built a simple handcrafted feature representation using [max;std] of the following simple (non-linear) data transformation. We can think to this f(x_t) as a temporal difference
 $$
-f(x) = (max;std)(|x(t+1) - x(t)|)
+f(x_t) = \vert x(t+1) - x(t) \vert
 $$
-the result was not bad: considering 20 samples (every sample consisting of short time series with 10 consecutive points), we were able to cluster correctly the 70 % of these points. 
+the result was good: considering 30 samples (every sample consisting of short time series with 10 consecutive points), we were able to cluster correctly 70 % of these points. And the misclassified one are the one dynamic one indistinguishable from the static one in this embedding space. 
 
-| ![](./images/clustering_gt.png)                              | ![](./images/clustering_predict.png)      |
-| ------------------------------------------------------------ | ----------------------------------------- |
-| time series data in dynamic (red) and static (blue) environment | gmm clustering using handcrafted features |
+| ![](./images/gt_gmm.png)                                     | ![](./images/pred_gmm.png) |
+| ------------------------------------------------------------ | -------------------------- |
+| time series data embedding for dynamic (red) and static (blue) environment | gmm clustering prediction  |
 
-Good! The preliminary results showed that, at least, it's not impossible to cluster these time series. Go on. It's time to build our model, that we, um-modestly, decided to call Sensing Framework. 
+Good! The preliminary results showed that, in principle, it's possible to cluster these time series. And given that we are able to cluster with handcrafted features, using deep learning and statistics, we should be able to find a representation space to solve our perception task. 
+
+It's time to build our model, that we, um-modestly, decided to call **Sensing Framework**. 
+
+
 
 ## Sensing Framework
 
@@ -88,31 +91,29 @@ As input for all the framework we have the 9 lidar readings, and the 7 joint pos
 
 ### Anomaly Detection Module
 
-For anomaly detection we tried two models: a Variational Auto-encoder and a Regression model. In both cases the idea was to solve a proxy task (reconstruction for the vae, prediction for the regression) to obtain an anomaly detector: after training, when the model is not able to reconstruct or predict a given sample point, we consider this point an anomaly. Simple and effective. In the end we decide to use the Regression model: it was simple to train and we obtained good enough results. 
+For anomaly detection we decided to use a Regression model. The model is a Normal model. The idea is to solve a proxy task (prediction) to obtain an anomaly detector: after training, when the model is not able to reconstruct or predict a given sample point, we consider this point an anomaly. Simple and effective. We used a multilayer perceptron with two 256 unit layers, hyperbolic tangent as activation. This network outputs two objects: 9 means (one for every lidar), and more important, 9 standard deviations. The network is trained minimizing the negative log likelihood. In this way, we can not only detect anomaly, but we quantify the uncertainty (building a confidence interval) for our prediction and we use this confidence interval to decide if a point is an anomaly or not. We don't need to use heuristics, because the probability to  be an outlier is directly linked with how well the model fits the data. 
 $$
 \begin{align}p(Y \vert X) 
 &= \prod_i p(y_i \vert x_i)\\
 &= \prod_i\prod_j \mathcal N(y_{ij}^{lidar} \vert \mu_{j}^{lidar}(x_i), \sigma_j^{lidar}(x_i)^2) \times \prod_{s,t} \mathcal N(y^{depth}_{i,st} \vert \mu^{depth}_{st}(x_i),\sigma^{depth}(x_i)^2 )
 \end{align}
 $$
-and relative loss
 $$
-L(Y, X, \lambda)= - \sum_i \log p(y_i \vert x_i)
+L(Y, X)= - \sum_i \log p(y_i \vert x_i)
 $$
 
 
-|                  ![](./images/anomaly.png)                   |
+|                ![](./images/anomaly_blog.png)                |
 | :----------------------------------------------------------: |
-| anomaly detection in action. We inject anomalies in the environment, and the model is not able to predict the new behavior. |
+| anomaly detection in action. Lidar n.3 reading. We inject anomalies in the environment, and the model is not able to predict the new behavior. |
 
 ###  Clustering Module
 
-After the Anomaly Detection module, we have a Clustering Module in our pipeline: if the ADM detects a normal behavior, we analyze this data with the CM to decide if it is background or self. To obtain this result we built and test a series of statistical models with increasing complexity. In this section, We present the two most promising: the selector model and the deep gaussian mixture model with data dependent moments.
+If the Anomaly Detector Module detects an anomaly, we have done. But, if it detects a normal behavior, now we need to use the Clustering Module to decide if it is background or self. To obtain this result we built what we called a **selector model**, a network that mimics the Gaussian mixture model' s behavior. Again we solve a proxy task (a prediction) to solve a clustering task. We train with maximum likelihood and an entropy regularization term.
 
-we consider the 9 lidars iid (a reasonable assumption give the correlation matrix that we computed) and we build probabilistic models to fit the data. In particular we have interest in learning the moments of 9 one dimensional multi modal Gaussian (with two modes: self and background)
+we assume the 9 lidars independent and identically distributed and we build a probabilistic model to fit the data. In particular we have interest in learning the moments of 9 one dimensional multi modal Gaussian with two modes: self and background. 
 
-### selector
-
+We input short time series of 10 consecutive points: in this way, we help the model to learn the dynamics and we filter noise, smoothing the prediction.
 
 $$
 \begin{align}
@@ -124,36 +125,24 @@ p(Y \vert X)
 \end{align}
 $$
 
+$$
+L(Y, X, \lambda, \gamma)= -\sum_i \log p(y_i \vert x_i) - \lambda \sum_i\sum_k\pi_k(x_i) \log \pi_k(x_i) -\gamma \sum_i\sum_k c_{ik} \log \pi_k(x_i)
+$$
 
-|                 ![](./images/clustering.jpg)                 |
+
+|                  ![](./images/cl_blog.png)                   |
 | :----------------------------------------------------------: |
-| clustering on a controlled experiment: the top row shows the lidar 3 seeing itself; lidar 4 is seeing another agent. |
+| clustering on a controlled experiment: lidar n.3 reading. The red vertical lines represent the limit of ground truth for self |
 
-With this model, on a ground truth of 3000 points manually labeled, we obtain an accuracy of 70 %.
-
-### Gaussian Mixture Model
-
+With this model, on a ground truth of 3000 points manually labeled, we obtained a global accuracy of 89.8 % and a recall (on the class of interest self) of 69.4 %.
 
 $$
-\begin{align}
-p(Y \vert X) 
-&= \prod_i p(y_i \vert x_i)\\
-&= \prod_i p(y_i^{lidar} \vert x_i)\times p(y_i^{depth} \vert x_i)\\ 
-& = \prod_i\prod_j [\sum_k \pi_{jk}^{lidar}(x_i) \mathcal N(y_{ij}^{lidar} \vert \mu_{jk}^{lidar}(x_i),\sigma_{jk}^{lidar}(x_i)^2) \\
-&\times \prod_{s,t}[\sum_k \pi_{st,k}^{depth}(x_i) \mathcal N(y^{depth}_{i,st} \vert \mu^{depth}_{st,k}(x_i), \sigma^{depth}_{k}(x_i)^2 )]
-\end{align}
-$$
-and relative loss
-
 
 $$
-L(Y, X, \lambda)= -\sum_i \log p(y_i \vert x_i) - \lambda \sum_i\sum_k\pi_k(x_i) \log \pi_k(x_i) -\gamma \sum_i\sum_k c_{ik} \log \pi_k(x_i)
-$$
-
 
 ### Collision Detection Module
 
-This part is a simple module for binary classification. Given our Unsupervised approach (i.e. we don't label data), how can we train a classifier? Well thanks to a smart trick that we called negative sampling: In practice, we consider batches of 10 consecutive time series point; we randomly choose columns and set that values to Gaussian noise around a small value (let's say 50 mm). We label any original data point class 0, and any modified data point 1: in this way we want to discriminate between a generic anomaly (something new in the environment, other agent acting) and a probable collision. We now train/test on this dataset and we evaluate the result considering a global result and a per lidar result (we solve a binary classification problem for every lidar). Computing the Confusion matrix for a test set sample of 2000 points,  we evaluate the classification result using the Jaccard index. 
+We model this task as a simple multi-label binary classification. Given our Unsupervised approach (i.e. we don't label data), how can we train a classifier? Well thanks to a smart trick that we called negative sampling: In practice, we consider batches of 10 consecutive time series point; we randomly choose columns and set that values to Gaussian noise around a small value (let's say 50 mm). We label any original data point class 0, and any modified data point 1: in this way we want to discriminate between a generic anomaly (something new in the environment, other agent acting) and a probable collision. We now train/test on this dataset and we evaluate the result considering a global result and a per lidar result (we solve a binary classification problem for every lidar). Computing the Confusion matrix for a test set sample of 2000 points,  we evaluate the classification result using the Jaccard index and the F1 metric. 
 
 We report results for the class of interest (collision or class 1):
 
@@ -168,5 +157,13 @@ We report results for the class of interest (collision or class 1):
 
 
 
+## Conclusions
 
+In this work, we built an unsupervised framework for sensing the environment without relying on a fixed configuration or geometry. This approach has Advantages and Drawbacks.
+
+Regarding the advantages, the most obvious, and the goal of this project, is to learn a model that can be transferred to different scenarios with minimum fine-tuning; another pro, less obvious, is the capacity to quantify the uncertainty around prediction in an intuitive and immediate way, because the approach is intrinsically statistical.
+
+But there are drawbacks: the most relevant of them is that we are not able to interact easily with the environment: we can sense, we can learn a model of the environment; but also with this knowledge is not straightforward how to use this knowledge and solve a specific task.
+
+The model can obviously be improved: in particular we can use latent variable models to learn better representation and sequence models to model the temporal dynamics.
 
