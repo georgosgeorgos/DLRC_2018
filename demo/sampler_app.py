@@ -176,8 +176,8 @@ class SamplerAnomalyClustering:
 
         mu_an, logvar_an = self.modelAnomalyDetection(x_an)
         std_an = th.exp(0.5 * logvar_an)
-
         prob_an = self.outlier_test(y_an, mu_an, std_an)
+        
         _, _, clst = self.modelCluster(x_cl)
 
         y_an = self.routine_array(y_an)[:, self.l]
@@ -188,6 +188,10 @@ class SamplerAnomalyClustering:
         clst = self.routine_array(clst)[:, self.l]
         # clst_n = self.prob_normalize(clst, prob_an)
 
-        res = {"input": y_an.tolist(), "mu": mu_an.tolist(), "std": std_an.tolist(), "prob": prob_an.tolist(),
-               "cluster": clst.tolist()}
+        res = {"input": y_an.tolist(), 
+               "mu": mu_an.tolist(), 
+               "std": std_an.tolist(), 
+               "prob": prob_an.tolist(),
+               "cluster": clst.tolist()
+               }
         return res

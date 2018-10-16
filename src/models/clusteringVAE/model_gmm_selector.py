@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 from torch.distributions import Normal
-from src.models.clusteringVAE.model_cnn_gmm_selector import EncoderCNN
+from models.clusteringVAE.model_cnn_gmm_selector import EncoderCNN
 # we frame all the problem as an unsupervised learning problem.
 # we want to use a Conditional Variational Auto-Encoder to tackle the problem.
 
@@ -49,7 +49,7 @@ class VAE(nn.Module):
                  n_clusters,
                  batch_size,
                  model_type="selector",
-                 is_multimodal=True):
+                 is_multimodal=False):
 
         super().__init__()
         assert type(encoder_layer_sizes) == list

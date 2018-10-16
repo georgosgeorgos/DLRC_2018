@@ -6,7 +6,7 @@ import plotly.graph_objs as go
 from dash.dependencies import Input, Output
 from plotly.graph_objs import *
 import numpy as np
-from demo.sampler_app import SamplerAnomalyClustering
+from sampler_app import SamplerAnomalyClustering
 import json
 import time
 from collections import defaultdict

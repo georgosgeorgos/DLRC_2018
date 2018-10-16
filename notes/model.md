@@ -25,18 +25,14 @@ $$
 
 
 
-  loss
-$$
-L(Y, X, \lambda)= \sum_i -\log p(y_i \vert x_i) - \lambda \sum_i\sum_k\pi_k(x_i) \log \pi_k(x_i) -\gamma \sum_i\sum_k c_{ik} \log \pi_k(x_i)
-$$
-  Loss autoencoder
-
+* loss
 
 $$
 L(Y, X, \lambda)= \sum_i -\log p(y_i \vert x_i) - \lambda \sum_i\sum_k\pi_k(x_i) \log \pi_k(x_i) -\gamma \sum_i\sum_k c_{ik} \log \pi_k(x_i)
 $$
 
-Loss  semisupervision + autoencoder
+
+* Loss  semisupervision + autoencoder_depth 
 
 
 
@@ -48,6 +44,12 @@ $$
 
 
 
+$$
+\begin{align}
+p(Y \vert X) &= \prod_i p(y_i \vert x) \\
+             &= \prod_i N(y_{i} \vert \sum_k \pi_{ik}(x_i)\mu_{ik}(x), \sum_k \pi_{ik}(x)\sigma_{ik}(x)^2) 
+\end{align}
+$$
 
 
 
