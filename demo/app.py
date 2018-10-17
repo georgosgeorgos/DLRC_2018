@@ -13,10 +13,10 @@ from collections import defaultdict
 # import py_at_broker as pab
 import src.utils.configs as cfg
 
-N_SAMPLES = 10
+N_SAMPLES = 100
 N_INTERVAL_UPDATE = 1.
 N_STD = 3
-N_LIDAR_IDX = [3, 5]
+N_LIDAR_IDX = [3]
 OFFLINE = True
 ANOMALY_THRESHOLD = .95
 ROBOT_NAME = 'franka'
@@ -102,7 +102,9 @@ def create_callback_normal_graph(id):
         # list_prob_background[id].append(data['cluster'][-1][id][0])
         # list_prob_self[id].append(1)
 
-        list_prob_background[id] = list_prob_background[id] + np.array(data['cluster'])[:, N_LIDAR_IDX.index(id)].tolist()
+        list_prob_background[id] = list_prob_background[id] + np.array(data['cluster'])[:, N_LIDAR_IDX.index(id), 0].tolist()
+
+
 
         # list_prob_anomaly[id].append(data['prob'][-1][id])
         list_prob_self[id] = [1] * len(list_prob_background[id])
