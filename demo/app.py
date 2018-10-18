@@ -10,10 +10,10 @@ from sampler_app import SamplerAnomalyClustering
 import json
 import time
 from collections import defaultdict
-import py_at_broker as pab
+# import py_at_broker as pab
 import src.utils.configs as cfg
 
-N_SAMPLES = 10
+N_SAMPLES = 100
 N_INTERVAL_UPDATE = 1.
 N_STD = 3
 N_LIDAR_IDX = [3]
@@ -21,7 +21,7 @@ OFFLINE = True
 ANOMALY_THRESHOLD = .95
 ROBOT_NAME = 'franka'
 N_MAX_INTERVAL = 1e+50
-# N_WINDOW_SIZE = 100
+# N_WINDOW_SIZE = 10
 DEBUG = False
 N_HEIGHT_SECONDARY_GRAPH = 275
 N_HEIGHT_PRIMARY_GRAPH = 400
@@ -41,7 +41,7 @@ list_prob_normal = defaultdict(list)
 list_prob_background = defaultdict(list)
 list_prob_self = defaultdict(list)
 
-sampler = SamplerAnomalyClustering(n=N_SAMPLES, l=[3])
+sampler = SamplerAnomalyClustering(n=N_SAMPLES, l=N_LIDAR_IDX)
 
 app = dash.Dash(__name__)
 
@@ -99,13 +99,22 @@ app.layout = html.Div(
 def create_callback_normal_graph(id):
     def callback(n, json_data):
         data = json.loads(json_data)
-        list_prob_background[id].append(data['cluster'][-1][id][0])
-        list_prob_self[id].append(1)
+        # list_prob_background[id].append(data['cluster'][-1][id][0])
+        # list_prob_self[id].append(1)
 
-        if n < N_WINDOW_SIZE:
-            timesteps = np.arange(len(list_prob_background[id]))
-        else:
-            timesteps = np.arange(start=n - N_WINDOW_SIZE, stop=n, step=1)
+        list_prob_background[id] = list_prob_background[id] + np.array(data['cluster'])[:, N_LIDAR_IDX.index(id), 0].tolist()
+
+
+
+        # list_prob_anomaly[id].append(data['prob'][-1][id])
+        list_prob_self[id] = [1] * len(list_prob_background[id])
+
+        # if n < N_WINDOW_SIZE:
+        #     timesteps = np.arange(len(list_prob_background[id]))
+        # else:
+        #     timesteps = np.arange(start=n - N_WINDOW_SIZE, stop=n, step=1)
+
+        timesteps = np.arange(start=n * N_SAMPLES, stop=n * N_SAMPLES + N_SAMPLES, step=1)
 
         trace_background = go.Scatter(
             x=timesteps,
@@ -150,13 +159,17 @@ def create_callback_anomaly_graph(id):
     def callback(n, json_data):
         data = json.loads(json_data)
 
-        list_prob_anomaly[id].append(data['prob'][-1][id])
-        list_prob_normal[id].append(1)
+        list_prob_anomaly[id] = list_prob_anomaly[id] + np.array(data['prob'])[:, N_LIDAR_IDX.index(id)].tolist()
 
-        if n < N_WINDOW_SIZE:
-            timesteps = np.arange(len(list_prob_anomaly[id]))
-        else:
-            timesteps = np.arange(start=n - N_WINDOW_SIZE, stop=n, step=1)
+        # list_prob_anomaly[id].append(data['prob'][-1][id])
+        list_prob_normal[id] = [1]*len(list_prob_anomaly[id])
+
+        # if n < N_WINDOW_SIZE:
+        #     timesteps = np.arange(len(list_prob_anomaly[id]))
+        # else:
+        #     timesteps = np.arange(start=n - N_WINDOW_SIZE, stop=n, step=1)
+
+        timesteps = np.arange(start=n * N_SAMPLES, stop=n * N_SAMPLES + N_SAMPLES, step=1)
 
         trace_normal = go.Scatter(
             x=timesteps,
@@ -229,11 +242,9 @@ def create_callback_lidar_graph(id):
     def callback(n, json_data):
         data = json.loads(json_data)
 
-        print(data['input'])
-
-        list_lidar_depth[id] = list_lidar_depth[id] + data['input'][:N_SAMPLES][id]
-        list_lidar_depth_mean[id] = list_lidar_depth_mean[id] + data['mu'][:N_SAMPLES][id]
-        list_lidar_depth_std[id] = list_lidar_depth_std[id] + data['std'][:N_SAMPLES][id]
+        list_lidar_depth[id] = list_lidar_depth[id] +  np.array(data['input'])[:, N_LIDAR_IDX.index(id)].tolist()
+        list_lidar_depth_mean[id] = list_lidar_depth_mean[id] + np.array(data['mu'])[:, N_LIDAR_IDX.index(id)].tolist()
+        list_lidar_depth_std[id] = list_lidar_depth_std[id] +np.array(data['std'])[:, N_LIDAR_IDX.index(id)].tolist()
 
         # if n < N_WINDOW_SIZE:
         #     timesteps = np.arange(len(list_lidar_depth[id]))
@@ -241,8 +252,6 @@ def create_callback_lidar_graph(id):
         #     timesteps = np.arange(start=n - N_WINDOW_SIZE, stop=n, step=1)
 
         timesteps = np.arange(start=n * N_SAMPLES, stop=n * N_SAMPLES + N_SAMPLES, step=1)
-        print(len(data['input'][:N_SAMPLES][id]), len(list_lidar_depth[id]))
-        print(timesteps)
 
         trace_inp = go.Scatter(
             x=timesteps,
@@ -310,8 +319,6 @@ def update_data(n):
         # msg_lidar = broker.recv_msg(ROBOT_NAME + "_lidar", -1)
         msg_lidar = None
 
-        # print('joint positions: {}'.format(list(msg_state.get_j_pos())))
-
         data = sampler.get_data(msg_lidar, msg_state, n, is_robot=True)
 
     return json.dumps(data)
@@ -319,16 +326,16 @@ def update_data(n):
 
 # Create separate callbacks for each lidar
 for lidar_idx in N_LIDAR_IDX:
-    # app.callback(Output('live-update-graph-normal-lidar{}'.format(lidar_idx), 'figure'),
-    #              [
-    #                  Input('interval', 'n_intervals'),
-    #                  Input('store-data-lidars', 'children')
-    #              ])(create_callback_normal_graph(lidar_idx)),
-    # app.callback(Output('live-update-graph-anom-lidar{}'.format(lidar_idx), 'figure'),
-    #              [
-    #                  Input('interval', 'n_intervals'),
-    #                  Input('store-data-lidars', 'children')
-    #              ])(create_callback_anomaly_graph(lidar_idx))
+    app.callback(Output('live-update-graph-normal-lidar{}'.format(lidar_idx), 'figure'),
+                 [
+                     Input('interval', 'n_intervals'),
+                     Input('store-data-lidars', 'children')
+                 ])(create_callback_normal_graph(lidar_idx)),
+    app.callback(Output('live-update-graph-anom-lidar{}'.format(lidar_idx), 'figure'),
+                 [
+                     Input('interval', 'n_intervals'),
+                     Input('store-data-lidars', 'children')
+                 ])(create_callback_anomaly_graph(lidar_idx))
     app.callback(Output('live-update-graph-lidar{}'.format(lidar_idx), 'figure'),
                  [
                      Input('interval', 'n_intervals'),
