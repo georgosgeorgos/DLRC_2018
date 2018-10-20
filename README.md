@@ -1,2 +1,4 @@
+## Probabilistic Models for Robotic Perception
 
-[blog post](https://argmax-ai.github.io/DLRCblog/team2/)
+* [Library](https://github.com/georgosgeorgos/DLRC_2018/tree/master/src)
+* [Blog Post](https://argmax-ai.github.io/DLRCblog/team2/)
