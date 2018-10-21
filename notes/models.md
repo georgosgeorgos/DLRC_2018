@@ -26,6 +26,7 @@ $$
 
 
 
+
 - Model 1.2: selector with local means and variances
   $$
   \begin{align}
@@ -64,16 +65,12 @@ $$
 
 
 
+
 Overall loss
 
 $$
-  L(Y, X, \lambda)= \sum_i -\log p(y_i \vert x_i) - \lambda \sum_i\sum_k\pi_k(x_i) \log \pi_k(x_i) -\gamma \sum_i\sum_k c_{ik} \log \pi_k(x_i)
+L(Y, X, \lambda)= \sum_i -\log p(y_i \vert x_i) - \lambda \sum_i\sum_k\pi_k(x_i) \log \pi_k(x_i) -\gamma \sum_i\sum_k c_{ik} \log \pi_k(x_i)
 $$
-
-
-TODO:
--	collect very large dataset at 100Hz, at least 4 hours of data
--	try all models with and without entropy regularisation that is in toal 9 models: Model 0 and 2 versions of models 1.1,1.2, 2.1, 2.2
 
 
 
