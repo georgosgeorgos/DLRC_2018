@@ -1,8 +1,8 @@
-# Unsupervised Classification of Sensor Data in Robotic Environment
+# Unsupervised Classification of Sensor Readings
 
 
 
-* Team: **BORING PANDA**
+* Team: **THE BORING PANDA**
 * Members: Daniel & Giorgio
 
 
@@ -39,11 +39,11 @@ We decided to use **Statistical Unsupervised Learning**, a class of Machine Lear
 
 We started to collect data and see if it was possible to detect some patterns. The first result was cheering: collecting lidar data on a given trajectory, we started to see a clear multi-modal pattern.
 
-|           ![](./images/jointplot_trajectory0.png)            |
+|           ![](./images/jointplot_trajectory0.jpg)            |
 | :----------------------------------------------------------: |
 | Data collected moving the robotic arm on a given trajectory. For any lidar, we show the temporal trace in mm and the relative histogram with density estimation. |
 
-| ![](./images/measurements_lidar3_with_thresh.png)            |
+| ![](./images/measurements_lidar3_with_thresh.jpg)            |
 | ------------------------------------------------------------ |
 | Controlled experiment to analyze different patterns for background, self and other. |
 
@@ -53,7 +53,7 @@ f(x_t) = \vert x(t+1) - x(t) \vert
 $$
 The result was good: considering 30 samples (every sample consisting of short time series with 10 consecutive points), we were able to cluster correctly 70 % of these points. Moreover, the misclassified samples are the dynamic one indistinguishable from the static one in this embedding space. 
 
-| ![](./images/gt_gmm.png)                                     | ![](./images/pred_gmm.png) |
+| ![](./images/gt_gmm.jpg)                                     | ![](./images/pred_gmm.jpg) |
 | ------------------------------------------------------------ | -------------------------- |
 | time series data embedding for dynamic (red) and static (blue) environment | gmm clustering prediction  |
 
@@ -69,7 +69,7 @@ Before to start, some definitions:
 * $y_{i j}$ is a lidar reading
 * $y_{i, s t}$ is a pixel in a depth image
 * $x_i$ is the state of the robot; typically joint angle positions and velocities
-* $\pi_k$ is a clustering selector$
+* $\pi_k$ is a clustering selector
 
 ### The Sensing framework
 
@@ -107,7 +107,7 @@ L(Y, X)= - \sum_i \log p(y_i \vert x_i)
 $$
 
 
-|                ![](./images/anomaly_blog.png)                |
+|                ![](./images/anomaly_blog.jpg)                |
 | :----------------------------------------------------------: |
 | Lidar n.3 reading. We inject anomalies in the environment, and the model is not able to predict the new behavior. |
 
@@ -115,7 +115,7 @@ $$
 
 If the Anomaly Detector Module detects an anomaly, we have done. However, if it detects a normal behavior, now we need to use the Clustering Module to decide if it is background or self. To obtain this result, we built what we called a selector model, a network that mimics the Gaussian mixture model' s behavior. Again we solve a proxy task (a prediction) to solve a clustering task. We train with maximum likelihood. In this case, for lidars readings, we have an interest in learning the moments of  9 one dimensional multi modal Gaussian with two modes: self and background. We input a short time series of 10 consecutive points: in this way, we help the model to learn the temporal dynamics and we filter noise.
 
-As before, the meaning of the symbols is the same. The selectors \pi_{k} are the only novelty. These selectors represent the clustering probability for any sensor reading. For example, given 9 lidars, we need to output (9, 2) numbers.
+As before, the meaning of the symbols is the same. The selectors $\pi_{k}$ are the only novelty. These selectors represent the clustering probability for any sensor reading. For example, given 9 lidars, we need to output (9, 2) numbers.
 $$
 \begin{align}
 p(Y \vert X) 
@@ -127,7 +127,7 @@ p(Y \vert X)
 $$
 
 
-|                  ![](./images/cl_blog.png)                   |
+|                  ![](./images/cl_blog.jpg)                   |
 | :----------------------------------------------------------: |
 | Clustering on a controlled experiment. Lidar n.3 reading. The red vertical lines represent the limit of ground truth for self. |
 
