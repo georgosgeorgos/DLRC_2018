@@ -11,17 +11,17 @@ from utils.utils import move_to_cuda, ckpt_utc, path_exists, tensor_to_variable
 
 def train(args):
     ckpt = ckpt_utc()
-    
+
     loss_fn = nELBO(args.batch_size, args.n_samples_z, args.n_samples_y)
 
     model = VAE(
-            encoder_layer_sizes=args.encoder_layer_sizes,
-            decoder_layer_sizes=args.decoder_layer_sizes,
-            latent_size=args.latent_size,
-            batch_size=args.batch_size,
-            conditional=args.conditional,
-            num_labels=args.num_labels
-            )
+        encoder_layer_sizes=args.encoder_layer_sizes,
+        decoder_layer_sizes=args.decoder_layer_sizes,
+        latent_size=args.latent_size,
+        batch_size=args.batch_size,
+        conditional=args.conditional,
+        num_labels=args.num_labels,
+    )
     model = move_to_cuda(model)
     model.train()
 
@@ -49,7 +49,7 @@ def train(args):
 
                 loss, kld, ll = loss_fn(y, mu_phi, log_var_phi, mu_theta, log_var_theta)
 
-                if args.split == 'train':
+                if args.split == "train":
                     loss.backward()
                     optimizer.step()
                     optimizer.zero_grad()
@@ -60,7 +60,7 @@ def train(args):
         print("negative likelihood: ", -ll.cpu().data.numpy())
         print("kl: ", kld.cpu().data.numpy())
         print("loss:", loss.cpu().data.numpy())
-        
+
         loss_list.append(np.mean(L) / (len(data_loader)))
 
     plt.plot(np.array(loss_list))

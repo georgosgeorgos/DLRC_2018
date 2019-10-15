@@ -8,13 +8,11 @@ from objectives.loss_neg_sampling import lossNegSampling as Loss
 from torch.utils.data import DataLoader
 from utils.utils import move_to_cuda, ckpt_utc, path_exists, tensor_to_variable
 
+
 def train(args):
     ckpt = ckpt_utc()
     loss_fn = Loss()
-    model = Model(layer_sizes=args.encoder_layer_sizes,
-                  latent_size=args.latent_size,
-                  is_uq=False
-                  )
+    model = Model(layer_sizes=args.encoder_layer_sizes, latent_size=args.latent_size, is_uq=False)
     model = move_to_cuda(model)
 
     optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
@@ -22,22 +20,24 @@ def train(args):
 
     # randomize an auxiliary index because we want to use random sample of time-series (10 time steps)
     # but the time series have to be intact
-    dataset = Dataset(path=args.data_dir,
-                      path_images=args.data_dir + "TRAIN_DATA/DEPTH/", 
-                      split=args.split, 
-                      n_samples=args.n_samples_y, 
-                      is_label_y=args.is_label_y,
-                      is_multimodal=args.is_multimodal
-                      )
+    dataset = Dataset(
+        path=args.data_dir,
+        path_images=args.data_dir + "TRAIN_DATA/DEPTH/",
+        split=args.split,
+        n_samples=args.n_samples_y,
+        is_label_y=args.is_label_y,
+        is_multimodal=args.is_multimodal,
+    )
     data_loader = DataLoader(dataset=dataset, batch_size=args.batch_size, shuffle=False)
 
-    dataset_val = Dataset(path=args.data_dir, 
-                          path_images=args.data_dir + "TRAIN_DATA/DEPTH/",
-                          split="val", 
-                          n_samples=args.n_samples_y,
-                          is_label_y=args.is_label_y,
-                          is_multimodal=args.is_multimodal
-                          )
+    dataset_val = Dataset(
+        path=args.data_dir,
+        path_images=args.data_dir + "TRAIN_DATA/DEPTH/",
+        split="val",
+        n_samples=args.n_samples_y,
+        is_label_y=args.is_label_y,
+        is_multimodal=args.is_multimodal,
+    )
     data_loader_val = DataLoader(dataset=dataset_val, batch_size=args.batch_size, shuffle=False)
 
     loss_train, loss_val = [], []
@@ -55,9 +55,9 @@ def train(args):
             lbl = tensor_to_variable(lbl)
             state = th.cat([y, x], dim=1)
 
-            pred  = model(state)
-            pred  = pred.reshape(-1, args.n_clusters, args.lidar_input_size)  #.permute(0,2,1)
-            
+            pred = model(state)
+            pred = pred.reshape(-1, args.n_clusters, args.lidar_input_size)  # .permute(0,2,1)
+
             loss = loss_fn(pred, lbl)
             loss.backward()
             optimizer.step()
@@ -68,7 +68,6 @@ def train(args):
         print("train loss:", np.mean(loss_epoch))
         loss_train.append(np.mean(loss_epoch))
 
-        
         if epoch % args.test_every_n_epochs == 0:
             model.eval()
             loss_epoch = []
@@ -78,7 +77,7 @@ def train(args):
                     state = th.cat([y, x], dim=1)
 
                     pred = model(state)
-                    pred = pred.reshape(-1, args.n_clusters, args.lidar_input_size)  #.permute(0,2,1)
+                    pred = pred.reshape(-1, args.n_clusters, args.lidar_input_size)  # .permute(0,2,1)
 
                     loss = loss_fn(pred, lbl)
                     loss_epoch.append(loss.cpu().data.numpy())

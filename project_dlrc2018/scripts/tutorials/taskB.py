@@ -8,20 +8,20 @@ print(b.register_signal("franka_target_pos", pab.MsgType.target_pos))
 print(b.request_signal("franka_state", pab.MsgType.franka_state))
 
 counter = 0
-state = b.recv_msg("franka_state", -1)    
+state = b.recv_msg("franka_state", -1)
 current_pos_c = state.get_c_pos()
-print('current pos: {}'.format(current_pos_c))
+print("current pos: {}".format(current_pos_c))
 
 n_points = 10
 n_runs = 3
-time2go = 1.
+time2go = 1.0
 delta = 2 * np.pi / n_points
 R = 0.2
 
-for n in range(1, n_runs+1):
-    for theta in np.arange(0, n*2*np.pi, delta):
+for n in range(1, n_runs + 1):
+    for theta in np.arange(0, n * 2 * np.pi, delta):
 
-        pos_c = current_pos_c + [R*np.sin(theta), R*np.cos(theta), 0]
+        pos_c = current_pos_c + [R * np.sin(theta), R * np.cos(theta), 0]
 
         msg = pab.target_pos_msg()
         msg.set_ctrl_t(pab.CtrlType.Cartesian)
@@ -33,5 +33,5 @@ for n in range(1, n_runs+1):
         b.send_msg("franka_target_pos", msg)
         time.sleep(0.5)
         new_state = b.recv_msg("franka_state", -1)
-        print('next pos: {}'.format(new_state.get_c_pos()))
+        print("next pos: {}".format(new_state.get_c_pos()))
         counter += 1

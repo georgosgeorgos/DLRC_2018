@@ -9,6 +9,7 @@ from objectives.reconstruction import LossReconstruction
 from torch.utils.data import DataLoader
 from utils.utils import move_to_cuda, ckpt_utc, tensor_to_variable, plot_eval
 
+
 def train(args):
     ckpt = ckpt_utc()
     train_set = PandaDataSetImg(root_dir=args.data_dir, split=args.split)
@@ -41,7 +42,14 @@ def train(args):
         epoch_loss = np.mean(loss_batch_history)
         epoch_loss_history.append(epoch_loss)
 
-        print('train epoch: {} avg. loss: {:.4f}'.format(epoch, epoch_loss))
+        print("train epoch: {} avg. loss: {:.4f}".format(epoch, epoch_loss))
 
-        plot_eval(np.arange(len(epoch_loss_history)), np.array(epoch_loss_history), save_to=osp.join(args.result_dir, 'train_loss.png'), title = 'train loss', xlabel="epochs", ylabel="loss")
+        plot_eval(
+            np.arange(len(epoch_loss_history)),
+            np.array(epoch_loss_history),
+            save_to=osp.join(args.result_dir, "train_loss.png"),
+            title="train loss",
+            xlabel="epochs",
+            ylabel="loss",
+        )
         th.save(model.state_dict(), osp.join(args.ckpt_dir, ckpt))

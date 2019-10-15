@@ -30,11 +30,11 @@ while True:
 
 ## 1 sample/0.06 s
 end = time.time()
-print(end-start)
+print(end - start)
 lidar_array = np.array(lidar_list)
 print(lidar_array.shape)
 
 for j in range(9):
-    plt.plot(lidar_array[:,j])
+    plt.plot(lidar_array[:, j])
 
 plt.show()

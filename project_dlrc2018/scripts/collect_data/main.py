@@ -2,11 +2,13 @@ import time
 import numpy as np
 from multiprocessing import Pool, Process, Queue
 from concurrent.futures import ThreadPoolExecutor
-#__________________________________________________
+
+# __________________________________________________
 import lib
 import sampler
 import controller
-#__________________________________________________
+
+# __________________________________________________
 broker = lib.default()
 print("broker initialized")
 
@@ -15,9 +17,11 @@ def sampler_f(broker):
     res = sampler.main(broker)
     return res
 
+
 def controller_f(broker):
     res = controller.main(broker)
     return res
+
 
 print("Starting ThreadPoolExecutor")
 with ThreadPoolExecutor(max_workers=4) as exe:
@@ -26,30 +30,30 @@ with ThreadPoolExecutor(max_workers=4) as exe:
 
 print(future)
 print("All tasks completed")
-#__________________________________________________
+# __________________________________________________
 
 
-#process1 = cr.main
-#process2 = rt.main
+# process1 = cr.main
+# process2 = rt.main
 
 
-#p1 = Process(target=method1) # create a process object p1
-#p1.start()                   # starts the process p1
-#p2 = Process(target=method2)
-#p2.start()
+# p1 = Process(target=method1) # create a process object p1
+# p1.start()                   # starts the process p1
+# p2 = Process(target=method2)
+# p2.start()
 
-#l1 = Queue()
-#print("l1")
-#p1 = Process(target=method1, args=(broker, l1, ))  
-#l2 = Queue()
-#print("l2")
-#p2 = Process(target=method2, args=(broker, l2, )) 
-#p1.start()   
+# l1 = Queue()
+# print("l1")
+# p1 = Process(target=method1, args=(broker, l1, ))
+# l2 = Queue()
+# print("l2")
+# p2 = Process(target=method2, args=(broker, l2, ))
+# p1.start()
 
-#result = map(f, [cr.main, rt.main])
-#print(result)
-#print("ok")
-#print(result)
+# result = map(f, [cr.main, rt.main])
+# print(result)
+# print("ok")
+# print(result)
 
 # pool = Pool()
 

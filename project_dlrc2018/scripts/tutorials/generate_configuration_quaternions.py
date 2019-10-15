@@ -24,6 +24,7 @@ def pos_msg(pos):
     msg.set_time_to_go(time2go)
     b.send_msg("franka_target_pos", msg)
 
+
 def pos_j_msg(pos):
     msg = pab.target_pos_msg()
     msg.set_ctrl_t(pab.CtrlType.Joint)
@@ -33,24 +34,25 @@ def pos_j_msg(pos):
     msg.set_time_to_go(time2go)
     b.send_msg("franka_target_pos", msg)
 
-state = b.recv_msg("franka_state", -1)    
+
+state = b.recv_msg("franka_state", -1)
 current_pos_c = state.get_c_pos()
-print('initial pos: {}'.format(current_pos_c))
+print("initial pos: {}".format(current_pos_c))
 
 n_points = 100
-n_runs   = 1
-time2go  = 3.
-delta    = 2 * np.pi / n_points
-R        = 0.2
-save_filename = 'data_5_min_static'
+n_runs = 1
+time2go = 3.0
+delta = 2 * np.pi / n_points
+R = 0.2
+save_filename = "data_5_min_static"
 
 data = {}
 c = 0
-n_samples=1
+n_samples = 1
 
 
 WallMin = [0.28, -0.78, 0.02]
-WallMax = [0.82,  0.78, 1.08]
+WallMax = [0.82, 0.78, 1.08]
 
 X = np.random.uniform(WallMin[0], WallMax[0], 1)[0]
 Y = np.random.uniform(WallMin[1], WallMax[1], 1)[0]
@@ -66,20 +68,29 @@ i = input()
 
 save_every = 10
 debug = False
-total_time = 300 # seconds
+total_time = 300  # seconds
 
-while runs < n_runs:    
-    runs +=1
+while runs < n_runs:
+    runs += 1
     print("RUN:", runs)
-    data[runs] = {"trajectory": [], 
-                  "state": {"j_pos": [], "j_vel": [], "j_load": [], 
-                  "c_pos": [], "c_vel": [], "c_ori_quat": [], 
-                  "dc_ori_quat": [], "timestamp": []}, 
-                  "lidar": {"measure": [], "timestamp": []}}
+    data[runs] = {
+        "trajectory": [],
+        "state": {
+            "j_pos": [],
+            "j_vel": [],
+            "j_load": [],
+            "c_pos": [],
+            "c_vel": [],
+            "c_ori_quat": [],
+            "dc_ori_quat": [],
+            "timestamp": [],
+        },
+        "lidar": {"measure": [], "timestamp": []},
+    }
     try:
-        state = b.recv_msg("franka_state", -1)    
+        state = b.recv_msg("franka_state", -1)
         pos_c = state.get_c_pos()
-        #print('current pos: {}'.format(pos_c))
+        # print('current pos: {}'.format(pos_c))
         counter += 1
         time.sleep(2.0)
         start = time.time()
@@ -89,8 +100,8 @@ while runs < n_runs:
             Z = np.random.uniform(WallMin[2], WallMax[2], 1)[0]
 
             alpha = np.random.uniform(-0.01, 0.01, 1)[0]
-            #q = list(Quaternion.random())
-            #if np.random.random() < 1.1:
+            # q = list(Quaternion.random())
+            # if np.random.random() < 1.1:
             pos = np.array([X, Y, Z])
             pos_msg(pos)
             # else:
@@ -105,7 +116,7 @@ while runs < n_runs:
 
             counter += 1
             time.sleep(0.5)
-            
+
             lidar = b.recv_msg("franka_lidar", -1)
             counter += 1
 
@@ -127,14 +138,14 @@ while runs < n_runs:
             data[runs]["lidar"]["timestamp"].append(lidar.get_timestamp())
 
             if debug == True:
-                print('next pos: {}'.format(new_state.get_c_pos()))
+                print("next pos: {}".format(new_state.get_c_pos()))
 
         if runs % save_every == 0:
-            with open(save_filename + str(runs) +'.pkl', 'wb') as f:
+            with open(save_filename + str(runs) + ".pkl", "wb") as f:
                 pkl.dump(data, f, protocol=pkl.HIGHEST_PROTOCOL)
 
     except KeyboardInterrupt:
-        with open(save_filename + str(runs) +'.pkl', 'wb') as f:
+        with open(save_filename + str(runs) + ".pkl", "wb") as f:
             pkl.dump(data, f, protocol=pkl.HIGHEST_PROTOCOL)
 
         print("input 0 to break")
@@ -144,5 +155,5 @@ while runs < n_runs:
         else:
             continue
 
-    with open(save_filename + str(runs) + '.pkl', 'wb') as f:
+    with open(save_filename + str(runs) + ".pkl", "wb") as f:
         pkl.dump(data, f, protocol=pkl.HIGHEST_PROTOCOL)

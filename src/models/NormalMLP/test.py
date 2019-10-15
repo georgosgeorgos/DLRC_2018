@@ -17,20 +17,27 @@ tebs = 1
 th.manual_seed(42)
 cuda = th.cuda.is_available()
 device = th.device("cuda" if cuda else "cpu")
-kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
-rootdir = '../../../'
-path_results = osp.join(rootdir, 'experiments', 'normalMLP')
+kwargs = {"num_workers": 1, "pin_memory": True} if cuda else {}
+rootdir = "../../../"
+path_results = osp.join(rootdir, "experiments", "normalMLP")
 path_exists(path_results)
 ckpt = ckpt_utc()
-ckpt_dir = osp.join(path_results, 'ckpt/')
+ckpt_dir = osp.join(path_results, "ckpt/")
 path_exists(ckpt_dir)
 
-test_set = PandaDataSet(root_dir=osp.join(rootdir, 'data'), filename='demos.pkl', train=True, test_split=0.0, transform=transforms.Compose([
-    transforms.Lambda(lambda n: th.Tensor(n)),
-    transforms.Lambda(
-        lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
-    transforms.Lambda(lambda n: n / 1000)
-]))
+test_set = PandaDataSet(
+    root_dir=osp.join(rootdir, "data"),
+    filename="demos.pkl",
+    train=True,
+    test_split=0.0,
+    transform=transforms.Compose(
+        [
+            transforms.Lambda(lambda n: th.Tensor(n)),
+            transforms.Lambda(lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
+            transforms.Lambda(lambda n: n / 1000),
+        ]
+    ),
+)
 test_loader = DataLoader(test_set, batch_size=tebs, shuffle=False, **kwargs)
 
 model = NormalMLP().to(device)
@@ -61,7 +68,7 @@ for i, (x, y, _) in enumerate(test_loader):
 
 # Preprocess
 input_list = []
-pred_list  = []
+pred_list = []
 mu_list = []
 std_list = []
 
@@ -99,6 +106,12 @@ std_array = np.array(std_list).squeeze()
 print(input_array.shape)
 
 
-plot_input_pred_timeseries(input=input_array, pred=mu_array, std=std_array, xlabel="time", ylabel="depth (m)",
-                           title='time series prediction', save_to=osp.join(path_results, 'test_timeseries_pred_anom_real.png'))
-
+plot_input_pred_timeseries(
+    input=input_array,
+    pred=mu_array,
+    std=std_array,
+    xlabel="time",
+    ylabel="depth (m)",
+    title="time series prediction",
+    save_to=osp.join(path_results, "test_timeseries_pred_anom_real.png"),
+)

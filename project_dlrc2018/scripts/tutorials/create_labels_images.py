@@ -15,16 +15,16 @@ start = time.time()
 lidar_list = []
 img_counter = 0
 
-time2go = 1.
+time2go = 1.0
 
 lidar_list = []
 c = 0
-n_samples=10
+n_samples = 10
 img_counter = 0
 runs = 0
 for n in range(10):
     print("Run:", runs)
-    runs +=1
+    runs += 1
     print("press Enter")
     i = input()
     try:
@@ -36,10 +36,10 @@ for n in range(10):
 
             rgb = np.reshape(img.get_rgb(), img.get_shape_rgb())
             rgb = Image.fromarray(rgb)
-            rgb.save('./images_franka/rgb/' + str(img_counter) + '.png')
+            rgb.save("./images_franka/rgb/" + str(img_counter) + ".png")
 
             depth = np.reshape(img.get_depth(), img.get_shape_depth())
-            tiff = TIFF.open('./images_franka/depth/' + str(img_counter) + '.tiff', mode='w')
+            tiff = TIFF.open("./images_franka/depth/" + str(img_counter) + ".tiff", mode="w")
             tiff.write_image(depth)
             tiff.close()
             img_counter += 1

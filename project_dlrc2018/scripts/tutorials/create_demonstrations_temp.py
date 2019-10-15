@@ -8,7 +8,7 @@ from collections import defaultdict
 from scripts.collect_data.lib import *
 
 data = defaultdict()
-rootdir = '../'
+rootdir = "../"
 data_path = osp.join(rootdir, "data")
 robot_name = "franka"
 max_sync_jitter = 0.2

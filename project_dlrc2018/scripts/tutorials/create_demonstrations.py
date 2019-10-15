@@ -8,7 +8,7 @@ from collections import defaultdict
 from scripts.collect_data.lib import *
 
 data = defaultdict()
-rootdir = '../'
+rootdir = "../"
 data_path = osp.join(rootdir, "data")
 robot_name = "franka"
 max_sync_jitter = 0.2
@@ -49,8 +49,8 @@ for d in range(num_demonstrations):
         sys.stdout.flush()
 
     end = time.time()
-    print("\n### Demo took {:.4f} seconds.".format(end-start))
-    data[d]["lidar"]['freq'] = num_timesteps / (end - start)
+    print("\n### Demo took {:.4f} seconds.".format(end - start))
+    data[d]["lidar"]["freq"] = num_timesteps / (end - start)
 
     plt.plot(data[d]["lidar"]["measurements"])
     plt.show()

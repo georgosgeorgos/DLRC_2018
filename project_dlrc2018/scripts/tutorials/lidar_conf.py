@@ -28,9 +28,9 @@ while True:
 lidar_array = np.array(lidar_list)
 
 for j in range(9):
-    plt.plot(lidar_array[:,j])
-    plt.title(j+1)
+    plt.plot(lidar_array[:, j])
+    plt.title(j + 1)
     plt.show()
-    plt.hist(lidar_array[:,j])
-    plt.title(j+1)
+    plt.hist(lidar_array[:, j])
+    plt.title(j + 1)
     plt.show()

@@ -1,6 +1,6 @@
 import sys
 
-sys.path.append('/home/georgos/DLRC_2018/')
+sys.path.append("/home/georgos/DLRC_2018/")
 import src
 import demo
 from src.models.NormalMLP.normalMLP import NormalMLP
@@ -16,6 +16,7 @@ import torch as th
 import os.path as osp
 from torch.distributions.normal import Normal
 import pickle as pkl
+
 # import py_at_broker as pab
 import time
 from random import shuffle
@@ -26,6 +27,7 @@ import src.utils.utils as cfg
 # pf = "../data/train_data_correct.pkl"
 # pf = "../data/anomaly_detection_gt.pkl"
 pf = "../data/clustering_gt.pkl"
+
 
 class SamplerData:
     def __init__(self, n=100):
@@ -58,9 +60,9 @@ class SamplerData:
         # This error occurs when mockup data is used
         n_interval = int(n_interval % max_n_interval)
 
-        sample_lidar = self.data_lidar[(n_interval * self.n):((n_interval * self.n) + self.n)]
-        sample_joint = self.data_joint[(n_interval * self.n):((n_interval * self.n) + self.n)]
-        sample_joint_v = self.data_joint_v[(n_interval * self.n):((n_interval * self.n) + self.n)]
+        sample_lidar = self.data_lidar[(n_interval * self.n) : ((n_interval * self.n) + self.n)]
+        sample_joint = self.data_joint[(n_interval * self.n) : ((n_interval * self.n) + self.n)]
+        sample_joint_v = self.data_joint_v[(n_interval * self.n) : ((n_interval * self.n) + self.n)]
         return (sample_lidar, sample_joint, sample_joint_v)
 
     def get_sample_clustering(self, n_interval, n_sample_y=10):
@@ -78,9 +80,9 @@ class SamplerData:
             end = end * n_sample_y
 
         for sample in range(start, end, 1):
-            sample_lidar_clustering.append(self.data_lidar[(sample - n_sample_y + 1):(sample + 1)])
-            sample_joint_clustering.append(self.data_joint[(sample - n_sample_y + 1):(sample + 1)].flatten())
-            sample_joint_v_clustering.append(self.data_joint_v[(sample - n_sample_y + 1):(sample + 1)].flatten())
+            sample_lidar_clustering.append(self.data_lidar[(sample - n_sample_y + 1) : (sample + 1)])
+            sample_joint_clustering.append(self.data_joint[(sample - n_sample_y + 1) : (sample + 1)].flatten())
+            sample_joint_v_clustering.append(self.data_joint_v[(sample - n_sample_y + 1) : (sample + 1)].flatten())
 
         sample_lidar_clustering = np.array(sample_lidar_clustering)
         sample_joint_clustering = np.array(sample_joint_clustering)
@@ -91,7 +93,7 @@ class SamplerData:
 class SamplerAnomalyClustering:
     def __init__(self, n=100, l=[i for i in range(9)]):
         self.cuda = th.cuda.is_available()
-        self.device = 'cpu'  # '#th.device("cuda" if self.cuda else "cpu")
+        self.device = "cpu"  # '#th.device("cuda" if self.cuda else "cpu")
         self.n = n
         self.l = l
 
@@ -99,7 +101,8 @@ class SamplerAnomalyClustering:
 
         self.modelAnomalyDetection = NormalMLP().to(self.device)
         self.modelAnomalyDetection.load_state_dict(
-            th.load("../experiments/normalMLP/ckpt/ckpt.pkl", map_location=self.device))
+            th.load("../experiments/normalMLP/ckpt/ckpt.pkl", map_location=self.device)
+        )
         self.modelAnomalyDetection.eval()
 
         self.n_clusters = 2
@@ -116,11 +119,12 @@ class SamplerAnomalyClustering:
             n_clusters=self.n_clusters,
             batch_size=self.n,
             model_type="selector",
-            is_multimodal=False
+            is_multimodal=False,
         )
 
         self.modelCluster.load_state_dict(
-            th.load("../experiments/selector_no_entropy/ckpt/ckpt_selector.pth", map_location=self.device))
+            th.load("../experiments/selector_no_entropy/ckpt/ckpt_selector.pth", map_location=self.device)
+        )
         self.modelCluster.eval().cpu()
 
     def routine_tensor(self, x):
@@ -177,7 +181,7 @@ class SamplerAnomalyClustering:
         mu_an, logvar_an = self.modelAnomalyDetection(x_an)
         std_an = th.exp(0.5 * logvar_an)
         prob_an = self.outlier_test(y_an, mu_an, std_an)
-        
+
         _, _, clst = self.modelCluster(x_cl)
 
         y_an = self.routine_array(y_an)[:, self.l]
@@ -188,10 +192,11 @@ class SamplerAnomalyClustering:
         clst = self.routine_array(clst)[:, self.l]
         # clst_n = self.prob_normalize(clst, prob_an)
 
-        res = {"input": y_an.tolist(), 
-               "mu": mu_an.tolist(), 
-               "std": std_an.tolist(), 
-               "prob": prob_an.tolist(),
-               "cluster": clst.tolist()
-               }
+        res = {
+            "input": y_an.tolist(),
+            "mu": mu_an.tolist(),
+            "std": std_an.tolist(),
+            "prob": prob_an.tolist(),
+            "cluster": clst.tolist(),
+        }
         return res

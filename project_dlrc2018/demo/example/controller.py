@@ -174,13 +174,12 @@ class ControlLoop():
                                                 epoch_start = self.pars["state"]["n_epoch"])
 
             # define a predictor to do the evaluations
-            self.predictor = Predictor(self.model, FILTER_ON = True)
-            selr.roller    = Roller(self.predictor, self.policy_obs) 
-
+            #self.predictor = Predictor(self.model, FILTER_ON = True)
+            #selr.roller    = Roller(self.predictor, self.policy_obs) 
             # if loop already running initialise from the buffer
             # you might want to sort this out later: if init networks changed, then we need a re-initilisation
-            if reload == True:
-                pass
+            #if reload == True:
+            #    pass
 
         #   Load/Save Admin Part II.
 

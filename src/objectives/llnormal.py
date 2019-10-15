@@ -9,6 +9,7 @@ class LLNormal(nn.Module):
             & = \prod_i\prod_jN(
             y_{ij}^{lidar} \vert \mu_{j}^{lidar}(x_i), \sigma_j^{lidar}(x_i)^2)
     """
+
     def __init__(self):
         super(LLNormal, self).__init__()
 

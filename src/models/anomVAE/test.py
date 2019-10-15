@@ -19,29 +19,41 @@ trbs = 100
 th.manual_seed(42)
 cuda = th.cuda.is_available()
 device = th.device("cuda" if cuda else "cpu")
-kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
-rootdir = '../../../'
-path_results = osp.join(rootdir, 'experiments', 'anomVAE')
+kwargs = {"num_workers": 1, "pin_memory": True} if cuda else {}
+rootdir = "../../../"
+path_results = osp.join(rootdir, "experiments", "anomVAE")
 path_exists(path_results)
 ckpt = ckpt_utc()
-ckpt_dir = osp.join(path_results, 'ckpt/')
+ckpt_dir = osp.join(path_results, "ckpt/")
 path_exists(ckpt_dir)
 
-train_set = PandaDataSet(root_dir=osp.join(rootdir, 'data'), filename='train_data_correct.pkl', train=True,
-                         transform=transforms.Compose([
-                             transforms.Lambda(lambda n: th.Tensor(n)),
-                             transforms.Lambda(lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
-                             transforms.Lambda(lambda n: n / 1000)
-                         ]))
+train_set = PandaDataSet(
+    root_dir=osp.join(rootdir, "data"),
+    filename="train_data_correct.pkl",
+    train=True,
+    transform=transforms.Compose(
+        [
+            transforms.Lambda(lambda n: th.Tensor(n)),
+            transforms.Lambda(lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
+            transforms.Lambda(lambda n: n / 1000),
+        ]
+    ),
+)
 train_loader = DataLoader(train_set, batch_size=trbs, shuffle=True, **kwargs)
 
-test_set = PandaDataSet(root_dir=osp.join(rootdir, 'data'), filename='anomaly_detection_gt.pkl', train=True,
-                        test_split=0.0, transform=transforms.Compose([
-        transforms.Lambda(lambda n: th.Tensor(n)),
-        transforms.Lambda(
-            lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
-        transforms.Lambda(lambda n: n / 1000)
-    ]))
+test_set = PandaDataSet(
+    root_dir=osp.join(rootdir, "data"),
+    filename="anomaly_detection_gt.pkl",
+    train=True,
+    test_split=0.0,
+    transform=transforms.Compose(
+        [
+            transforms.Lambda(lambda n: th.Tensor(n)),
+            transforms.Lambda(lambda n: th.Tensor.clamp(n, cfg.LIDAR_MIN_RANGE, cfg.LIDAR_MAX_RANGE)),
+            transforms.Lambda(lambda n: n / 1000),
+        ]
+    ),
+)
 test_loader = DataLoader(test_set, batch_size=tebs, shuffle=False, **kwargs)
 
 model = VAE().to(device)
@@ -103,9 +115,9 @@ for i, (x, y, _) in enumerate(train_loader):
 # train input
 train_input = np.vstack(train_input)
 df = pd.DataFrame(data=train_input, index=None, columns=None)
-df.to_csv(osp.join(path_results, 'train.csv'))
+df.to_csv(osp.join(path_results, "train.csv"))
 
 # train input recon
 train_recon_input = np.vstack(train_recon_input)
 df = pd.DataFrame(data=train_recon_input, index=None, columns=None)
-df.to_csv(osp.join(path_results, 'train_recon.csv'))
+df.to_csv(osp.join(path_results, "train_recon.csv"))

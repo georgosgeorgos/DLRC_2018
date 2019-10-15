@@ -18,7 +18,7 @@ class PandaDataSet(Dataset):
             self.data = pkl.load(f)
             self.num_demonstrations = len(self.data)
             self.num_timesteps = len(self.data[0]["lidar"]["measurements"])
-            self.num_samples = self.num_demonstrations*self.num_timesteps
+            self.num_samples = self.num_demonstrations * self.num_timesteps
             self.num_lidars = len(self.data[0]["lidar"]["measurements"][0])
             self.num_joints = len(self.data[0]["state"]["j_pos"][0])
 

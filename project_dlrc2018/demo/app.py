@@ -10,17 +10,18 @@ from sampler_app import SamplerAnomalyClustering
 import json
 import time
 from collections import defaultdict
+
 # import py_at_broker as pab
 import src.utils.configs as cfg
 
 N_SAMPLES = 100
-N_INTERVAL_UPDATE = 1.
+N_INTERVAL_UPDATE = 1.0
 N_STD = 3
 N_LIDAR_IDX = [3]
 OFFLINE = True
-ANOMALY_THRESHOLD = .95
-ROBOT_NAME = 'franka'
-N_MAX_INTERVAL = 1e+50
+ANOMALY_THRESHOLD = 0.95
+ROBOT_NAME = "franka"
+N_MAX_INTERVAL = 1e50
 # N_WINDOW_SIZE = 10
 DEBUG = False
 N_HEIGHT_SECONDARY_GRAPH = 275
@@ -29,8 +30,11 @@ MAX_SYNC_JITTER = 0.2
 
 if not OFFLINE:
     broker = pab.broker()
-    print("Request signal <{}_state> {}".format(ROBOT_NAME,
-                                                broker.request_signal(ROBOT_NAME + '_state', pab.MsgType.franka_state)))
+    print(
+        "Request signal <{}_state> {}".format(
+            ROBOT_NAME, broker.request_signal(ROBOT_NAME + "_state", pab.MsgType.franka_state)
+        )
+    )
 
 # Lists that store data coming in over time
 list_lidar_depth = defaultdict(list)
@@ -50,45 +54,43 @@ app = dash.Dash(__name__)
 #### APP LAYOUT
 ################################
 
+
 def lidar_viz(lidar_id):
     """
     # Visualize sensors belonging to other agent state and either self or background
     :param lidar_id: 
     :return: 
     """
-    return html.Div([
-        html.Div([
-            html.Div([
-                html.H3("Status LiDAR: {}".format(lidar_id), style={
-                    "font": "Helvetica",
-                    "color": "#FFFFFF"
-                }
-                        )], style={
-                "font": "Helvetica",
-                "padding": 3,
-                "text-align": "center",
-                "border-radius": 5,
-                "border-color": "#2C3E50",
-                "color": "#FFFFFF",
-                "background-color": "#2C3E50",
-            }),
-            dcc.Graph(id='live-update-graph-lidar{}'.format(lidar_id)),
-            dcc.Graph(id='live-update-graph-anom-lidar{}'.format(lidar_id)),
-            dcc.Graph(id='live-update-graph-normal-lidar{}'.format(lidar_id)),
-        ]),
-    ], className="row")
+    return html.Div(
+        [
+            html.Div(
+                [
+                    html.Div(
+                        [html.H3("Status LiDAR: {}".format(lidar_id), style={"font": "Helvetica", "color": "#FFFFFF"})],
+                        style={
+                            "font": "Helvetica",
+                            "padding": 3,
+                            "text-align": "center",
+                            "border-radius": 5,
+                            "border-color": "#2C3E50",
+                            "color": "#FFFFFF",
+                            "background-color": "#2C3E50",
+                        },
+                    ),
+                    dcc.Graph(id="live-update-graph-lidar{}".format(lidar_id)),
+                    dcc.Graph(id="live-update-graph-anom-lidar{}".format(lidar_id)),
+                    dcc.Graph(id="live-update-graph-normal-lidar{}".format(lidar_id)),
+                ]
+            )
+        ],
+        className="row",
+    )
 
 
 app.layout = html.Div(
-    [
-        dcc.Interval(
-            id='interval',
-            interval=N_INTERVAL_UPDATE * 1000,
-            n_intervals=0,
-            max_intervals=N_MAX_INTERVAL
-        )] +
-    [lidar_viz(id) for id in N_LIDAR_IDX] +
-    [html.Div(id='store-data-lidars', style={'display': 'none'})]
+    [dcc.Interval(id="interval", interval=N_INTERVAL_UPDATE * 1000, n_intervals=0, max_intervals=N_MAX_INTERVAL)]
+    + [lidar_viz(id) for id in N_LIDAR_IDX]
+    + [html.Div(id="store-data-lidars", style={"display": "none"})]
 )
 
 
@@ -96,15 +98,16 @@ app.layout = html.Div(
 #### CALLBACKS
 ################################
 
+
 def create_callback_normal_graph(id):
     def callback(n, json_data):
         data = json.loads(json_data)
         # list_prob_background[id].append(data['cluster'][-1][id][0])
         # list_prob_self[id].append(1)
 
-        list_prob_background[id] = list_prob_background[id] + np.array(data['cluster'])[:, N_LIDAR_IDX.index(id), 0].tolist()
-
-
+        list_prob_background[id] = (
+            list_prob_background[id] + np.array(data["cluster"])[:, N_LIDAR_IDX.index(id), 0].tolist()
+        )
 
         # list_prob_anomaly[id].append(data['prob'][-1][id])
         list_prob_self[id] = [1] * len(list_prob_background[id])
@@ -119,35 +122,30 @@ def create_callback_normal_graph(id):
         trace_background = go.Scatter(
             x=timesteps,
             y=np.array(list_prob_background[id])[timesteps],
-            mode='lines',
-            fill='tozeroy',
-            fillcolor='rgba(165, 105, 189, .8)',
-            name='background',
-            line=dict(color='rgba(165, 105, 189, .8)', smoothing=0.5, shape='spline')
+            mode="lines",
+            fill="tozeroy",
+            fillcolor="rgba(165, 105, 189, .8)",
+            name="background",
+            line=dict(color="rgba(165, 105, 189, .8)", smoothing=0.5, shape="spline"),
         )
 
         trace_self = go.Scatter(
             x=timesteps,
             y=np.array(list_prob_self[id])[timesteps],
-            mode='lines',
-            fill='tozeroy',
-            name='thyself',
-            fillcolor='rgba(247, 220, 111, .8)',
-            line=dict(color='rgba(247, 220, 111, .8)', smoothing=0.5, shape='spline'),
-            showlegend=True
+            mode="lines",
+            fill="tozeroy",
+            name="thyself",
+            fillcolor="rgba(247, 220, 111, .8)",
+            line=dict(color="rgba(247, 220, 111, .8)", smoothing=0.5, shape="spline"),
+            showlegend=True,
         )
 
         layout = Layout(
-            xaxis=dict(
-                title='Timesteps'
-            ),
-            yaxis=dict(
-                title='Prob',
-                range=[0, 1]
-            ),
+            xaxis=dict(title="Timesteps"),
+            yaxis=dict(title="Prob", range=[0, 1]),
             height=N_HEIGHT_SECONDARY_GRAPH,
             showlegend=True,
-            legend=dict(xanchor='right', yanchor='top', bgcolor='rgba(255, 255, 255, .8)'),
+            legend=dict(xanchor="right", yanchor="top", bgcolor="rgba(255, 255, 255, .8)"),
         )
 
         return Figure(data=[trace_self, trace_background], layout=layout)
@@ -159,10 +157,10 @@ def create_callback_anomaly_graph(id):
     def callback(n, json_data):
         data = json.loads(json_data)
 
-        list_prob_anomaly[id] = list_prob_anomaly[id] + np.array(data['prob'])[:, N_LIDAR_IDX.index(id)].tolist()
+        list_prob_anomaly[id] = list_prob_anomaly[id] + np.array(data["prob"])[:, N_LIDAR_IDX.index(id)].tolist()
 
         # list_prob_anomaly[id].append(data['prob'][-1][id])
-        list_prob_normal[id] = [1]*len(list_prob_anomaly[id])
+        list_prob_normal[id] = [1] * len(list_prob_anomaly[id])
 
         # if n < N_WINDOW_SIZE:
         #     timesteps = np.arange(len(list_prob_anomaly[id]))
@@ -174,21 +172,21 @@ def create_callback_anomaly_graph(id):
         trace_normal = go.Scatter(
             x=timesteps,
             y=np.array(list_prob_normal[id])[timesteps],
-            mode='lines',
-            fill='tozeroy',
-            fillcolor='rgba(133, 193, 233, .8)',
-            name='normal',
-            line=dict(color='rgba(133, 193, 233, .8)', smoothing=0.5, shape='spline')
+            mode="lines",
+            fill="tozeroy",
+            fillcolor="rgba(133, 193, 233, .8)",
+            name="normal",
+            line=dict(color="rgba(133, 193, 233, .8)", smoothing=0.5, shape="spline"),
         )
 
         trace_anom = go.Scatter(
             x=timesteps,
             y=np.array(list_prob_anomaly[id])[timesteps],
-            mode='lines',
-            fill='tozeroy',
-            fillcolor='rgba(240, 128, 128, .1)',
-            line=dict(color='rgba(240, 128, 128, .1)', smoothing=0.5, shape='spline'),
-            showlegend=False
+            mode="lines",
+            fill="tozeroy",
+            fillcolor="rgba(240, 128, 128, .1)",
+            line=dict(color="rgba(240, 128, 128, .1)", smoothing=0.5, shape="spline"),
+            showlegend=False,
         )
 
         mask = np.array(list_prob_anomaly[id])[timesteps] > ANOMALY_THRESHOLD
@@ -207,30 +205,27 @@ def create_callback_anomaly_graph(id):
         trace_anom_decision = go.Scatter(
             x=timesteps[mask],
             y=(np.array(list_prob_anomaly[id])[timesteps])[mask],
-            mode='lines',
-            fill='tozeroy',
-            fillcolor='rgba(240, 128, 128, 1.)',
-            line=dict(color='rgba(240, 128, 128, 1.)', smoothing=0.5, shape='spline'),
-            name='other agent'
+            mode="lines",
+            fill="tozeroy",
+            fillcolor="rgba(240, 128, 128, 1.)",
+            line=dict(color="rgba(240, 128, 128, 1.)", smoothing=0.5, shape="spline"),
+            name="other agent",
         )
 
         trace_anom_threshold = go.Scatter(
             x=timesteps,
             y=(np.ones_like(timesteps) * ANOMALY_THRESHOLD),
-            mode='lines',
-            line=dict(color='#17202A', dash='dash', width=1),
-            name='anomaly threshold'
+            mode="lines",
+            line=dict(color="#17202A", dash="dash", width=1),
+            name="anomaly threshold",
         )
 
         layout = Layout(
-            yaxis=dict(
-                title='Prob',
-                range=[0, 1]
-            ),
+            yaxis=dict(title="Prob", range=[0, 1]),
             height=N_HEIGHT_SECONDARY_GRAPH,
             showlegend=True,
-            title='Clustering of sensor measurements',
-            legend=dict(xanchor='right', yanchor='top', bgcolor='rgba(255, 255, 255, .8)'),
+            title="Clustering of sensor measurements",
+            legend=dict(xanchor="right", yanchor="top", bgcolor="rgba(255, 255, 255, .8)"),
         )
 
         return Figure(data=[trace_normal, trace_anom, trace_anom_decision, trace_anom_threshold], layout=layout)
@@ -242,9 +237,9 @@ def create_callback_lidar_graph(id):
     def callback(n, json_data):
         data = json.loads(json_data)
 
-        list_lidar_depth[id] = list_lidar_depth[id] +  np.array(data['input'])[:, N_LIDAR_IDX.index(id)].tolist()
-        list_lidar_depth_mean[id] = list_lidar_depth_mean[id] + np.array(data['mu'])[:, N_LIDAR_IDX.index(id)].tolist()
-        list_lidar_depth_std[id] = list_lidar_depth_std[id] +np.array(data['std'])[:, N_LIDAR_IDX.index(id)].tolist()
+        list_lidar_depth[id] = list_lidar_depth[id] + np.array(data["input"])[:, N_LIDAR_IDX.index(id)].tolist()
+        list_lidar_depth_mean[id] = list_lidar_depth_mean[id] + np.array(data["mu"])[:, N_LIDAR_IDX.index(id)].tolist()
+        list_lidar_depth_std[id] = list_lidar_depth_std[id] + np.array(data["std"])[:, N_LIDAR_IDX.index(id)].tolist()
 
         # if n < N_WINDOW_SIZE:
         #     timesteps = np.arange(len(list_lidar_depth[id]))
@@ -256,47 +251,45 @@ def create_callback_lidar_graph(id):
         trace_inp = go.Scatter(
             x=timesteps,
             y=np.array(list_lidar_depth[id])[timesteps],
-            mode='lines',
-            name='input depth',
-            line=dict(color='#2ECC71', smoothing=0.5, shape='spline')
+            mode="lines",
+            name="input depth",
+            line=dict(color="#2ECC71", smoothing=0.5, shape="spline"),
         )
 
         trace_mean = go.Scatter(
             x=timesteps,
             y=np.array(list_lidar_depth_mean[id])[timesteps],
-            mode='lines',
-            name='prediction mean',
-            line=dict(color='rgb(231, 76, 60)', smoothing=0.5, shape='spline')
+            mode="lines",
+            name="prediction mean",
+            line=dict(color="rgb(231, 76, 60)", smoothing=0.5, shape="spline"),
         )
 
         trace_upper_std = go.Scatter(
             x=timesteps,
             y=(np.array(list_lidar_depth_mean[id]) + N_STD * np.array(list_lidar_depth_std[id]))[timesteps],
-            mode='lines',
-            name='prediction ± {} standard deviation'.format(N_STD),
-            fill='tonexty',
-            fillcolor='rgba(231, 76, 60, 0.15)',
-            line=dict(color='rgba(231, 76, 60, 0.15)')
+            mode="lines",
+            name="prediction ± {} standard deviation".format(N_STD),
+            fill="tonexty",
+            fillcolor="rgba(231, 76, 60, 0.15)",
+            line=dict(color="rgba(231, 76, 60, 0.15)"),
         )
 
         trace_lower_std = go.Scatter(
             x=timesteps,
             y=(np.array(list_lidar_depth_mean[id]) - N_STD * np.array(list_lidar_depth_std[id]))[timesteps],
-            mode='lines',
+            mode="lines",
             showlegend=False,
-            fillcolor='rgba(231, 76, 60, 0.15)',
-            line=dict(color='rgba(231, 76, 60, 0.15)')
+            fillcolor="rgba(231, 76, 60, 0.15)",
+            line=dict(color="rgba(231, 76, 60, 0.15)"),
         )
 
         layout = Layout(
             xaxis=dict(title="Timesteps"),
-            yaxis=dict(
-                title='Depth (m)'
-            ),
+            yaxis=dict(title="Depth (m)"),
             height=N_HEIGHT_PRIMARY_GRAPH,
             showlegend=True,
-            title='Sensor measurements and predictions',
-            legend=dict(xanchor='right', yanchor='top', bgcolor='rgba(255, 255, 255, 0.25)'),
+            title="Sensor measurements and predictions",
+            legend=dict(xanchor="right", yanchor="top", bgcolor="rgba(255, 255, 255, 0.25)"),
         )
 
         return Figure(data=[trace_lower_std, trace_upper_std, trace_inp, trace_mean], layout=layout)
@@ -304,8 +297,7 @@ def create_callback_lidar_graph(id):
     return callback
 
 
-@app.callback(Output('store-data-lidars', 'children'),
-              [Input('interval', 'n_intervals')])
+@app.callback(Output("store-data-lidars", "children"), [Input("interval", "n_intervals")])
 def update_data(n):
     if OFFLINE:
         data = sampler.get_data(None, None, n, is_robot=False)
@@ -326,25 +318,20 @@ def update_data(n):
 
 # Create separate callbacks for each lidar
 for lidar_idx in N_LIDAR_IDX:
-    app.callback(Output('live-update-graph-normal-lidar{}'.format(lidar_idx), 'figure'),
-                 [
-                     Input('interval', 'n_intervals'),
-                     Input('store-data-lidars', 'children')
-                 ])(create_callback_normal_graph(lidar_idx)),
-    app.callback(Output('live-update-graph-anom-lidar{}'.format(lidar_idx), 'figure'),
-                 [
-                     Input('interval', 'n_intervals'),
-                     Input('store-data-lidars', 'children')
-                 ])(create_callback_anomaly_graph(lidar_idx))
-    app.callback(Output('live-update-graph-lidar{}'.format(lidar_idx), 'figure'),
-                 [
-                     Input('interval', 'n_intervals'),
-                     Input('store-data-lidars', 'children')
-                 ])(create_callback_lidar_graph(lidar_idx))
+    app.callback(
+        Output("live-update-graph-normal-lidar{}".format(lidar_idx), "figure"),
+        [Input("interval", "n_intervals"), Input("store-data-lidars", "children")],
+    )(create_callback_normal_graph(lidar_idx)),
+    app.callback(
+        Output("live-update-graph-anom-lidar{}".format(lidar_idx), "figure"),
+        [Input("interval", "n_intervals"), Input("store-data-lidars", "children")],
+    )(create_callback_anomaly_graph(lidar_idx))
+    app.callback(
+        Output("live-update-graph-lidar{}".format(lidar_idx), "figure"),
+        [Input("interval", "n_intervals"), Input("store-data-lidars", "children")],
+    )(create_callback_lidar_graph(lidar_idx))
 
-app.css.append_css({
-    'external_url': 'https://codepen.io/chriddyp/pen/bWLwgP.css'
-})
+app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run_server(debug=DEBUG)

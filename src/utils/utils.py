@@ -19,10 +19,12 @@ def tensor_to_variable(x, required_grad=False):
         x = x.cuda()
     return Variable(x, requires_grad=required_grad)
 
+
 def path_exists(path):
     if not exists(path):
         makedirs(path)
     return path
+
 
 def ckpt_utc():
     s = datetime.datetime.utcnow()
@@ -50,14 +52,14 @@ def cumulative_moving_average(x=None, x_new=None, n=None):
     return (x_new + n * x) / (n + 1)
 
 
-def plot_eval(x=None, y=None, xlabel=None, ylabel=None, title=None, figsize=(7,5), save_to=None):
+def plot_eval(x=None, y=None, xlabel=None, ylabel=None, title=None, figsize=(7, 5), save_to=None):
     plt.clf()
     plt.figure(figsize=figsize)
     plt.plot(x, y)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.title(title)
-    plt.savefig(save_to, format='png')
+    plt.savefig(save_to, format="png")
     plt.tight_layout()
     plt.close()
 
@@ -69,7 +71,7 @@ def plot_scatter(x=None, y=None, xlabel=None, ylabel=None, title=None, save_to=N
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.title(title)
-    plt.savefig(save_to, format='png')
+    plt.savefig(save_to, format="png")
     plt.tight_layout()
     plt.close()
 
@@ -79,19 +81,26 @@ def plot_hist_lidars(x, title, save_to):
     num_samples, num_channels = x.shape
     nrow, ncol = 3, 3
     colors = cm.viridis(np.linspace(0, 1, num_channels))
-    fig = plt.figure(figsize=(15*nrow, 10*ncol))
+    fig = plt.figure(figsize=(15 * nrow, 10 * ncol))
     fig.suptitle(title, size=40)
 
     for idx in range(num_channels):
         row = int(idx % nrow)
         col = int(idx / ncol)
-        gs = gridspec.GridSpec(nrow, ncol, width_ratios=[1]*nrow, height_ratios=[1]*ncol)
+        gs = gridspec.GridSpec(nrow, ncol, width_ratios=[1] * nrow, height_ratios=[1] * ncol)
         ax0 = plt.subplot(gs[row, col])
-        sns_dist = sns.distplot(x[:, idx], ax=ax0, vertical=False, bins=20, kde=True,
-                     hist_kws={"color": colors[idx], "range": (-4, 4)},
-                     kde_kws={"color": colors[idx], "lw": 3}, label='channel {}'.format(idx))
+        sns_dist = sns.distplot(
+            x[:, idx],
+            ax=ax0,
+            vertical=False,
+            bins=20,
+            kde=True,
+            hist_kws={"color": colors[idx], "range": (-4, 4)},
+            kde_kws={"color": colors[idx], "lw": 3},
+            label="channel {}".format(idx),
+        )
         ax0.legend(loc=1, fontsize=30)
-    plt.savefig(save_to, format='png')
+    plt.savefig(save_to, format="png")
     plt.close()
 
 
@@ -99,9 +108,14 @@ def plot_hist(x, xlabel=None, ylabel=None, title=None, save_to=None):
     plt.clf()
     fig = plt.figure(figsize=(10, 5))
 
-    sns_dist = sns.distplot(x, vertical=False, bins=25, kde=False,
-                 hist_kws={"color": "blue", "range": (-4, 4)},
-                 kde_kws={"color": "blue", "lw": 3})
+    sns_dist = sns.distplot(
+        x,
+        vertical=False,
+        bins=25,
+        kde=False,
+        hist_kws={"color": "blue", "range": (-4, 4)},
+        kde_kws={"color": "blue", "lw": 3},
+    )
     # # N(0,1)
     # sns_dist = sns.distplot(np.random.randn(len(x)), vertical=False, bins=25,
     #                         hist_kws={"color": "red", "range": (-3, 3)},
@@ -109,7 +123,7 @@ def plot_hist(x, xlabel=None, ylabel=None, title=None, save_to=None):
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
-    plt.savefig(save_to, format='png')
+    plt.savefig(save_to, format="png")
     plt.close()
 
 
@@ -117,13 +131,15 @@ def plot_correlation_matrix(x, xlabel=None, ylabel=None, title=None, save_to=Non
     plt.clf()
     fig = plt.figure(figsize=(9, 7))
     cor = np.corrcoef(x.T)
-    sns.heatmap(cor, center=0., vmin=-1., vmax=1.)
+    sns.heatmap(cor, center=0.0, vmin=-1.0, vmax=1.0)
     plt.title(title)
-    plt.savefig(save_to, format='png')
+    plt.savefig(save_to, format="png")
     plt.close()
 
 
-def plot_input_pred_timeseries(input, pred, std, num_std=3, downsample_step=1, xlabel=None, ylabel=None, title=None, save_to=None):
+def plot_input_pred_timeseries(
+    input, pred, std, num_std=3, downsample_step=1, xlabel=None, ylabel=None, title=None, save_to=None
+):
     plt.clf()
     num_samples, num_channels = input.shape
     downsample_every_nth = [i for i in range(0, input.shape[0], downsample_step)]
@@ -133,31 +149,41 @@ def plot_input_pred_timeseries(input, pred, std, num_std=3, downsample_step=1, x
     for idx in range(num_channels):
         x = idx % num_channels
         y = idx % 1
-        gs = gridspec.GridSpec(num_channels, 2, width_ratios=[4, 1], height_ratios=[1]*num_channels)
+        gs = gridspec.GridSpec(num_channels, 2, width_ratios=[4, 1], height_ratios=[1] * num_channels)
         ax0 = plt.subplot(gs[x, y])
 
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
-        ax0.plot(input[downsample_every_nth, idx], color='black', label="true signal")
-        ax0.plot(pred[downsample_every_nth, idx], color='red', label="mean signal")
+        ax0.plot(input[downsample_every_nth, idx], color="black", label="true signal")
+        ax0.plot(pred[downsample_every_nth, idx], color="red", label="mean signal")
         # plot lower and upper confidence curves
-        ax0.plot(pred[downsample_every_nth, idx] - std[downsample_every_nth, idx] * num_std, color='blue', alpha=0.1)
-        ax0.plot(pred[downsample_every_nth, idx] + std[downsample_every_nth, idx] * num_std, color='blue', alpha=0.1)
+        ax0.plot(pred[downsample_every_nth, idx] - std[downsample_every_nth, idx] * num_std, color="blue", alpha=0.1)
+        ax0.plot(pred[downsample_every_nth, idx] + std[downsample_every_nth, idx] * num_std, color="blue", alpha=0.1)
 
-        ax0.fill_between(x=[i for i in range(input[downsample_every_nth].shape[0])],
-                         y1=pred[downsample_every_nth, idx] + std[downsample_every_nth, idx] * num_std,
-                         y2=pred[downsample_every_nth, idx] - std[downsample_every_nth, idx] * num_std,
-                         facecolor="blue", alpha=0.1, label="3 std. confidence interval")
+        ax0.fill_between(
+            x=[i for i in range(input[downsample_every_nth].shape[0])],
+            y1=pred[downsample_every_nth, idx] + std[downsample_every_nth, idx] * num_std,
+            y2=pred[downsample_every_nth, idx] - std[downsample_every_nth, idx] * num_std,
+            facecolor="blue",
+            alpha=0.1,
+            label="3 std. confidence interval",
+        )
 
         if idx == 0:
             ax0.legend(loc=1, fontsize=20)
 
         ax1 = plt.subplot(gs[x, y + 1])
-        sns.distplot(input[downsample_every_nth, idx], ax=ax1, vertical=False, bins=15, kde=False,
-                     hist_kws={"color": "blue", "range": (np.min(input), np.max(input)), "alpha": 0.5},
-                     kde_kws={"color": "blue", "lw": 3})
-        plt.xlabel('frequency')
+        sns.distplot(
+            input[downsample_every_nth, idx],
+            ax=ax1,
+            vertical=False,
+            bins=15,
+            kde=False,
+            hist_kws={"color": "blue", "range": (np.min(input), np.max(input)), "alpha": 0.5},
+            kde_kws={"color": "blue", "lw": 3},
+        )
+        plt.xlabel("frequency")
     plt.tight_layout()
     plt.title(title)
-    plt.savefig(save_to, format='png')
+    plt.savefig(save_to, format="png")
     plt.close()

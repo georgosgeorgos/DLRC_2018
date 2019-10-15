@@ -7,20 +7,21 @@ import torch as th
 from models.cvae_gmm.cvae_gmm import VAE
 from loaders.load_panda_timeseries import Loader
 
+
 def test(args):
-    #10 samples y and 57% accuracy
+    # 10 samples y and 57% accuracy
     model = VAE(
-            encoder_layer_sizes=args.encoder_layer_sizes,
-            decoder_layer_sizes=args.decoder_layer_sizes,
-            latent_size=args.latent_size,
-            batch_size=args.batch_size_test,
-            conditional=args.conditional,
-            num_labels=args.num_labels
-            )
-    
+        encoder_layer_sizes=args.encoder_layer_sizes,
+        decoder_layer_sizes=args.decoder_layer_sizes,
+        latent_size=args.latent_size,
+        batch_size=args.batch_size_test,
+        conditional=args.conditional,
+        num_labels=args.num_labels,
+    )
+
     saved_state_dict = th.load(args.ckpt_dir + args.ckpt)
     model.load_state_dict(saved_state_dict)
-    
+
     dataset = Loader(split=args.split, samples=args.n_samples_y)
     data_loader = DataLoader(dataset=dataset, batch_size=args.batch_size_test, shuffle=False)
 
@@ -40,5 +41,5 @@ def test(args):
         prediction.append(z)
 
     prediction = np.array(prediction)
-    np.savetxt("prediction.csv", prediction[:,3].astype(int), fmt='%i')
+    np.savetxt("prediction.csv", prediction[:, 3].astype(int), fmt="%i")
     print("Done!")

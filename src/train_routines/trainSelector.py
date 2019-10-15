@@ -8,25 +8,26 @@ from objectives.loss_gmm_selector import LossSelector as Loss
 from torch.utils.data import DataLoader
 from utils.utils import move_to_cuda, ckpt_utc, path_exists, tensor_to_variable
 
+
 def train(args):
     ckpt = ckpt_utc()
     loss_fn = Loss(
-              args.batch_size, 
-              args.n_samples_y, 
-              args.lidar_input_size, 
-              args.n_clusters, 
-              model_type=args.model_type,
-              is_entropy=args.is_entropy,
-              lmbda=args.lmbda
-              )
+        args.batch_size,
+        args.n_samples_y,
+        args.lidar_input_size,
+        args.n_clusters,
+        model_type=args.model_type,
+        is_entropy=args.is_entropy,
+        lmbda=args.lmbda,
+    )
     model = Model(
-            encoder_layer_sizes=args.encoder_layer_sizes,
-            latent_size=args.latent_size,
-            n_clusters=args.n_clusters,
-            batch_size=args.batch_size,
-            model_type=args.model_type,
-            is_multimodal=args.is_multimodal
-            )
+        encoder_layer_sizes=args.encoder_layer_sizes,
+        latent_size=args.latent_size,
+        n_clusters=args.n_clusters,
+        batch_size=args.batch_size,
+        model_type=args.model_type,
+        is_multimodal=args.is_multimodal,
+    )
     model = move_to_cuda(model)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
@@ -50,8 +51,8 @@ def train(args):
         for itr, batch in enumerate(data_loader):
             # observable
             y, x, depth = batch
-            y     = tensor_to_variable(y)
-            x     = tensor_to_variable(x)
+            y = tensor_to_variable(y)
+            x = tensor_to_variable(x)
             depth = tensor_to_variable(depth)
             mu_c, std_c, clusters = model(x)
 
@@ -65,7 +66,6 @@ def train(args):
         print("train loss:", np.mean(loss_epoch))
         loss_train.append(np.mean(loss_epoch))
 
-        
         if epoch % args.test_every_n_epochs == 0:
             model.eval()
             loss_epoch = []

@@ -11,15 +11,16 @@ from utils.utils import plot_timeseries
 import os.path as osp
 import json
 
+
 def test(args):
     model = Model(
-            encoder_layer_sizes=args.encoder_layer_sizes,
-            latent_size=args.latent_size,
-            n_clusters=args.n_clusters,
-            batch_size=args.batch_size_test,
-            model_type=args.model_type,
-            )
-    
+        encoder_layer_sizes=args.encoder_layer_sizes,
+        latent_size=args.latent_size,
+        n_clusters=args.n_clusters,
+        batch_size=args.batch_size_test,
+        model_type=args.model_type,
+    )
+
     saved_state_dict = th.load(args.ckpt_dir + args.ckpt_test)
     model.load_state_dict(saved_state_dict)
 
@@ -29,13 +30,13 @@ def test(args):
     res = {"y": [], "mu": [], "std": [], "cluster": []}
     prediction = []
     model.eval()
-    
+
     dataset.generate_index()
     for itr, batch in enumerate(data_loader):
         y, x = batch
 
         y = y.view(-1, args.n_samples_y, args.lidar_input_size)
-        y = y[:,-1,:]
+        y = y[:, -1, :]
 
         mu_c, std_c, clusters = model(x)
 
@@ -45,10 +46,10 @@ def test(args):
             std_new = th.zeros((1, index.size()[0]))
 
             for i in range(len(index)):
-                mu_new[:,i]  = mu_c[:,i,index[i]]
-                std_new[:,i] = std_c[:,i,index[i]]
+                mu_new[:, i] = mu_c[:, i, index[i]]
+                std_new[:, i] = std_c[:, i, index[i]]
 
-            mu_c  = mu_new
+            mu_c = mu_new
             std_c = std_new
 
         # observable
@@ -56,14 +57,20 @@ def test(args):
         res["mu"].append(mu_c.data.numpy().squeeze().tolist())
         res["std"].append(std_c.data.numpy().squeeze().tolist())
         res["cluster"].append(clusters.data.numpy().squeeze().tolist())
-    
+
     with open(osp.join(args.result_dir, "res_" + args.split_evaluation + ".json"), "w") as f:
         json.dump(res, f)
 
-    mu_array    = np.array(res["mu"])
-    std_array   = np.array(res["std"])
+    mu_array = np.array(res["mu"])
+    std_array = np.array(res["std"])
     input_array = np.array(res["y"])
-    plot_timeseries(input=input_array, pred=mu_array, std=std_array, 
-                    xlabel="time", ylabel="depth (m)", title='time series prediction', 
-                    save_to=osp.join(args.result_dir, 'timeseries_pred_' + args.split_evaluation + '.png'))
+    plot_timeseries(
+        input=input_array,
+        pred=mu_array,
+        std=std_array,
+        xlabel="time",
+        ylabel="depth (m)",
+        title="time series prediction",
+        save_to=osp.join(args.result_dir, "timeseries_pred_" + args.split_evaluation + ".png"),
+    )
     print("Done!")

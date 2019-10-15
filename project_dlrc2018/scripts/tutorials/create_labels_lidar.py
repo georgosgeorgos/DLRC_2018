@@ -17,7 +17,7 @@ while True:
         c = 0
         print("Press Enter to start")
         print("Run:", runs)
-        runs +=1
+        runs += 1
         i = input()
         while c < 100:
             lidar = b.recv_msg("franka_lidar", -1)

@@ -11,7 +11,7 @@ class PandaDataSetImg(Dataset):
 
         self.root_dir = root_dir
         self.transform = transform
-        self.split     = split
+        self.split = split
 
         if self.split == "train":
             self.file_list = glob.glob(self.root_dir + "TRAIN/" + "*")
@@ -27,8 +27,8 @@ class PandaDataSetImg(Dataset):
 
     def __getitem__(self, index):
 
-        path_file = self.file_list[index] 
-        tiff = TIFF.open(path_file, mode='r') 
+        path_file = self.file_list[index]
+        tiff = TIFF.open(path_file, mode="r")
         depth = tiff.read_image()
         depth = depth / 1000
         depth = depth.astype(float)
