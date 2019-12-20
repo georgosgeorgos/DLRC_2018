@@ -25,7 +25,7 @@ When we started to work on this project, one month ago, we decided to focus on t
 
 Typically in Robotics we deal with tasks well defined. It is possible to obtain impressive results applying Geometry, Control theory and engineering. In a traditional setup, we don't need Learning.
 
-| ![](./images/geometry_based.jpg)                             | ![](./images/learning_based.jpg)                             |
+| ![](./project_dlrc2018/images/geometry_based.jpg)                             | ![](./project_dlrc2018/images/learning_based.jpg)                             |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | Geometry based approach: we build a specific model of our system, and on top of it we use machine learning to solve specific tasks. | Learning based approach: we build a statistical model, and on top of it we inject geometrical constraints and task-dependent information. |
 
