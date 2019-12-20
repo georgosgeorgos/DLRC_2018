@@ -1,6 +1,6 @@
-## Probabilistic Models for Robotic Perception
+# Probabilistic Models for Robotic Perception
 
-# Unsupervised Classification of Sensor Readings
+## Unsupervised Classification of Sensor Readings
 
 
 
@@ -17,11 +17,11 @@ Our goal for the Robotic Challenge was:
 
 We hypothesized that the perception task can be solved without relying explicitly on geometry and configuration.
 
-## Background
+### Background
 
 When we started to work on this project, one month ago, we decided to focus on the Machine Learning part.  Moreover, reading papers, a simple observation arose naturally: Machine Learning for Robotics works in specific cases, and it is challenging to generalize. We tried to understand why.
 
-### Geometry based and Machine Learning based approach
+#### Geometry based and Machine Learning based approach
 
 Typically in Robotics we deal with tasks well defined. It is possible to obtain impressive results applying Geometry, Control theory and engineering. In a traditional setup, we don't need Learning.
 
@@ -31,13 +31,13 @@ Typically in Robotics we deal with tasks well defined. It is possible to obtain 
 
 But assume that the task is not so well defined; that we don't have perfect knowledge of our agent; and that we need to deal with a not static environment. This last hypothesis is not only a theoretical assumption, and it's particularly relevant considering that more and more robots are interacting with us in environments that typically evolve. For this new scenario, classical methods are not sufficient. Now Statistical Methods can be helpful.
 
-### Statistical Modeling
+#### Statistical Modeling
 
 It became immediately clear that a Supervised approach that relies on manual labeling and strong supervision was not well suited for this task. The manual labeling for sensor reading is not trivial and not always objective (imagine that you need to label thousands of data points every second). Moreover, discriminative algorithms assume the same data distribution between train and test set (it is possible to work with Domain Adaptation techniques, but they always assume some distribution similarity). Also, they typically output a number. All features that are not good in Robotics, where domain shift and uncertainty are the norms.
 
 We decided to use **Statistical Unsupervised Learning**, a class of Machine Learning algorithms that learn structure in data without manual labeling. With one model we can sense the environment without using complex heuristics to label sensor data and quantify uncertainty around our prediction.
 
-### Data Analysis
+#### Data Analysis
 
 We started to collect data and see if it was possible to detect some patterns. The first result was cheering: collecting lidar data on a given trajectory, we started to see a clear multi-modal pattern.
 
@@ -61,9 +61,9 @@ The result was good: considering 30 samples (every sample consisting of short ti
 
 Given that we can cluster with handcrafted features, using deep learning and statistics, we should be able to find a representation space to solve our perception task. We started to build our model on this basis.
 
-## Model
+### Model
 
-### Definitions
+#### Definitions
 
 Before to start, some definitions:
 
@@ -73,7 +73,7 @@ Before to start, some definitions:
 * $x_i$ is the state of the robot; typically joint angle positions and velocities
 * $\pi_k$ is a clustering selector
 
-### The Sensing framework
+#### The Sensing framework
 
 The sensing framework is a hierarchical statistical learning model and consists of three main Modules:
 
@@ -91,7 +91,7 @@ As input for all the framework, we have the 9 lidar readings, and the 7 joint po
 | ------------------------------------------------------------ |
 | Pictorial view of our Perception Framework. Given input data sensor, we build a hierarchical learning pipeline to deal with complex Dynamic Environments. |
 
-### Anomaly Detection Module
+#### Anomaly Detection Module
 
 For anomaly detection, we decided to use a Regression model. The statistical model is Normal. The idea is to solve a proxy task (prediction) to obtain an anomaly detector: after training, when the model is not able to reconstruct or predict a given sample point, we consider this point an anomaly. Simple and effective! 
 
@@ -113,7 +113,7 @@ $$
 | :----------------------------------------------------------: |
 | Lidar n.3 reading. We inject anomalies in the environment, and the model is not able to predict the new behavior. |
 
-###  Clustering Module
+####  Clustering Module
 
 If the Anomaly Detector Module detects an anomaly, we have done. However, if it detects a normal behavior, now we need to use the Clustering Module to decide if it is background or self. To obtain this result, we built what we called a selector model, a network that mimics the Gaussian mixture model' s behavior. Again we solve a proxy task (a prediction) to solve a clustering task. We train with maximum likelihood. In this case, for lidars readings, we have an interest in learning the moments of  9 one dimensional multi modal Gaussian with two modes: self and background. We input a short time series of 10 consecutive points: in this way, we help the model to learn the temporal dynamics and we filter noise.
 
@@ -135,7 +135,7 @@ $$
 
 With this model, on a ground truth of 3000 labeled lidar point measurements, we obtained a global accuracy of 89.8 % and a recall (on the class of interest self) of 69.4 %.
 
-### Collision Detection Module
+#### Collision Detection Module
 
 We model this task as a simple multi-label binary classification: in practice, we consider batches of 10 consecutive time series point; we randomly chose columns and set that values to Gaussian noise around a small value (around 50 mm). We label any original data point class 0, and any modified data point 1: in this way we want to discriminate between a generic anomaly (something new in the environment, another agent acting) and a probable collision. We now train/test on this dataset and we evaluate the result considering a global result and a per lidar result (we solve a binary classification problem for every lidar). Computing the Confusion matrix for a test set sample of 2000 points,  we evaluate the classification result using the Jaccard index and the F1 metric. 
 
@@ -150,7 +150,7 @@ We report results for the class of interest (collision or class 1):
 
 ​						Result on 2000 points with ground truth for collision detection
 
-## Conclusions
+### Conclusions
 
 In this work, we investigated the possibility to sense the environment using an unsupervised learning approach, without relying on a particular configuration or geometry. This approach showed Advantages and Drawbacks.
 
@@ -160,7 +160,7 @@ However, we didn't manage to solve the unsupervised classification task in a gen
 
 The model can be improved: in particular, to solve the perception task robustly, we want to use latent variable models to learn better data representation and sequence models to model the temporal dynamics.
 
-## References
+### References
 
 0)  [GitHub repository](https://github.com/georgosgeorgos/DLRC_2018)
 
